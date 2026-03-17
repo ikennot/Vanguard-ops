@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanguard Ops: Tactical Strike</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-root">
+    <canvas id="game-canvas" width="1280" height="720" aria-label="Vanguard Ops game canvas"></canvas>
+
+    <section id="menu-main" class="overlay">
+      <h1>Vanguard Ops: Tactical Strike</h1>
+      <div class="menu-actions">
+        <button id="btn-start">Start Mission</button>
+        <button id="btn-settings">Settings</button>
+        <button id="btn-exit">Exit</button>
+      </div>
+    </section>
+
+    <section id="menu-pause" class="overlay hidden">
+      <h2>Game Paused</h2>
+      <div class="menu-actions">
+        <button id="btn-resume">Resume</button>
+        <button id="btn-restart">Restart</button>
+        <button id="btn-main">Return to Main Menu</button>
+      </div>
+    </section>
+
+    <section id="menu-settings" class="overlay hidden">
+      <h2>System Settings</h2>
+      <label>BGM <input id="bgm-volume" type="range" min="0" max="100" value="70"></label>
+      <label>SFX <input id="sfx-volume" type="range" min="0" max="100" value="80"></label>
+      <p>Controls: WASD move, G shoot, F jetpack, ESC pause</p>
+      <button id="btn-settings-close">Back</button>
+    </section>
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/spritesheet.js"></script>
+  <script src="js/physics.js"></script>
+  <script src="js/collision.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/particle.js"></script>
+  <script src="js/platform.js"></script>
+  <script src="js/projectile.js"></script>
+  <script src="js/weapon.js"></script>
+  <script src="js/pickup.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

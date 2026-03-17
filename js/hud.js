@@ -39,6 +39,14 @@ class Hud {
     ctx.fillRect(p.x + 14, p.y + 11, 5, 22);
     ctx.fillRect(p.x + 25, p.y + 11, 5, 22);
 
+    if (game.state === "playing") {
+      ctx.beginPath();
+      ctx.arc(game.input.mouse.x, game.input.mouse.y, 12, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.82)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
     ctx.restore();
   }
 }

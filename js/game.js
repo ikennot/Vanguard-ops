@@ -2,7 +2,7 @@ class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.input = new InputHandler();
+    this.input = new InputHandler(canvas);
     this.audio = new AudioManager();
     this.camera = new Camera(canvas.width, canvas.height);
     this.platforms = new PlatformManager();

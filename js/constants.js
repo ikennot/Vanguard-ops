@@ -29,7 +29,7 @@ window.GAME_CONST = {
     knockback: 420
   },
   objective: { targetKills: 15 },
-  controls: { left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", shoot: "KeyG", jetpack: "KeyF", pause: "Escape" },
+  controls: { left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", jetpack: "Space", pause: "Escape" },
   maps: {
     space: {
       id: "space",

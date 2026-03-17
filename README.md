@@ -24,10 +24,10 @@ The player is an elite operative with advanced mobility gear (jetpack), multiple
 ## Controls
 
 - `W A S D` - Move
-- `G` - Shoot
-- `F` - Jetpack / Flight
+- `Left Click` - Shoot
+- `Space` - Jetpack / Flight
 - `ESC` - Pause
-- Mouse - UI navigation
+- Mouse - Aim and UI navigation
 
 ## Rules and Conditions
 

@@ -91,7 +91,7 @@ class Player {
     this.invulnTimer = Math.max(0, this.invulnTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (input.wasPressed(GAME_CONST.controls.shoot)) this.tryShoot(game);
+    if (input.wasMousePressed(0)) this.tryShoot(game);
 
     if (jetpackActive) this.state = "jetpack";
     else if (!this.onGround && this.velocity.y < 0) this.state = "jumping";
@@ -106,7 +106,19 @@ class Player {
       this.weapon.startReload();
       return;
     }
-    const direction = { x: this.facing, y: 0 };
+    const originX = this.position.x + this.width * 0.5;
+    const originY = this.position.y + this.height * 0.45;
+    const mouseWorldX = game.input.mouse.x + game.camera.x;
+    const mouseWorldY = game.input.mouse.y + game.camera.y;
+    const deltaX = mouseWorldX - originX;
+    const deltaY = mouseWorldY - originY;
+    let direction = { x: this.facing, y: 0 };
+
+    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+      direction = { x: deltaX, y: deltaY };
+      if (deltaX !== 0) this.facing = deltaX > 0 ? 1 : -1;
+    }
+
     game.projectiles.spawn(
       { x: this.position.x + this.width * 0.5 + this.facing * 12, y: this.position.y + this.height * 0.45 },
       direction,

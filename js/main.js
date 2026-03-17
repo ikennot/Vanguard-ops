@@ -13,21 +13,42 @@ import MenuController from "./menu.js";
 import serviceLocator from "./core/ServiceLocator.js";
 import gameState from "./core/GameState.js";
 import eventBus from "./core/EventBus.js";
+import EntityManager from "./entities/EntityManager.js";
+import PhysicsSystem from "./systems/PhysicsSystem.js";
+import CollisionSystem from "./systems/CollisionSystem.js";
+import RenderSystem from "./systems/RenderSystem.js";
 
 function bootstrap() {
   const canvas = document.getElementById("game-canvas");
+  const entityManager = new EntityManager();
+  const input = new InputHandler(canvas);
+  const audio = new AudioManager();
+  const camera = new Camera(canvas.width, canvas.height);
+  const platforms = new PlatformManager();
+  const player = new Player(entityManager);
+  const enemies = new EnemyManager(entityManager);
+  const projectiles = new ProjectileManager(entityManager);
+  const pickups = new PickupManager(entityManager);
+  const particles = new ParticleSystem();
+  const hud = new Hud();
+  const menu = new MenuController();
+
   const services = {
-    input: new InputHandler(canvas),
-    audio: new AudioManager(),
-    camera: new Camera(canvas.width, canvas.height),
-    platforms: new PlatformManager(),
-    player: new Player(),
-    enemies: new EnemyManager(),
-    projectiles: new ProjectileManager(),
-    pickups: new PickupManager(),
-    particles: new ParticleSystem(),
-    hud: new Hud(),
-    menu: new MenuController()
+    input,
+    audio,
+    camera,
+    platforms,
+    entityManager,
+    player,
+    enemies,
+    projectiles,
+    pickups,
+    particles,
+    hud,
+    menu,
+    physicsSystem: new PhysicsSystem(),
+    collisionSystem: new CollisionSystem(),
+    renderSystem: new RenderSystem()
   };
 
   for (const [key, instance] of Object.entries(services)) {

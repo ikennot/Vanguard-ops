@@ -4,6 +4,7 @@ import { createTransform } from "./components/Transform.js";
 import { createHealth } from "./components/Health.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
+import eventBus from "./core/EventBus.js";
 
 class Enemy {
   constructor(entityManager, x, y, patrolWidth = 180, type = "rival") {
@@ -83,7 +84,7 @@ class Enemy {
   }
 
   update(deltaTime, deps) {
-    const difficultyScale = deps.getDifficultyScale();
+    const difficultyScale = deps.difficultyScale;
     const transform = this.transform;
     const ai = this.ai;
     const health = this.health;
@@ -132,6 +133,17 @@ class EnemyManager {
     this.spawnTimer = 0;
     this.maxActive = 4;
     this.totalSpawned = 0;
+    this.kills = 0;
+    eventBus.on("game:scoreChanged", ({ kills }) => {
+      this.kills = kills;
+    });
+  }
+
+  getDifficultyScale() {
+    const step = GAME_CONST.enemy.difficultyStepEveryKills;
+    const maxStep = GAME_CONST.enemy.maxDifficultyStep;
+    const difficultyStep = Math.min(maxStep, Math.floor(this.kills / step));
+    return 1 + difficultyStep * 0.15;
   }
 
   reset(platforms) {
@@ -157,10 +169,14 @@ class EnemyManager {
 
   update(deltaTime, deps) {
     this.spawnTimer -= deltaTime;
+    const difficultyScale = this.getDifficultyScale();
 
     for (const enemy of this.enemies) {
       if (enemy.entity.markedForRemoval) continue;
-      enemy.update(deltaTime, deps);
+      enemy.update(deltaTime, {
+        ...deps,
+        difficultyScale
+      });
     }
 
     this.enemies = this.enemies.filter((enemy) => !enemy.entity.markedForRemoval);

@@ -1,11 +1,17 @@
 import { GAME_CONST } from "../constants.js";
 import serviceLocator from "../core/ServiceLocator.js";
+import eventBus from "../core/EventBus.js";
 
 class HealthSystem {
-  constructor({ particles, audio, onEnemyKilled } = {}) {
+  constructor({ particles, audio } = {}) {
     this.particles = particles;
     this.audio = audio;
-    this.onEnemyKilled = onEnemyKilled;
+    eventBus.on("enemy:hit", ({ entity, damage, knockback }) => {
+      this.applyEnemyDamage(entity, damage, knockback);
+    });
+    eventBus.on("player:hit", ({ entity, knockback }) => {
+      this.applyPlayerDamage(entity, knockback);
+    });
   }
 
   applyPlayerDamage(entity, knockbackX) {
@@ -72,7 +78,7 @@ class HealthSystem {
         if (entity.hasTag("enemy")) {
           if (!health.killCounted) {
             health.killCounted = true;
-            if (this.onEnemyKilled) this.onEnemyKilled();
+            eventBus.emit("entity:death", { tag: "enemy" });
           }
           entity.markedForRemoval = true;
         }

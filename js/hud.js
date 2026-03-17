@@ -1,8 +1,15 @@
 import { GAME_CONST } from "./constants.js";
+import eventBus from "./core/EventBus.js";
 
 class Hud {
   constructor() {
     this.pauseButtonRect = { x: 1220, y: 14, width: 44, height: 44 };
+    this.kills = 0;
+    this.killTarget = GAME_CONST.objective.targetKills;
+    eventBus.on("game:scoreChanged", ({ kills, target }) => {
+      this.kills = kills;
+      this.killTarget = target;
+    });
   }
 
   draw(ctx, game) {
@@ -11,7 +18,7 @@ class Hud {
     ctx.fillRect(18, 18, 280, 58);
     ctx.fillStyle = "#f2d17a";
     ctx.font = "700 18px sans-serif";
-    ctx.fillText(`KILLS: ${String(game.kills).padStart(2, "0")}/${GAME_CONST.objective.targetKills}`, 28, 54);
+    ctx.fillText(`KILLS: ${String(this.kills).padStart(2, "0")}/${this.killTarget}`, 28, 54);
     ctx.fillStyle = "#d7ebf2";
     ctx.font = "600 14px sans-serif";
     ctx.fillText(`MAP: ${game.currentMapData.name.toUpperCase()}  TIME: ${game.getFormattedTime()}`, 158, 40);

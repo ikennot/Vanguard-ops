@@ -5,6 +5,8 @@ import { createHealth } from "./components/Health.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
 import serviceLocator from "./core/ServiceLocator.js";
+import eventBus from "./core/EventBus.js";
+import gameState from "./core/GameState.js";
 
 class Player {
   constructor(entityManager) {
@@ -12,6 +14,25 @@ class Player {
     this.maxJetpackFuel = 100;
     this.weapon = new WeaponSystem();
     this.entity = null;
+    this.jumpRequested = false;
+    this.shootRequested = false;
+    eventBus.on("input:jump", () => {
+      if (gameState.get() !== "playing") return;
+      this.jumpRequested = true;
+    });
+    eventBus.on("input:shoot", () => {
+      if (gameState.get() !== "playing") return;
+      this.shootRequested = true;
+    });
+    eventBus.on("player:fallout", () => {
+      this.loseLife();
+    });
+    eventBus.on("game:state-changed", (nextState) => {
+      if (nextState !== "playing") {
+        this.jumpRequested = false;
+        this.shootRequested = false;
+      }
+    });
     this.resetForSession({ x: 150, y: 400 });
   }
 
@@ -195,9 +216,10 @@ class Player {
     }
     if (this.velocity.x !== 0) this.facing = this.velocity.x > 0 ? 1 : -1;
 
-    if (wasGrounded && inputService.wasPressed(GAME_CONST.controls.up)) {
+    if (wasGrounded && this.jumpRequested) {
       this.velocity.y = GAME_CONST.player.jumpForce;
     }
+    this.jumpRequested = false;
 
     let jetpackActive = false;
     if (inputService.isDown(GAME_CONST.controls.jetpack) && this.jetpackFuel > 0) {
@@ -228,7 +250,7 @@ class Player {
     this.shootTimer = Math.max(0, this.shootTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (inputService.wasMousePressed(0)) {
+    if (this.shootRequested) {
       this.tryShoot({
         ...deps,
         input: inputService,
@@ -236,6 +258,7 @@ class Player {
         particles: particleSystem
       });
     }
+    this.shootRequested = false;
 
     if (jetpackActive) this.state = "jetpack";
     else if (!this.onGround && this.velocity.y < 0) this.state = "jumping";
@@ -294,10 +317,10 @@ class Player {
     }
   }
 
-  loseLife(onDefeat) {
+  loseLife() {
     this.lives = Math.max(0, this.lives - 1);
     if (this.lives <= 0) {
-      onDefeat();
+      eventBus.emit("player:died", { lives: this.lives });
       return;
     }
     this.respawn();

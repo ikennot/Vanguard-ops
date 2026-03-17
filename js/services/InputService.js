@@ -1,3 +1,6 @@
+import { GAME_CONST } from "../constants.js";
+import eventBus from "../core/EventBus.js";
+
 class InputService {
   constructor(canvas) {
     this.canvas = canvas;
@@ -11,7 +14,16 @@ class InputService {
 
   setupListeners() {
     window.addEventListener("keydown", (event) => {
-      if (!this.keys.has(event.code)) this.pressed.add(event.code);
+      const isFirstPress = !this.keys.has(event.code);
+      if (isFirstPress) {
+        this.pressed.add(event.code);
+        if (event.code === GAME_CONST.controls.up) {
+          eventBus.emit("input:jump");
+        }
+        if (event.code === GAME_CONST.controls.pause) {
+          eventBus.emit("input:pause");
+        }
+      }
       this.keys.add(event.code);
     });
 
@@ -28,7 +40,13 @@ class InputService {
     });
 
     this.canvas.addEventListener("mousedown", (event) => {
-      if (!this.mouseButtons.has(event.button)) this.mousePressed.add(event.button);
+      const isFirstPress = !this.mouseButtons.has(event.button);
+      if (isFirstPress) {
+        this.mousePressed.add(event.button);
+        if (event.button === 0) {
+          eventBus.emit("input:shoot");
+        }
+      }
       this.mouseButtons.add(event.button);
 
       const position = this.getCanvasPosition(event.clientX, event.clientY);

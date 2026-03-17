@@ -46,8 +46,7 @@ class Game {
       services.healthSystem ||
       new HealthSystem({
         particles: this.particles,
-        audio: this.audio,
-        onEnemyKilled: () => this.registerKill()
+        audio: this.audio
       });
     this.renderSystem = services.renderSystem || new RenderSystem();
 
@@ -60,9 +59,30 @@ class Game {
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
 
     this.bindUi();
+    this.bindEvents();
     this.menu.show("main");
     this.updateMapPreview();
     gameState.set(this.state);
+    eventBus.emit("game:scoreChanged", {
+      kills: this.kills,
+      target: GAME_CONST.objective.targetKills
+    });
+  }
+
+  bindEvents() {
+    eventBus.on("input:pause", () => {
+      if (this.state === "playing") this.setState("pause");
+      else if (this.state === "pause") this.setState("playing");
+    });
+
+    eventBus.on("player:died", () => {
+      this.triggerDefeat();
+    });
+
+    eventBus.on("entity:death", ({ tag }) => {
+      if (tag !== "enemy") return;
+      this.registerKill();
+    });
   }
 
   bindUi() {
@@ -148,6 +168,10 @@ class Game {
   startMission() {
     this.kills = 0;
     this.missionTime = 0;
+    eventBus.emit("game:scoreChanged", {
+      kills: this.kills,
+      target: GAME_CONST.objective.targetKills
+    });
     this.platforms.setMap(this.currentMapId);
     this.player.resetForSession(this.platforms.getSpawnPoint());
     this.enemies.reset(this.platforms.platforms);
@@ -164,6 +188,10 @@ class Game {
     this.player.resetForSession(this.platforms.getSpawnPoint());
     this.kills = 0;
     this.missionTime = 0;
+    eventBus.emit("game:scoreChanged", {
+      kills: this.kills,
+      target: GAME_CONST.objective.targetKills
+    });
     this.enemies.reset(this.platforms.platforms);
     this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
@@ -182,6 +210,10 @@ class Game {
 
   registerKill() {
     this.kills += 1;
+    eventBus.emit("game:scoreChanged", {
+      kills: this.kills,
+      target: GAME_CONST.objective.targetKills
+    });
     if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
       document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
       this.updateScoreboard("victory", "Victory");
@@ -225,11 +257,6 @@ class Game {
   }
 
   update(deltaTime) {
-    if (this.input.wasPressed(GAME_CONST.controls.pause)) {
-      if (this.state === "playing") this.setState("pause");
-      else if (this.state === "pause") this.setState("playing");
-    }
-
     if (this.state !== "playing") {
       this.input.endFrame();
       return;
@@ -248,7 +275,6 @@ class Game {
     this.enemies.update(deltaTime, {
       player: this.player,
       projectiles: this.projectiles,
-      getDifficultyScale: () => this.getDifficultyScale(),
       gameState: this.state,
       platforms: this.platforms.platforms
     });
@@ -257,7 +283,7 @@ class Game {
     this.collisionSystem.update(this.entityManager, this.platforms.platforms);
 
     if (this.player.position.y > GAME_CONST.world.killY) {
-      this.player.loseLife(() => this.triggerDefeat());
+      eventBus.emit("player:fallout");
     }
 
     this.missionTime += deltaTime;
@@ -287,11 +313,11 @@ class Game {
         for (const enemy of this.enemies.enemies) {
           if (enemy.entity.markedForRemoval) continue;
           if (Collision.intersects(projectileTransform, enemy.transform)) {
-            this.healthSystem.applyEnemyDamage(
-              enemy.entity,
-              projectileData.damage,
-              projectileData.knockback
-            );
+            eventBus.emit("enemy:hit", {
+              entity: enemy.entity,
+              damage: projectileData.damage,
+              knockback: projectileData.knockback
+            });
             hit = true;
             break;
           }
@@ -300,7 +326,10 @@ class Game {
 
       if (!hit && projectileData.owner === "enemy") {
         if (Collision.intersects(projectileTransform, this.player.transform)) {
-          this.healthSystem.applyPlayerDamage(this.player.entity, projectileData.knockback);
+          eventBus.emit("player:hit", {
+            entity: this.player.entity,
+            knockback: projectileData.knockback
+          });
           hit = true;
         }
       }

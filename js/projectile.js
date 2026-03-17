@@ -2,6 +2,7 @@ import { GAME_CONST } from "./constants.js";
 import { createTransform } from "./components/Transform.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
+import eventBus from "./core/EventBus.js";
 
 class ProjectileManager {
   constructor(entityManager) {
@@ -53,6 +54,11 @@ class ProjectileManager {
       });
 
     this.projectiles.push(projectile);
+    eventBus.emit("projectile:spawned", {
+      owner,
+      origin: { x: origin.x, y: origin.y },
+      damage
+    });
   }
 
   update(deltaTime, worldWidth, worldHeight = GAME_CONST.world.killY) {

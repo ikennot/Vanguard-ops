@@ -1,3 +1,5 @@
+import { Utils } from "./utils.js";
+
 class AudioManager {
   constructor() {
     this.bgmVolume = 0.7;
@@ -18,4 +20,4 @@ class AudioManager {
   }
 }
 
-window.AudioManager = AudioManager;
+export default AudioManager;

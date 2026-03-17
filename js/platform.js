@@ -1,3 +1,5 @@
+import { GAME_CONST } from "./constants.js";
+
 class PlatformManager {
   constructor() {
     this.currentMap = GAME_CONST.maps.space;
@@ -24,4 +26,4 @@ class PlatformManager {
   }
 }
 
-window.PlatformManager = PlatformManager;
+export default PlatformManager;

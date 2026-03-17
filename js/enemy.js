@@ -1,3 +1,8 @@
+import { GAME_CONST } from "./constants.js";
+import { Utils } from "./utils.js";
+import { Physics } from "./physics.js";
+import { Collision } from "./collision.js";
+
 class Enemy {
   constructor(x, y, patrolWidth = 180, type = "rival") {
     this.position = { x, y };
@@ -144,4 +149,4 @@ class EnemyManager {
   }
 }
 
-window.EnemyManager = EnemyManager;
+export { Enemy, EnemyManager };

@@ -1,3 +1,6 @@
+import { GAME_CONST } from "./constants.js";
+import { Utils } from "./utils.js";
+
 class Camera {
   constructor(width, height) {
     this.width = width;
@@ -12,4 +15,4 @@ class Camera {
   }
 }
 
-window.Camera = Camera;
+export default Camera;

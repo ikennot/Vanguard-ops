@@ -1,4 +1,4 @@
-window.GAME_CONST = {
+export const GAME_CONST = {
   canvas: { width: 1280, height: 720 },
   world: { width: 1800, height: 720, killY: 940 },
   player: {
@@ -27,6 +27,12 @@ window.GAME_CONST = {
     enemySpeed: 480,
     life: 1.4,
     knockback: 420
+  },
+  weapons: {
+    types: ["pistol", "rifle", "smg", "machinegun", "rocket"],
+    magSize: { pistol: 12, rifle: 20, smg: 30, machinegun: 40, rocket: 1 },
+    reloadTime: { pistol: 0.9, rifle: 1.05, smg: 1.1, machinegun: 1.25, rocket: 1.4 },
+    reserveAmmo: { pistol: 36, rifle: 80, smg: 120, machinegun: 160, rocket: 10 }
   },
   objective: { targetKills: 15 },
   controls: { left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", jetpack: "Space", pause: "Escape" },

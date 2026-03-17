@@ -1,3 +1,5 @@
+import { Utils } from "./utils.js";
+
 class ParticleSystem {
   constructor() {
     this.particles = [];
@@ -38,4 +40,4 @@ class ParticleSystem {
   }
 }
 
-window.ParticleSystem = ParticleSystem;
+export default ParticleSystem;

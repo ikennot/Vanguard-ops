@@ -1,4 +1,6 @@
-window.Collision = {
+import { Utils } from "./utils.js";
+
+export const Collision = {
   getX(entity) {
     return entity.position ? entity.position.x : entity.x;
   },

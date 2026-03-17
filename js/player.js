@@ -1,3 +1,7 @@
+import { GAME_CONST } from "./constants.js";
+import { Physics } from "./physics.js";
+import WeaponSystem from "./weapon.js";
+
 class Player {
   constructor() {
     this.width = 44;
@@ -166,4 +170,4 @@ class Player {
   }
 }
 
-window.Player = Player;
+export default Player;

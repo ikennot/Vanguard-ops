@@ -1,4 +1,4 @@
-window.Utils = {
+export const Utils = {
   clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   },

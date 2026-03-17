@@ -6,4 +6,4 @@ class SpriteSheet {
   }
 }
 
-window.SpriteSheet = SpriteSheet;
+export default SpriteSheet;

@@ -1,18 +1,34 @@
+import { GAME_CONST } from "./constants.js";
+import InputHandler from "./input.js";
+import AudioManager from "./audio.js";
+import Camera from "./camera.js";
+import PlatformManager from "./platform.js";
+import Player from "./player.js";
+import { EnemyManager } from "./enemy.js";
+import ProjectileManager from "./projectile.js";
+import PickupManager from "./pickup.js";
+import ParticleSystem from "./particle.js";
+import Hud from "./hud.js";
+import MenuController from "./menu.js";
+import { Collision } from "./collision.js";
+import gameState from "./core/GameState.js";
+import eventBus from "./core/EventBus.js";
+
 class Game {
-  constructor(canvas) {
+  constructor(canvas, services = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.input = new InputHandler(canvas);
-    this.audio = new AudioManager();
-    this.camera = new Camera(canvas.width, canvas.height);
-    this.platforms = new PlatformManager();
-    this.player = new Player();
-    this.enemies = new EnemyManager();
-    this.projectiles = new ProjectileManager();
-    this.pickups = new PickupManager();
-    this.particles = new ParticleSystem();
-    this.hud = new Hud();
-    this.menu = new MenuController();
+    this.input = services.input || new InputHandler(canvas);
+    this.audio = services.audio || new AudioManager();
+    this.camera = services.camera || new Camera(canvas.width, canvas.height);
+    this.platforms = services.platforms || new PlatformManager();
+    this.player = services.player || new Player();
+    this.enemies = services.enemies || new EnemyManager();
+    this.projectiles = services.projectiles || new ProjectileManager();
+    this.pickups = services.pickups || new PickupManager();
+    this.particles = services.particles || new ParticleSystem();
+    this.hud = services.hud || new Hud();
+    this.menu = services.menu || new MenuController();
     this.state = "main";
     this.kills = 0;
     this.missionTime = 0;
@@ -24,6 +40,7 @@ class Game {
     this.bindUi();
     this.menu.show("main");
     this.updateMapPreview();
+    gameState.set(this.state);
   }
 
   bindUi() {
@@ -84,10 +101,14 @@ class Game {
   }
 
   setState(nextState) {
+    const previousState = this.state;
     this.state = nextState;
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
     else this.menu.show(nextState);
+
+    gameState.set(nextState);
+    eventBus.emit("game:state-changed", nextState, previousState);
   }
 
   shiftMap(direction) {
@@ -258,4 +279,4 @@ class Game {
   }
 }
 
-window.Game = Game;
+export default Game;

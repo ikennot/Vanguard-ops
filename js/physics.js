@@ -1,4 +1,4 @@
-window.Physics = {
+export const Physics = {
   applyGravity(entity, deltaTime) {
     entity.velocity.y += entity.gravity * deltaTime;
   },

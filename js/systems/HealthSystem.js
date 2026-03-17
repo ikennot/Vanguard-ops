@@ -1,4 +1,5 @@
 import { GAME_CONST } from "../constants.js";
+import serviceLocator from "../core/ServiceLocator.js";
 
 class HealthSystem {
   constructor({ particles, audio, onEnemyKilled } = {}) {
@@ -8,6 +9,8 @@ class HealthSystem {
   }
 
   applyPlayerDamage(entity, knockbackX) {
+    const audio = this.audio || serviceLocator.get("audio");
+    const particles = this.particles || serviceLocator.get("particles");
     const health = entity.getComponent("health");
     const transform = entity.getComponent("transform");
     if (!health || !transform) return;
@@ -18,8 +21,8 @@ class HealthSystem {
     health.invulnTimer = 0.45;
     health.controlLockTimer = 0.2;
 
-    if (this.audio?.particlesEnabled && this.particles) {
-      this.particles.spawn(
+    if (audio?.particlesEnabled && particles) {
+      particles.spawn(
         { x: transform.position.x + transform.width * 0.5, y: transform.position.y + 20 },
         "#ff7f7f",
         10
@@ -28,6 +31,8 @@ class HealthSystem {
   }
 
   applyEnemyDamage(entity, amount, knockback) {
+    const audio = this.audio || serviceLocator.get("audio");
+    const particles = this.particles || serviceLocator.get("particles");
     const health = entity.getComponent("health");
     const transform = entity.getComponent("transform");
     if (!health || !transform) return;
@@ -39,8 +44,8 @@ class HealthSystem {
     transform.velocity.y = -320;
     health.knockbackTimer = healthRatio > 0.35 ? 0.6 : 0.95;
 
-    if (this.audio?.particlesEnabled && this.particles) {
-      this.particles.spawn(
+    if (audio?.particlesEnabled && particles) {
+      particles.spawn(
         { x: transform.position.x + transform.width * 0.5, y: transform.position.y + 20 },
         "#ff9c75",
         10

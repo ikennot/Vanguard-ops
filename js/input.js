@@ -74,4 +74,4 @@ class InputHandler {
   }
 }
 
-window.InputHandler = InputHandler;
+export default InputHandler;

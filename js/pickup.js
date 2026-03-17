@@ -1,3 +1,5 @@
+import { Collision } from "./collision.js";
+
 class PickupManager {
   constructor() {
     this.pickups = [];
@@ -87,4 +89,4 @@ class PickupManager {
   }
 }
 
-window.PickupManager = PickupManager;
+export default PickupManager;

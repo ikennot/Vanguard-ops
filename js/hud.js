@@ -1,3 +1,5 @@
+import { GAME_CONST } from "./constants.js";
+
 class Hud {
   constructor() {
     this.pauseButtonRect = { x: 1220, y: 14, width: 44, height: 44 };
@@ -51,4 +53,4 @@ class Hud {
   }
 }
 
-window.Hud = Hud;
+export default Hud;

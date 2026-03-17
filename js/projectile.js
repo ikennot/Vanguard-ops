@@ -1,3 +1,5 @@
+import { GAME_CONST } from "./constants.js";
+
 class ProjectileManager {
   constructor() {
     this.projectiles = [];
@@ -45,4 +47,4 @@ class ProjectileManager {
   }
 }
 
-window.ProjectileManager = ProjectileManager;
+export default ProjectileManager;

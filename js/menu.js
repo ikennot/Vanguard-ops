@@ -41,4 +41,4 @@ class MenuController {
   }
 }
 
-window.MenuController = MenuController;
+export default MenuController;

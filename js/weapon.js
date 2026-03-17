@@ -1,15 +1,17 @@
+import { GAME_CONST } from "./constants.js";
+
 class WeaponSystem {
   constructor() {
-    this.weapons = ["pistol", "rifle", "smg", "machinegun", "rocket"];
-    this.magSize = { pistol: 12, rifle: 20, smg: 30, machinegun: 40, rocket: 1 };
-    this.reloadTime = { pistol: 0.9, rifle: 1.05, smg: 1.1, machinegun: 1.25, rocket: 1.4 };
+    this.weapons = [...GAME_CONST.weapons.types];
+    this.magSize = { ...GAME_CONST.weapons.magSize };
+    this.reloadTime = { ...GAME_CONST.weapons.reloadTime };
     this.infiniteAmmo = true;
     this.reset();
   }
 
   reset() {
     this.current = "rifle";
-    this.reserveAmmo = { pistol: 36, rifle: 80, smg: 120, machinegun: 160, rocket: 10 };
+    this.reserveAmmo = { ...GAME_CONST.weapons.reserveAmmo };
     this.magAmmo = { pistol: 0, rifle: 0, smg: 0, machinegun: 0, rocket: 0 };
     this.reloading = false;
     this.reloadTimer = 0;
@@ -88,4 +90,4 @@ class WeaponSystem {
   }
 }
 
-window.WeaponSystem = WeaponSystem;
+export default WeaponSystem;

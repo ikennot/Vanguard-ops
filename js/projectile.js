@@ -55,7 +55,7 @@ class ProjectileManager {
     this.projectiles.push(projectile);
   }
 
-  update(deltaTime, worldWidth, worldHeight) {
+  update(deltaTime, worldWidth, worldHeight = GAME_CONST.world.killY) {
     for (const projectile of this.projectiles) {
       if (projectile.markedForRemoval) continue;
       const transform = projectile.getComponent("transform");

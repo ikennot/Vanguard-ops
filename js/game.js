@@ -264,7 +264,7 @@ class Game {
     }
 
     this.missionTime += deltaTime;
-    this.projectiles.update(deltaTime, GAME_CONST.world.width, GAME_CONST.world.height);
+    this.projectiles.update(deltaTime, GAME_CONST.world.width, GAME_CONST.world.killY);
     this.resolveProjectileHits();
     this.pickups.update(deltaTime, {
       player: this.player,

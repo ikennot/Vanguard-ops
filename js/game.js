@@ -10,9 +10,14 @@ import PickupManager from "./pickup.js";
 import ParticleSystem from "./particle.js";
 import Hud from "./hud.js";
 import MenuController from "./menu.js";
-import { Collision } from "./collision.js";
 import gameState from "./core/GameState.js";
 import eventBus from "./core/EventBus.js";
+import EntityManager from "./entities/EntityManager.js";
+import PhysicsSystem from "./systems/PhysicsSystem.js";
+import CollisionSystem from "./systems/CollisionSystem.js";
+import HealthSystem from "./systems/HealthSystem.js";
+import RenderSystem from "./systems/RenderSystem.js";
+import { Collision } from "./collision.js";
 
 class Game {
   constructor(canvas, services = {}) {
@@ -22,13 +27,33 @@ class Game {
     this.audio = services.audio || new AudioManager();
     this.camera = services.camera || new Camera(canvas.width, canvas.height);
     this.platforms = services.platforms || new PlatformManager();
-    this.player = services.player || new Player();
-    this.enemies = services.enemies || new EnemyManager();
-    this.projectiles = services.projectiles || new ProjectileManager();
-    this.pickups = services.pickups || new PickupManager();
+    this.entityManager = services.entityManager || new EntityManager();
+    this.player = services.player || new Player(this.entityManager);
+    this.enemies = services.enemies || new EnemyManager(this.entityManager);
+    this.projectiles = services.projectiles || new ProjectileManager(this.entityManager);
+    this.pickups = services.pickups || new PickupManager(this.entityManager);
     this.particles = services.particles || new ParticleSystem();
     this.hud = services.hud || new Hud();
     this.menu = services.menu || new MenuController();
+
+    this.physicsSystem =
+      services.physicsSystem ||
+      new PhysicsSystem();
+    this.collisionSystem =
+      services.collisionSystem ||
+      new CollisionSystem();
+    this.healthSystem =
+      services.healthSystem ||
+      new HealthSystem({
+        particles: this.particles,
+        audio: this.audio,
+        onEnemyKilled: () => this.registerKill()
+      });
+    this.healthSystem.particles = this.particles;
+    this.healthSystem.audio = this.audio;
+    this.healthSystem.onEnemyKilled = () => this.registerKill();
+    this.renderSystem = services.renderSystem || new RenderSystem();
+
     this.state = "main";
     this.kills = 0;
     this.missionTime = 0;
@@ -129,11 +154,12 @@ class Game {
     this.platforms.setMap(this.currentMapId);
     this.player.resetForSession(this.platforms.getSpawnPoint());
     this.enemies.reset(this.platforms.platforms);
-    this.projectiles.projectiles = [];
+    this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
     this.camera.x = 0;
     this.camera.y = 0;
+    this.entityManager.flush();
     this.setState("playing");
   }
 
@@ -143,15 +169,17 @@ class Game {
     this.kills = 0;
     this.missionTime = 0;
     this.enemies.reset(this.platforms.platforms);
-    this.projectiles.projectiles = [];
+    this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
+    this.entityManager.flush();
     this.setState("playing");
   }
 
   backToMainMenu() {
-    this.projectiles.projectiles = [];
+    this.projectiles.clear();
     this.particles.particles = [];
+    this.entityManager.flush();
     this.setState("main");
   }
 
@@ -210,46 +238,84 @@ class Game {
       return;
     }
 
-    this.player.update(this.input, deltaTime, this);
-    Collision.resolveWorldBounds(this.player, GAME_CONST.world.width);
-    Collision.resolvePlatforms(this.player, this.platforms.platforms);
-    if (this.player.position.y > GAME_CONST.world.killY) this.player.loseLife(this);
+    this.healthSystem.update(this.entityManager, deltaTime);
 
-    this.enemies.update(deltaTime, this);
+    this.player.update(this.input, deltaTime, {
+      input: this.input,
+      camera: this.camera,
+      projectiles: this.projectiles,
+      particles: this.particles,
+      audio: this.audio
+    });
+
+    this.enemies.update(deltaTime, {
+      player: this.player,
+      projectiles: this.projectiles,
+      getDifficultyScale: () => this.getDifficultyScale(),
+      gameState: this.state,
+      platforms: this.platforms.platforms
+    });
+
+    this.physicsSystem.update(this.entityManager, deltaTime);
+    this.collisionSystem.update(this.entityManager, this.platforms.platforms);
+
+    if (this.player.position.y > GAME_CONST.world.killY) {
+      this.player.loseLife(() => this.triggerDefeat());
+    }
+
     this.missionTime += deltaTime;
-    this.projectiles.update(deltaTime, GAME_CONST.world.width, GAME_CONST.world.height);
+    this.projectiles.update(deltaTime, GAME_CONST.world.width, GAME_CONST.world.killY);
     this.resolveProjectileHits();
-    this.pickups.update(deltaTime, this);
+    this.pickups.update(deltaTime, {
+      player: this.player,
+      particles: this.particles,
+      audio: this.audio
+    });
     this.particles.update(deltaTime);
     this.camera.follow(this.player);
+    this.entityManager.flush();
 
     this.input.endFrame();
   }
 
   resolveProjectileHits() {
-    const survivors = [];
-
     for (const projectile of this.projectiles.projectiles) {
+      if (projectile.markedForRemoval) continue;
+
+      const projectileData = projectile.getComponent("projectile");
+      const projectileTransform = projectile.getComponent("transform");
       let hit = false;
-      if (projectile.owner === "player") {
+
+      if (projectileData.owner === "player") {
         for (const enemy of this.enemies.enemies) {
-          if (Collision.intersects(projectile, enemy)) {
-            enemy.takeDamage(projectile.damage, projectile.knockback, this);
+          if (enemy.entity.markedForRemoval) continue;
+          if (Collision.intersects(projectileTransform, enemy.transform)) {
+            this.healthSystem.applyEnemyDamage(
+              enemy.entity,
+              projectileData.damage,
+              projectileData.knockback
+            );
             hit = true;
             break;
           }
         }
       }
 
-      if (!hit && projectile.owner === "enemy" && Collision.intersects(projectile, this.player)) {
-        this.player.takeDamage(projectile.damage, projectile.knockback, this);
-        hit = true;
+      if (!hit && projectileData.owner === "enemy") {
+        if (Collision.intersects(projectileTransform, this.player.transform)) {
+          this.healthSystem.applyPlayerDamage(this.player.entity, projectileData.knockback);
+          hit = true;
+        }
       }
 
-      if (!hit) survivors.push(projectile);
+      if (hit) {
+        projectile.markedForRemoval = true;
+      }
     }
 
-    this.projectiles.projectiles = survivors;
+    this.projectiles.projectiles = this.projectiles.projectiles.filter(
+      (projectile) => !projectile.markedForRemoval
+    );
   }
 
   drawBackground() {
@@ -266,10 +332,10 @@ class Game {
 
     if (["playing", "pause", "victory", "defeat"].includes(this.state)) {
       this.platforms.draw(this.ctx, this.camera);
-      this.pickups.draw(this.ctx, this.camera);
-      this.enemies.draw(this.ctx, this.camera);
-      this.projectiles.draw(this.ctx, this.camera);
-      this.player.draw(this.ctx, this.camera);
+      this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "pickup");
+      this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "enemy");
+      this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "projectile");
+      this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "player");
       this.particles.draw(this.ctx, this.camera);
     }
 

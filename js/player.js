@@ -1,65 +1,189 @@
 import { GAME_CONST } from "./constants.js";
-import { Physics } from "./physics.js";
 import WeaponSystem from "./weapon.js";
+import { createTransform } from "./components/Transform.js";
+import { createHealth } from "./components/Health.js";
+import { createSprite } from "./components/Sprite.js";
+import { createHitbox } from "./components/Hitbox.js";
 
 class Player {
-  constructor() {
-    this.width = 44;
-    this.height = 64;
-    this.gravity = GAME_CONST.player.gravity;
-    this.maxLives = GAME_CONST.player.maxLives;
+  constructor(entityManager) {
+    this.entityManager = entityManager;
     this.maxJetpackFuel = 100;
     this.weapon = new WeaponSystem();
+    this.entity = null;
+    this.resetForSession({ x: 150, y: 400 });
+  }
 
-    this.spawnPoint = { x: 150, y: 400 };
-    this.position = { x: this.spawnPoint.x, y: this.spawnPoint.y };
-    this.velocity = { x: 0, y: 0 };
-    this.prevPosition = { x: this.position.x, y: this.position.y };
-    this.lives = this.maxLives;
-    this.onGround = false;
-    this.jetpackFuel = this.maxJetpackFuel;
-    this.facing = 1;
-    this.state = "idle";
-    this.shootTimer = 0;
-    this.invulnTimer = 0;
-    this.knockbackVelocityX = 0;
-    this.controlLockTimer = 0;
+  createOrResetEntity(spawnPoint) {
+    const existing = this.entity;
+    if (existing) existing.markedForRemoval = true;
+
+    this.entity = this.entityManager.createEntity();
+    this.entity
+      .addTag("player")
+      .addTag("render")
+      .addTag("physics")
+      .addTag("platform-collide")
+      .addTag("world-bounds")
+      .addComponent(
+        "transform",
+        createTransform({
+          x: spawnPoint.x,
+          y: spawnPoint.y,
+          width: 44,
+          height: 64,
+          gravity: GAME_CONST.player.gravity,
+          facing: 1
+        })
+      )
+      .addComponent(
+        "health",
+        createHealth({
+          lives: GAME_CONST.player.maxLives,
+          maxLives: GAME_CONST.player.maxLives,
+          invulnTimer: 0,
+          controlLockTimer: 0,
+          knockbackVelocityX: 0
+        })
+      )
+      .addComponent(
+        "playerState",
+        {
+          state: "idle",
+          shootTimer: 0,
+          jetpackFuel: this.maxJetpackFuel,
+          spawnPoint: { ...spawnPoint }
+        }
+      )
+      .addComponent(
+        "sprite",
+        createSprite({
+          color: "#6fc18d",
+          gunColor: "#102631"
+        })
+      )
+      .addComponent("hitbox", createHitbox());
+  }
+
+  get transform() {
+    return this.entity.getComponent("transform");
+  }
+
+  get health() {
+    return this.entity.getComponent("health");
+  }
+
+  get playerState() {
+    return this.entity.getComponent("playerState");
+  }
+
+  get position() {
+    return this.transform.position;
+  }
+
+  get velocity() {
+    return this.transform.velocity;
+  }
+
+  get prevPosition() {
+    return this.transform.prevPosition;
+  }
+
+  get width() {
+    return this.transform.width;
+  }
+
+  get height() {
+    return this.transform.height;
+  }
+
+  get onGround() {
+    return this.transform.onGround;
+  }
+
+  set onGround(value) {
+    this.transform.onGround = value;
+  }
+
+  get facing() {
+    return this.transform.facing;
+  }
+
+  set facing(value) {
+    this.transform.facing = value;
+  }
+
+  get state() {
+    return this.playerState.state;
+  }
+
+  set state(value) {
+    this.playerState.state = value;
+  }
+
+  get shootTimer() {
+    return this.playerState.shootTimer;
+  }
+
+  set shootTimer(value) {
+    this.playerState.shootTimer = value;
+  }
+
+  get jetpackFuel() {
+    return this.playerState.jetpackFuel;
+  }
+
+  set jetpackFuel(value) {
+    this.playerState.jetpackFuel = value;
+  }
+
+  get lives() {
+    return this.health.lives;
+  }
+
+  set lives(value) {
+    this.health.lives = value;
+  }
+
+  get invulnTimer() {
+    return this.health.invulnTimer;
+  }
+
+  set invulnTimer(value) {
+    this.health.invulnTimer = value;
   }
 
   setSpawn(spawnPoint) {
-    this.spawnPoint = { ...spawnPoint };
-    this.position.x = this.spawnPoint.x;
-    this.position.y = this.spawnPoint.y;
-    this.prevPosition.x = this.spawnPoint.x;
-    this.prevPosition.y = this.spawnPoint.y;
+    const state = this.playerState;
+    state.spawnPoint = { ...spawnPoint };
+    this.position.x = spawnPoint.x;
+    this.position.y = spawnPoint.y;
+    this.prevPosition.x = spawnPoint.x;
+    this.prevPosition.y = spawnPoint.y;
     this.velocity.x = 0;
     this.velocity.y = 0;
     this.onGround = false;
   }
 
   resetForSession(spawnPoint) {
-    this.lives = this.maxLives;
-    this.jetpackFuel = this.maxJetpackFuel;
     this.weapon.reset();
-    this.setSpawn(spawnPoint);
+    this.createOrResetEntity(spawnPoint);
   }
 
   respawn() {
     this.jetpackFuel = Math.max(55, this.jetpackFuel);
-    this.setSpawn(this.spawnPoint);
+    this.setSpawn(this.playerState.spawnPoint);
     this.invulnTimer = 0.75;
   }
 
-  update(input, deltaTime, game) {
-    this.prevPosition.x = this.position.x;
-    this.prevPosition.y = this.position.y;
+  update(input, deltaTime, deps) {
     const wasGrounded = this.onGround;
-
     const speed = GAME_CONST.player.speed;
-    this.velocity.x = 0;
-    this.controlLockTimer = Math.max(0, this.controlLockTimer - deltaTime);
+    const health = this.health;
 
-    if (this.controlLockTimer <= 0) {
+    this.velocity.x = 0;
+
+    if (health.controlLockTimer <= 0) {
       if (input.isDown(GAME_CONST.controls.left)) this.velocity.x = -speed;
       if (input.isDown(GAME_CONST.controls.right)) this.velocity.x = speed;
     }
@@ -75,36 +199,42 @@ class Player {
       this.jetpackFuel = Math.max(0, this.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
       jetpackActive = true;
 
-      if (game.audio.particlesEnabled) {
-        game.particles.spawn({ x: this.position.x + this.width * 0.5, y: this.position.y + this.height }, "#67c7ff", 2);
+      if (deps.audio.particlesEnabled) {
+        deps.particles.spawn(
+          { x: this.position.x + this.width * 0.5, y: this.position.y + this.height },
+          "#67c7ff",
+          2
+        );
       }
     } else if (wasGrounded) {
-      this.jetpackFuel = Math.min(this.maxJetpackFuel, this.jetpackFuel + GAME_CONST.player.jetpackRegen * deltaTime);
+      this.jetpackFuel = Math.min(
+        this.maxJetpackFuel,
+        this.jetpackFuel + GAME_CONST.player.jetpackRegen * deltaTime
+      );
     }
 
     this.onGround = false;
 
-    this.velocity.x += this.knockbackVelocityX;
-    this.knockbackVelocityX *= 0.9;
-    if (Math.abs(this.knockbackVelocityX) < 8) this.knockbackVelocityX = 0;
-
-    Physics.applyGravity(this, deltaTime);
-    Physics.integrate(this, deltaTime);
+    this.velocity.x += health.knockbackVelocityX;
+    health.knockbackVelocityX *= 0.9;
+    if (Math.abs(health.knockbackVelocityX) < 8) health.knockbackVelocityX = 0;
 
     this.shootTimer = Math.max(0, this.shootTimer - deltaTime);
-    this.invulnTimer = Math.max(0, this.invulnTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (input.wasMousePressed(0)) this.tryShoot(game);
+    if (input.wasMousePressed(0)) this.tryShoot(deps);
 
     if (jetpackActive) this.state = "jetpack";
     else if (!this.onGround && this.velocity.y < 0) this.state = "jumping";
     else if (!this.onGround && this.velocity.y >= 0) this.state = "falling";
     else if (this.velocity.x !== 0) this.state = "running";
     else this.state = "idle";
+
+    const sprite = this.entity.getComponent("sprite");
+    sprite.color = this.invulnTimer > 0 ? "#99dfe8" : "#6fc18d";
   }
 
-  tryShoot(game) {
+  tryShoot(deps) {
     if (this.shootTimer > 0) return;
     if (!this.weapon.canFire()) {
       this.weapon.startReload();
@@ -112,8 +242,8 @@ class Player {
     }
     const originX = this.position.x + this.width * 0.5;
     const originY = this.position.y + this.height * 0.45;
-    const mouseWorldX = game.input.mouse.x + game.camera.x;
-    const mouseWorldY = game.input.mouse.y + game.camera.y;
+    const mouseWorldX = deps.input.mouse.x + deps.camera.x;
+    const mouseWorldY = deps.input.mouse.y + deps.camera.y;
     const deltaX = mouseWorldX - originX;
     const deltaY = mouseWorldY - originY;
     let direction = { x: this.facing, y: 0 };
@@ -123,7 +253,7 @@ class Player {
       if (deltaX !== 0) this.facing = deltaX > 0 ? 1 : -1;
     }
 
-    game.projectiles.spawn(
+    deps.projectiles.spawn(
       { x: this.position.x + this.width * 0.5 + this.facing * 12, y: this.position.y + this.height * 0.45 },
       direction,
       GAME_CONST.projectile.playerSpeed,
@@ -134,39 +264,22 @@ class Player {
     );
     this.weapon.consumeAmmo(1);
     this.shootTimer = GAME_CONST.player.shootCooldown;
-    if (game.audio.particlesEnabled) {
-      game.particles.spawn({ x: this.position.x + this.width * 0.5 + this.facing * 14, y: this.position.y + 26 }, "#ffb458", 10);
+    if (deps.audio.particlesEnabled) {
+      deps.particles.spawn(
+        { x: this.position.x + this.width * 0.5 + this.facing * 14, y: this.position.y + 26 },
+        "#ffb458",
+        10
+      );
     }
   }
 
-  takeDamage(amount, knockbackX, game) {
-    if (this.invulnTimer > 0) return;
-    this.knockbackVelocityX += knockbackX;
-    this.velocity.y = -180;
-    this.invulnTimer = 0.45;
-    this.controlLockTimer = 0.2;
-
-    if (game.audio.particlesEnabled) {
-      game.particles.spawn({ x: this.position.x + this.width * 0.5, y: this.position.y + 20 }, "#ff7f7f", 10);
-    }
-  }
-
-  loseLife(game) {
+  loseLife(onDefeat) {
     this.lives = Math.max(0, this.lives - 1);
     if (this.lives <= 0) {
-      game.triggerDefeat();
+      onDefeat();
       return;
     }
     this.respawn();
-  }
-
-  draw(ctx, camera) {
-    ctx.fillStyle = this.invulnTimer > 0 ? "#99dfe8" : "#6fc18d";
-    ctx.fillRect(this.position.x - camera.x, this.position.y - camera.y, this.width, this.height);
-
-    ctx.fillStyle = "#102631";
-    if (this.facing > 0) ctx.fillRect(this.position.x + this.width - 10 - camera.x, this.position.y + 18 - camera.y, 14, 4);
-    else ctx.fillRect(this.position.x - 4 - camera.x, this.position.y + 18 - camera.y, 14, 4);
   }
 }
 

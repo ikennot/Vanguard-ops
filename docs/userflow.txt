@@ -1,0 +1,60 @@
+flowchart TD
+    A([Game Launches in Browser]) --> B[Title / Splash Screen]
+    B --> C[Main Menu]
+    C --> D[Start Game]
+    C --> E[Settings]
+    C --> F([Exit / Close App])
+    E --> E1[Adjust Audio Volume]
+    E --> E2[Configure Controls]
+    E1 & E2 --> E3[Save Settings]
+    E3 --> C
+    D --> G[Game Session Initialization]
+    G --> G1[Player Spawns on Stage]
+    G1 --> G2[Enemies Begin Spawning]
+    G2 --> G3[HUD Active\nHealth Bar / Lives x5 / Ammo / Kills 0 of 15]
+    G3 --> H
+    subgraph H[Gameplay Loop]
+        direction TB
+        H1[Player Moves - WASD] --> H2{Walked over\na pickup?}
+        H2 -->|Weapon Crate| H3[Auto-Pickup\nAmmo & Weapon Refreshed]
+        H2 -->|Jetpack| H4[Auto-Pickup\nJetpack Available]
+        H2 -->|Nothing| H5[Continue Moving]
+        H3 & H4 & H5 --> H6{Player\nAction?}
+        H6 -->|Press G - Shoot| H7[Bullet Fires in\nFacing Direction]
+        H6 -->|Press F - Jetpack Active| H8[Player Propels Upward\nReposition Mid-Air]
+        H6 -->|Idle / Move| H1
+        H8 -->|Jetpack Duration Expires| H1
+        H7 --> H9{Bullet hits\nenemy?}
+        H9 -->|Miss| H1
+        H9 -->|Hit| H10[Enemy Takes Damage\nKnockback Force Applied]
+        H10 --> H11{Enemy\nHealth?}
+        H11 -->|High Health| H12[Small Knockback\nEnemy Stays on Stage]
+        H11 -->|Low Health| H13[Large Knockback\nEnemy Falls Off Stage]
+        H12 --> H1
+    end
+    H13 --> K[Kill Counted +1]
+    K --> L{Kill Count\n= 15?}
+    L -->|No| H
+    G3 --> M
+    subgraph M[Player Gets Hit]
+        direction TB
+        M1[Enemy Bullet Hits Player] --> M2[Player Takes Damage\nKnockback Force Applied]
+        M2 --> M3{Player\nHealth?}
+        M3 -->|High Health| M4[Small Knockback\nPlayer Stays on Stage]
+        M3 -->|Low Health| M5[Large Knockback\nPlayer Falls Off Stage]
+    end
+    M4 --> H
+    M5 --> N[Lose 1 Life\nLife Icon Removed from HUD]
+    N --> O{Lives\nRemaining?}
+    O -->|Lives > 0| P[Player Respawns\nHealth Reset]
+    P --> H
+    H6 -->|Pause| Q[Pause Menu]
+    Q --> Q1[Resume] --> H
+    Q --> Q2[Restart] --> G
+    Q --> Q3[Return to Main Menu] --> C
+    L -->|Yes - 15 Kills & Lives Remain| R([Victory])
+    O -->|Lives = 0| S([Defeat])
+    R & S --> T[Scoreboard\nFinal Kills / Lives Left / Result]
+    T --> U{Player Choice}
+    U -->|Play Again| G
+    U -->|Main Menu| C

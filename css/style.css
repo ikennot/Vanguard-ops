@@ -1,9 +1,11 @@
 :root {
-  --bg: #0a1018;
-  --panel: rgba(13, 24, 35, 0.9);
-  --line: #2d4b63;
-  --text: #d8e8f5;
-  --accent: #ff9c32;
+  --bg: #070f16;
+  --panel: rgba(13, 27, 35, 0.92);
+  --line: #315466;
+  --text: #d8eef7;
+  --accent: #77d4de;
+  --accent-warm: #ffb549;
+  --danger: #ff7f7f;
 }
 
 * {
@@ -15,7 +17,7 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at 20% 20%, #1b2b3d, var(--bg) 60%);
+  background: radial-gradient(circle at 20% 20%, #1c3648, var(--bg) 65%);
   color: var(--text);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
@@ -44,7 +46,14 @@ body {
   gap: 0.8rem;
   padding: 1rem;
   text-align: center;
-  background: linear-gradient(to bottom, rgba(4, 8, 14, 0.45), rgba(4, 8, 14, 0.78));
+  background: linear-gradient(to bottom, rgba(4, 8, 14, 0.48), rgba(4, 8, 14, 0.82));
+}
+
+.overlay h1,
+.overlay h2 {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .hidden {
@@ -54,6 +63,11 @@ body {
 .menu-actions {
   display: grid;
   gap: 0.7rem;
+}
+
+.menu-actions.row {
+  grid-auto-flow: column;
+  justify-content: center;
 }
 
 button,
@@ -66,15 +80,103 @@ button {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 button:hover {
   border-color: var(--accent);
 }
 
+label {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+}
+
+.panel {
+  place-content: center;
+}
+
+.rules-grid,
+.resources-grid {
+  display: grid;
+  max-width: 920px;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: rgba(15, 31, 40, 0.82);
+  text-align: left;
+}
+
+.rules-grid p,
+.resources-grid p {
+  margin: 0;
+}
+
+.map-select-box {
+  min-width: 500px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: rgba(15, 31, 40, 0.82);
+}
+
+.map-name {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--accent-warm);
+  text-transform: uppercase;
+}
+
+.map-description {
+  margin: 0.35rem 0 0;
+}
+
+.end-screen {
+  background: radial-gradient(circle at center, rgba(18, 36, 48, 0.93), rgba(5, 10, 15, 0.94));
+}
+
+.end-screen p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.scoreboard {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 320px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  background: rgba(9, 18, 24, 0.7);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.victory h2 {
+  color: #ffe89a;
+}
+
+.defeat h2 {
+  color: var(--danger);
+}
+
 @media (max-width: 768px) {
   #game-root {
     width: 100vw;
     border: 0;
+  }
+
+  .map-select-box {
+    min-width: 0;
+    width: 100%;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .menu-actions.row {
+    grid-auto-flow: row;
   }
 }

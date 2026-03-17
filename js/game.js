@@ -13,51 +13,246 @@ class Game {
     this.particles = new ParticleSystem();
     this.hud = new Hud();
     this.menu = new MenuController();
-    this.state = "menu";
+    this.state = "main";
     this.kills = 0;
+    this.missionTime = 0;
+    this.maps = ["space", "jungle", "canyon"];
+    this.mapIndex = 0;
+    this.currentMapId = this.maps[this.mapIndex];
+    this.currentMapData = GAME_CONST.maps[this.currentMapId];
 
     this.bindUi();
+    this.menu.show("main");
+    this.updateMapPreview();
   }
 
   bindUi() {
     document.getElementById("btn-start").addEventListener("click", () => {
-      this.state = "playing";
-      this.menu.hideAll();
+      this.setState("rules");
     });
+
     document.getElementById("btn-settings").addEventListener("click", () => {
-      this.menu.main.classList.add("hidden");
-      this.menu.settings.classList.remove("hidden");
+      this.setState("settings");
     });
+
+    document.getElementById("btn-exit").addEventListener("click", () => {
+      window.alert("Exit is disabled in browser mode. Close the tab to exit.");
+    });
+
     document.getElementById("btn-settings-close").addEventListener("click", () => {
-      this.menu.showMain();
+      this.setState("main");
     });
+
+    document.getElementById("bgm-volume").addEventListener("input", (event) => {
+      this.audio.setBgmVolume(Number(event.target.value) / 100);
+    });
+    document.getElementById("sfx-volume").addEventListener("input", (event) => {
+      this.audio.setSfxVolume(Number(event.target.value) / 100);
+    });
+    document.getElementById("particle-enabled").addEventListener("change", (event) => {
+      this.audio.setParticlesEnabled(event.target.checked);
+    });
+
+    document.getElementById("btn-rules-back").addEventListener("click", () => this.setState("main"));
+    document.getElementById("btn-rules-ok").addEventListener("click", () => this.setState("map-select"));
+    document.getElementById("btn-map-back").addEventListener("click", () => this.setState("rules"));
+    document.getElementById("btn-map-prev").addEventListener("click", () => this.shiftMap(-1));
+    document.getElementById("btn-map-next").addEventListener("click", () => this.shiftMap(1));
+    document.getElementById("btn-map-confirm").addEventListener("click", () => this.setState("resources"));
+    document.getElementById("btn-resources-back").addEventListener("click", () => this.setState("map-select"));
+    document.getElementById("btn-resources-ok").addEventListener("click", () => this.startMission());
+
+    document.getElementById("btn-resume").addEventListener("click", () => this.setState("playing"));
+    document.getElementById("btn-restart").addEventListener("click", () => this.restartMission());
+    document.getElementById("btn-main").addEventListener("click", () => this.backToMainMenu());
+
+    document.getElementById("btn-victory-replay").addEventListener("click", () => this.restartMission());
+    document.getElementById("btn-victory-main").addEventListener("click", () => this.backToMainMenu());
+    document.getElementById("btn-defeat-restart").addEventListener("click", () => this.restartMission());
+    document.getElementById("btn-defeat-main").addEventListener("click", () => this.backToMainMenu());
+
+    this.canvas.addEventListener("click", (event) => {
+      if (this.state !== "playing") return;
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      const x = (event.clientX - rect.left) * scaleX;
+      const y = (event.clientY - rect.top) * scaleY;
+      const r = this.hud.pauseButtonRect;
+      if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) this.setState("pause");
+    });
+  }
+
+  setState(nextState) {
+    this.state = nextState;
+    if (nextState === "playing") this.menu.hideAll();
+    else if (nextState === "pause") this.menu.show("pause");
+    else this.menu.show(nextState);
+  }
+
+  shiftMap(direction) {
+    this.mapIndex = (this.mapIndex + direction + this.maps.length) % this.maps.length;
+    this.currentMapId = this.maps[this.mapIndex];
+    this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    this.updateMapPreview();
+  }
+
+  updateMapPreview() {
+    document.getElementById("map-name").textContent = this.currentMapData.name;
+    document.getElementById("map-description").textContent = this.currentMapData.description;
+  }
+
+  startMission() {
+    this.kills = 0;
+    this.missionTime = 0;
+    this.platforms.setMap(this.currentMapId);
+    this.player.resetForSession(this.platforms.getSpawnPoint());
+    this.enemies.reset(this.platforms.platforms);
+    this.projectiles.projectiles = [];
+    this.pickups.reset(this.platforms.platforms);
+    this.particles.particles = [];
+    this.camera.x = 0;
+    this.camera.y = 0;
+    this.setState("playing");
+  }
+
+  restartMission() {
+    this.platforms.setMap(this.currentMapId);
+    this.player.resetForSession(this.platforms.getSpawnPoint());
+    this.kills = 0;
+    this.missionTime = 0;
+    this.enemies.reset(this.platforms.platforms);
+    this.projectiles.projectiles = [];
+    this.pickups.reset(this.platforms.platforms);
+    this.particles.particles = [];
+    this.setState("playing");
+  }
+
+  backToMainMenu() {
+    this.projectiles.projectiles = [];
+    this.particles.particles = [];
+    this.setState("main");
+  }
+
+  registerKill() {
+    this.kills += 1;
+    if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
+      document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
+      this.updateScoreboard("victory", "Victory");
+      this.setState("victory");
+    }
+  }
+
+  triggerDefeat() {
+    if (this.state !== "playing") return;
+    document.getElementById("defeat-lives").textContent = `Lives Remaining: ${this.player.lives}`;
+    this.updateScoreboard("defeat", "Defeat");
+    this.setState("defeat");
+  }
+
+  getDifficultyScale() {
+    const step = GAME_CONST.enemy.difficultyStepEveryKills;
+    const maxStep = GAME_CONST.enemy.maxDifficultyStep;
+    const difficultyStep = Math.min(maxStep, Math.floor(this.kills / step));
+    return 1 + difficultyStep * 0.15;
+  }
+
+  getFormattedTime() {
+    const total = Math.max(0, Math.floor(this.missionTime));
+    const mm = String(Math.floor(total / 60)).padStart(2, "0");
+    const ss = String(total % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
+  }
+
+  updateScoreboard(target, resultLabel) {
+    const elementId = target === "victory" ? "scoreboard-victory" : "scoreboard-defeat";
+    const scoreboard = document.getElementById(elementId);
+    scoreboard.innerHTML = [
+      `<strong>Scoreboard</strong>`,
+      `Map: ${this.currentMapData.name}`,
+      `Result: ${resultLabel}`,
+      `Final Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`,
+      `Lives Left: ${this.player.lives}`,
+      `Mission Time: ${this.getFormattedTime()}`,
+      `Difficulty Tier: x${this.getDifficultyScale().toFixed(2)}`
+    ].join("<br>");
   }
 
   update(deltaTime) {
-    if (this.state !== "playing") return;
-    this.player.update(this.input, deltaTime);
-    Collision.resolveWorldBounds(this.player, 1800, this.canvas.height);
-    this.enemies.update(deltaTime);
-    this.projectiles.update(deltaTime);
+    if (this.input.wasPressed(GAME_CONST.controls.pause)) {
+      if (this.state === "playing") this.setState("pause");
+      else if (this.state === "pause") this.setState("playing");
+    }
+
+    if (this.state !== "playing") {
+      this.input.endFrame();
+      return;
+    }
+
+    this.player.update(this.input, deltaTime, this);
+    Collision.resolveWorldBounds(this.player, GAME_CONST.world.width);
+    Collision.resolvePlatforms(this.player, this.platforms.platforms);
+    if (this.player.position.y > GAME_CONST.world.killY) this.player.loseLife(this);
+
+    this.enemies.update(deltaTime, this);
+    this.missionTime += deltaTime;
+    this.projectiles.update(deltaTime, GAME_CONST.world.width, GAME_CONST.world.height);
+    this.resolveProjectileHits();
+    this.pickups.update(deltaTime, this);
     this.particles.update(deltaTime);
     this.camera.follow(this.player);
+
+    this.input.endFrame();
+  }
+
+  resolveProjectileHits() {
+    const survivors = [];
+
+    for (const projectile of this.projectiles.projectiles) {
+      let hit = false;
+      if (projectile.owner === "player") {
+        for (const enemy of this.enemies.enemies) {
+          if (Collision.intersects(projectile, enemy)) {
+            enemy.takeDamage(projectile.damage, projectile.knockback, this);
+            hit = true;
+            break;
+          }
+        }
+      }
+
+      if (!hit && projectile.owner === "enemy" && Collision.intersects(projectile, this.player)) {
+        this.player.takeDamage(projectile.damage, projectile.knockback, this);
+        hit = true;
+      }
+
+      if (!hit) survivors.push(projectile);
+    }
+
+    this.projectiles.projectiles = survivors;
   }
 
   drawBackground() {
-    this.ctx.fillStyle = "#142230";
+    const mapData = GAME_CONST.maps[this.currentMapId] || GAME_CONST.maps.space;
+    const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    grad.addColorStop(0, mapData.theme.bgTop);
+    grad.addColorStop(1, mapData.theme.bgBottom);
+    this.ctx.fillStyle = grad;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  drawPlayer() {
-    const { x, y } = this.player.position;
-    this.ctx.fillStyle = "#6ab0d8";
-    this.ctx.fillRect(x - this.camera.x, y - this.camera.y, this.player.width, this.player.height);
   }
 
   render() {
     this.drawBackground();
-    if (this.state === "playing") {
-      this.drawPlayer();
+
+    if (["playing", "pause", "victory", "defeat"].includes(this.state)) {
+      this.platforms.draw(this.ctx, this.camera);
+      this.pickups.draw(this.ctx, this.camera);
+      this.enemies.draw(this.ctx, this.camera);
+      this.projectiles.draw(this.ctx, this.camera);
+      this.player.draw(this.ctx, this.camera);
+      this.particles.draw(this.ctx, this.camera);
+    }
+
+    if (["playing", "pause"].includes(this.state)) {
       this.hud.draw(this.ctx, this);
     }
   }

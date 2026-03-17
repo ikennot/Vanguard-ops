@@ -7,8 +7,8 @@ class Camera {
   }
 
   follow(target) {
-    this.x = Math.max(0, target.position.x - this.width * 0.35);
-    this.y = Math.max(0, target.position.y - this.height * 0.45);
+    this.x = Utils.clamp(target.position.x - this.width * 0.35, 0, GAME_CONST.world.width - this.width);
+    this.y = Utils.clamp(target.position.y - this.height * 0.45, 0, GAME_CONST.world.height - this.height);
   }
 }
 

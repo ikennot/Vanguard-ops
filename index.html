@@ -19,6 +19,52 @@
       </div>
     </section>
 
+    <section id="screen-rules" class="overlay hidden panel">
+      <h2>Rules</h2>
+      <div class="rules-grid">
+        <p>1. Move freely across platforms and use jetpack pickup for short tactical flight.</p>
+        <p>2. Weapons use limited ammo. Refill through crates and ammo packs.</p>
+        <p>3. Taking damage causes knockback, but does not reduce lives directly.</p>
+        <p>4. Falling off the stage immediately costs 1 life.</p>
+        <p>5. Win by eliminating 15 enemies before your lives run out.</p>
+        <p>6. Defeat occurs when all 5 lives are lost.</p>
+      </div>
+      <div class="menu-actions row">
+        <button id="btn-rules-back">Back</button>
+        <button id="btn-rules-ok">OK</button>
+      </div>
+    </section>
+
+    <section id="screen-map-select" class="overlay hidden panel">
+      <h2>Select Map</h2>
+      <div class="map-select-box">
+        <button id="btn-map-prev" aria-label="Previous map">&lt;</button>
+        <div>
+          <p id="map-name" class="map-name">Space</p>
+          <p id="map-description" class="map-description">Balanced open platforms.</p>
+        </div>
+        <button id="btn-map-next" aria-label="Next map">&gt;</button>
+      </div>
+      <div class="menu-actions row">
+        <button id="btn-map-back">Back</button>
+        <button id="btn-map-confirm">Confirm</button>
+      </div>
+    </section>
+
+    <section id="screen-resources" class="overlay hidden panel">
+      <h2>Resources</h2>
+      <div class="resources-grid">
+        <p>Armored Weapon Crate: random weapon swap and ammo refill.</p>
+        <p>Small Med Pouch: removed from this mode.</p>
+        <p>Ammo Packs: small, medium, and large ammo boosts.</p>
+        <p>Compact Booster Unit: restores jetpack fuel.</p>
+      </div>
+      <div class="menu-actions row">
+        <button id="btn-resources-back">Back</button>
+        <button id="btn-resources-ok">Start Deployment</button>
+      </div>
+    </section>
+
     <section id="menu-pause" class="overlay hidden">
       <h2>Game Paused</h2>
       <div class="menu-actions">
@@ -32,8 +78,31 @@
       <h2>System Settings</h2>
       <label>BGM <input id="bgm-volume" type="range" min="0" max="100" value="70"></label>
       <label>SFX <input id="sfx-volume" type="range" min="0" max="100" value="80"></label>
+      <label>Particle Effects <input id="particle-enabled" type="checkbox" checked></label>
       <p>Controls: WASD move, G shoot, F jetpack, ESC pause</p>
       <button id="btn-settings-close">Back</button>
+    </section>
+
+    <section id="screen-victory" class="overlay hidden end-screen victory">
+      <h2>Mission Success!</h2>
+      <p>Combat Zone Secured</p>
+      <p id="victory-kills">Target Kills: 15/15</p>
+      <div id="scoreboard-victory" class="scoreboard"></div>
+      <div class="menu-actions row">
+        <button id="btn-victory-replay">Play Again</button>
+        <button id="btn-victory-main">Main Menu</button>
+      </div>
+    </section>
+
+    <section id="screen-defeat" class="overlay hidden end-screen defeat">
+      <h2>Operative Neutralized</h2>
+      <p>Mission Failure</p>
+      <p id="defeat-lives">Lives Remaining: 0</p>
+      <div id="scoreboard-defeat" class="scoreboard"></div>
+      <div class="menu-actions row">
+        <button id="btn-defeat-restart">Restart Mission</button>
+        <button id="btn-defeat-main">Main Menu</button>
+      </div>
     </section>
   </div>
 

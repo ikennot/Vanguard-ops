@@ -1,7 +1,7 @@
 import { GAME_CONST } from "./constants.js";
-import InputHandler from "./input.js";
-import AudioManager from "./audio.js";
-import Camera from "./camera.js";
+import InputService from "./services/InputService.js";
+import AudioService from "./services/AudioService.js";
+import CameraService from "./services/CameraService.js";
 import PlatformManager from "./platform.js";
 import Player from "./player.js";
 import { EnemyManager } from "./enemy.js";
@@ -23,9 +23,9 @@ class Game {
   constructor(canvas, services = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.input = services.input || new InputHandler(canvas);
-    this.audio = services.audio || new AudioManager();
-    this.camera = services.camera || new Camera(canvas.width, canvas.height);
+    this.input = services.input || new InputService(canvas);
+    this.audio = services.audio || new AudioService();
+    this.camera = services.camera || new CameraService(canvas.width, canvas.height);
     this.platforms = services.platforms || new PlatformManager();
     this.entityManager = services.entityManager || new EntityManager();
     this.player = services.player || new Player(this.entityManager);
@@ -49,9 +49,6 @@ class Game {
         audio: this.audio,
         onEnemyKilled: () => this.registerKill()
       });
-    this.healthSystem.particles = this.particles;
-    this.healthSystem.audio = this.audio;
-    this.healthSystem.onEnemyKilled = () => this.registerKill();
     this.renderSystem = services.renderSystem || new RenderSystem();
 
     this.state = "main";
@@ -157,8 +154,7 @@ class Game {
     this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
-    this.camera.x = 0;
-    this.camera.y = 0;
+    this.camera.reset();
     this.entityManager.flush();
     this.setState("playing");
   }
@@ -172,6 +168,7 @@ class Game {
     this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
+    this.camera.reset();
     this.entityManager.flush();
     this.setState("playing");
   }

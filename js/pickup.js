@@ -2,6 +2,7 @@ import { Collision } from "./collision.js";
 import { createTransform } from "./components/Transform.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
+import serviceLocator from "./core/ServiceLocator.js";
 
 class PickupManager {
   constructor(entityManager) {
@@ -57,7 +58,13 @@ class PickupManager {
     }
   }
 
-  update(deltaTime, deps) {
+  update(deltaTime, deps = {}) {
+    const player = deps.player || serviceLocator.get("player");
+    const audio = deps.audio || serviceLocator.get("audio");
+    const particles = deps.particles || serviceLocator.get("particles");
+
+    if (!player) return;
+
     for (const queued of this.respawnQueue) queued.timer -= deltaTime;
     const ready = this.respawnQueue.filter((respawn) => respawn.timer <= 0);
     this.respawnQueue = this.respawnQueue.filter((respawn) => respawn.timer > 0);
@@ -66,7 +73,7 @@ class PickupManager {
       this.createPickup(respawn.type, respawn.x, respawn.y, respawn.sourcePlatform);
     }
 
-    const playerTransform = deps.player.entity.getComponent("transform");
+    const playerTransform = player.entity.getComponent("transform");
     this.pickups = this.pickups.filter((pickup) => {
       if (pickup.markedForRemoval) return false;
 
@@ -77,7 +84,7 @@ class PickupManager {
         return true;
       }
 
-      this.applyPickup(pickupData.type, deps.player);
+      this.applyPickup(pickupData.type, player);
       this.respawnQueue.push({
         timer: 10,
         type: pickupData.type,
@@ -86,8 +93,8 @@ class PickupManager {
         y: pickupData.sourcePlatform.y - 20
       });
 
-      if (deps.audio.particlesEnabled) {
-        deps.particles.spawn(
+      if (audio?.particlesEnabled && particles) {
+        particles.spawn(
           { x: transform.position.x + 10, y: transform.position.y + 10 },
           "#7ce3e6",
           12

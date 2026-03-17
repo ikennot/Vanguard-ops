@@ -12,6 +12,10 @@ class ServiceLocator {
     return this.services.get(key) || null;
   }
 
+  has(key) {
+    return this.services.has(key);
+  }
+
   clear() {
     this.services.clear();
   }

@@ -4,6 +4,7 @@ import { createTransform } from "./components/Transform.js";
 import { createHealth } from "./components/Health.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
+import serviceLocator from "./core/ServiceLocator.js";
 
 class Player {
   constructor(entityManager) {
@@ -176,31 +177,36 @@ class Player {
     this.invulnTimer = 0.75;
   }
 
-  update(input, deltaTime, deps) {
+  update(input, deltaTime, deps = {}) {
+    const inputService = input || deps.input || serviceLocator.get("input");
+    const audioService = deps.audio || serviceLocator.get("audio");
+    const particleSystem = deps.particles || serviceLocator.get("particles");
     const wasGrounded = this.onGround;
     const speed = GAME_CONST.player.speed;
     const health = this.health;
 
+    if (!inputService) return;
+
     this.velocity.x = 0;
 
     if (health.controlLockTimer <= 0) {
-      if (input.isDown(GAME_CONST.controls.left)) this.velocity.x = -speed;
-      if (input.isDown(GAME_CONST.controls.right)) this.velocity.x = speed;
+      if (inputService.isDown(GAME_CONST.controls.left)) this.velocity.x = -speed;
+      if (inputService.isDown(GAME_CONST.controls.right)) this.velocity.x = speed;
     }
     if (this.velocity.x !== 0) this.facing = this.velocity.x > 0 ? 1 : -1;
 
-    if (wasGrounded && input.wasPressed(GAME_CONST.controls.up)) {
+    if (wasGrounded && inputService.wasPressed(GAME_CONST.controls.up)) {
       this.velocity.y = GAME_CONST.player.jumpForce;
     }
 
     let jetpackActive = false;
-    if (input.isDown(GAME_CONST.controls.jetpack) && this.jetpackFuel > 0) {
+    if (inputService.isDown(GAME_CONST.controls.jetpack) && this.jetpackFuel > 0) {
       this.velocity.y -= GAME_CONST.player.jetpackForce * deltaTime;
       this.jetpackFuel = Math.max(0, this.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
       jetpackActive = true;
 
-      if (deps.audio.particlesEnabled) {
-        deps.particles.spawn(
+      if (audioService?.particlesEnabled && particleSystem) {
+        particleSystem.spawn(
           { x: this.position.x + this.width * 0.5, y: this.position.y + this.height },
           "#67c7ff",
           2
@@ -222,7 +228,14 @@ class Player {
     this.shootTimer = Math.max(0, this.shootTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (input.wasMousePressed(0)) this.tryShoot(deps);
+    if (inputService.wasMousePressed(0)) {
+      this.tryShoot({
+        ...deps,
+        input: inputService,
+        audio: audioService,
+        particles: particleSystem
+      });
+    }
 
     if (jetpackActive) this.state = "jetpack";
     else if (!this.onGround && this.velocity.y < 0) this.state = "jumping";
@@ -234,16 +247,24 @@ class Player {
     sprite.color = this.invulnTimer > 0 ? "#99dfe8" : "#6fc18d";
   }
 
-  tryShoot(deps) {
+  tryShoot(deps = {}) {
+    const inputService = deps.input || serviceLocator.get("input");
+    const cameraService = deps.camera || serviceLocator.get("camera");
+    const projectileManager = deps.projectiles || serviceLocator.get("projectiles");
+    const audioService = deps.audio || serviceLocator.get("audio");
+    const particleSystem = deps.particles || serviceLocator.get("particles");
+
     if (this.shootTimer > 0) return;
     if (!this.weapon.canFire()) {
       this.weapon.startReload();
       return;
     }
+    if (!inputService || !cameraService || !projectileManager) return;
+
     const originX = this.position.x + this.width * 0.5;
     const originY = this.position.y + this.height * 0.45;
-    const mouseWorldX = deps.input.mouse.x + deps.camera.x;
-    const mouseWorldY = deps.input.mouse.y + deps.camera.y;
+    const mouseWorldX = inputService.mouse.x + cameraService.x;
+    const mouseWorldY = inputService.mouse.y + cameraService.y;
     const deltaX = mouseWorldX - originX;
     const deltaY = mouseWorldY - originY;
     let direction = { x: this.facing, y: 0 };
@@ -253,7 +274,7 @@ class Player {
       if (deltaX !== 0) this.facing = deltaX > 0 ? 1 : -1;
     }
 
-    deps.projectiles.spawn(
+    projectileManager.spawn(
       { x: this.position.x + this.width * 0.5 + this.facing * 12, y: this.position.y + this.height * 0.45 },
       direction,
       GAME_CONST.projectile.playerSpeed,
@@ -264,8 +285,8 @@ class Player {
     );
     this.weapon.consumeAmmo(1);
     this.shootTimer = GAME_CONST.player.shootCooldown;
-    if (deps.audio.particlesEnabled) {
-      deps.particles.spawn(
+    if (audioService?.particlesEnabled && particleSystem) {
+      particleSystem.spawn(
         { x: this.position.x + this.width * 0.5 + this.facing * 14, y: this.position.y + 26 },
         "#ffb458",
         10

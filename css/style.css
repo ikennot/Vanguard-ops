@@ -157,6 +157,12 @@ label {
   margin: 0;
 }
 
+.rules-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .map-select-box {
   min-width: 500px;
   display: grid;

@@ -10,6 +10,7 @@ import PickupManager from "./pickup.js";
 import ParticleSystem from "./particle.js";
 import Hud from "./hud.js";
 import MenuController from "./menu.js";
+import { TutorialManager } from "./tutorial.js";
 import gameState from "./core/GameState.js";
 import eventBus from "./core/EventBus.js";
 import EntityManager from "./entities/EntityManager.js";
@@ -35,6 +36,7 @@ class Game {
     this.particles = services.particles || new ParticleSystem();
     this.hud = services.hud || new Hud();
     this.menu = services.menu || new MenuController();
+    this.tutorialManager = new TutorialManager(document.getElementById("tutorial-canvas"));
 
     this.physicsSystem =
       services.physicsSystem ||
@@ -94,6 +96,14 @@ class Game {
       this.setState("settings");
     });
 
+    document.getElementById("btn-tutorial").addEventListener("click", () => {
+      this.setState("tutorial");
+    });
+
+    document.getElementById("btn-tutorial-back").addEventListener("click", () => {
+      this.setState("main");
+    });
+
     document.getElementById("btn-exit").addEventListener("click", () => {
       window.alert("Exit is disabled in browser mode. Close the tab to exit.");
     });
@@ -112,12 +122,32 @@ class Game {
       this.audio.setParticlesEnabled(event.target.checked);
     });
 
-    document.getElementById("btn-rules-back").addEventListener("click", () => this.setState("main"));
     document.getElementById("btn-rules-ok").addEventListener("click", () => this.setState("map-select"));
-    document.getElementById("btn-map-back").addEventListener("click", () => this.setState("rules"));
-    document.getElementById("btn-map-prev").addEventListener("click", () => this.shiftMap(-1));
-    document.getElementById("btn-map-next").addEventListener("click", () => this.shiftMap(1));
-    document.getElementById("btn-map-confirm").addEventListener("click", () => this.setState("resources"));
+    document.getElementById("btn-map-prev").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.shiftMap(-1);
+    });
+    document.getElementById("btn-map-next").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.shiftMap(1);
+    });
+    
+    const confirmMap = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      // If Level 1 (Space) is selected, proceed to Resources. 
+      // Locked maps (index > 0) will not proceed.
+      if (this.mapIndex === 0) {
+        this.setState("resources");
+      }
+    };
+
+    document.getElementById("map-preview-img").addEventListener("click", confirmMap);
+    document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
     document.getElementById("btn-resources-back").addEventListener("click", () => this.setState("map-select"));
     document.getElementById("btn-resources-ok").addEventListener("click", () => this.startMission());
 
@@ -161,8 +191,39 @@ class Game {
   }
 
   updateMapPreview() {
-    document.getElementById("map-name").textContent = this.currentMapData.name;
-    document.getElementById("map-description").textContent = this.currentMapData.description;
+    const frameImg = document.getElementById("map-select-bg-frame");
+    if (frameImg) {
+      let assetName = this.currentMapId;
+      if (assetName === "canyon") assetName = "lava";
+      frameImg.src = `assets/sprites/ui/selectmap${assetName}.png`;
+    }
+    
+    const previewImg = document.getElementById("map-preview-img");
+    const isLocked = this.mapIndex > 0; // Simple logic: Only Level 1 is unlocked initially
+    
+    if (previewImg) {
+      let assetName = this.currentMapId;
+      if (isLocked) {
+        // Use locked image for Jungle and Canyon (Lava)
+        let lockedAsset = assetName;
+        if (assetName === "canyon") lockedAsset = "lava";
+        previewImg.src = `assets/sprites/ui/lock${lockedAsset}.jpg`;
+        // Remove cursor pointer if locked
+        document.querySelector('.map-card-container').style.cursor = 'default';
+      } else {
+        previewImg.src = `assets/sprites/environment/${assetName}_selectmap.jpg`;
+        // Restore cursor pointer if unlocked
+        document.querySelector('.map-card-container').style.cursor = 'pointer';
+      }
+    }
+
+    const resourcesInfoImg = document.getElementById("resources-info-img");
+    if (resourcesInfoImg) {
+      let infoAsset = `assets/sprites/ui/buttons/space map/level1_info.png`;
+      if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
+      if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
+      resourcesInfoImg.src = infoAsset;
+    }
   }
 
   startMission() {
@@ -257,6 +318,11 @@ class Game {
   }
 
   update(deltaTime) {
+    if (this.state === "tutorial") {
+      this.tutorialManager.update(deltaTime);
+      return;
+    }
+
     if (this.state !== "playing") {
       this.input.endFrame();
       return;
@@ -296,6 +362,7 @@ class Game {
     });
     this.particles.update(deltaTime);
     this.camera.follow(this.player);
+    this.renderSystem.updateAnimations(this.entityManager.getByTag("render"), deltaTime);
     this.entityManager.flush();
 
     this.input.endFrame();
@@ -345,15 +412,30 @@ class Game {
   }
 
   drawBackground() {
-    const mapData = GAME_CONST.maps[this.currentMapId] || GAME_CONST.maps.space;
-    const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    grad.addColorStop(0, mapData.theme.bgTop);
-    grad.addColorStop(1, mapData.theme.bgBottom);
-    this.ctx.fillStyle = grad;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    const assets = serviceLocator.get("assets");
+    let bgImg = null;
+    if (this.currentMapId === "space") bgImg = assets.get("bg-space");
+    if (this.currentMapId === "jungle") bgImg = assets.get("bg-jungle");
+    if (this.currentMapId === "canyon") bgImg = assets.get("bg-canyon");
+
+    if (bgImg) {
+      this.ctx.drawImage(bgImg, 0, 0, this.canvas.width, this.canvas.height);
+    } else {
+      const mapData = GAME_CONST.maps[this.currentMapId] || GAME_CONST.maps.space;
+      const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+      grad.addColorStop(0, mapData.theme.bgTop);
+      grad.addColorStop(1, mapData.theme.bgBottom);
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 
   render() {
+    if (this.state === "tutorial") {
+      this.tutorialManager.draw();
+      return;
+    }
+
     this.drawBackground();
 
     if (["playing", "pause", "victory", "defeat"].includes(this.state)) {

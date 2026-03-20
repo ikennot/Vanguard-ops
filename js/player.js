@@ -80,8 +80,14 @@ class Player {
       .addComponent(
         "sprite",
         createSprite({
-          color: "#6fc18d",
-          gunColor: "#102631"
+          type: "sprite",
+          assetKey: "player-soldier",
+          frameWidth: 64,
+          frameHeight: 64,
+          numFrames: 1,
+          animationSpeed: 0.1,
+          scale: 1.2,
+          color: "#6fc18d"
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -261,13 +267,15 @@ class Player {
     this.shootRequested = false;
 
     if (jetpackActive) this.state = "jetpack";
-    else if (!this.onGround && this.velocity.y < 0) this.state = "jumping";
-    else if (!this.onGround && this.velocity.y >= 0) this.state = "falling";
+    else if (!wasGrounded && this.velocity.y < -50) this.state = "jumping";
+    else if (!wasGrounded && this.velocity.y > 50) this.state = "falling";
     else if (this.velocity.x !== 0) this.state = "running";
     else this.state = "idle";
 
     const sprite = this.entity.getComponent("sprite");
-    sprite.color = this.invulnTimer > 0 ? "#99dfe8" : "#6fc18d";
+    sprite.assetKey = "player-soldier";
+    sprite.numFrames = 1;
+    sprite.color = this.invulnTimer > 0 ? "rgba(153, 223, 232, 0.5)" : "transparent";
   }
 
   tryShoot(deps = {}) {

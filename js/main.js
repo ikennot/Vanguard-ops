@@ -22,10 +22,25 @@ import RenderSystem from "./systems/RenderSystem.js";
 const assetManifest = [
   { key: "player-main", src: "assets/sprites/player/main-char.png", type: "image" },
   { key: "player-shoot", src: "assets/sprites/player/char-shooting-animation.png", type: "image" },
+  { key: "player-soldier", src: "assets/sprites/player/soldier.png", type: "image" },
   { key: "enemy-sheet", src: "assets/sprites/enemies/enemies-sprite.png", type: "image" },
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },
-  { key: "effect-explosion", src: "assets/sprites/effects/effects-particles-explosion-sprite.png", type: "image" }
+  { key: "effect-explosion", src: "assets/sprites/effects/effects-particles-explosion-sprite.png", type: "image" },
+  { key: "hud-life", src: "assets/sprites/ui/buttons/life.png", type: "image" },
+  { key: "hud-bullet", src: "assets/sprites/ui/buttons/bullet.png", type: "image" },
+  { key: "hud-gun", src: "assets/sprites/ui/buttons/gun.png", type: "image" },
+  { key: "platform-space", src: "assets/sprites/ui/buttons/spaceplatform.png", type: "image" },
+  { key: "platform-jungle-1", src: "assets/sprites/ui/buttons/jungleplatform_1_3.png", type: "image" },
+  { key: "platform-jungle-2", src: "assets/sprites/ui/buttons/jungleplatform_2.png", type: "image" },
+  { key: "platform-canyon", src: "assets/sprites/ui/buttons/lavaplatform.png", type: "image" },
+  { key: "bg-space", src: "assets/sprites/ui/buttons/terrainspace.jpg", type: "image" },
+  { key: "bg-jungle", src: "assets/sprites/ui/buttons/terrainjungle.jpg", type: "image" },
+  { key: "bg-canyon", src: "assets/sprites/ui/buttons/terrainlava.jpg", type: "image" },
+  { key: "info-space", src: "assets/sprites/ui/buttons/space map/level1_info.png", type: "image" },
+  { key: "info-jungle", src: "assets/sprites/ui/buttons/jungle map/level2_info.png", type: "image" },
+  { key: "info-canyon", src: "assets/sprites/ui/buttons/labva map/gameinfo_lava.png", type: "image" },
+  { key: "pause-icon", src: "assets/sprites/ui/buttons/pause.jpg", type: "image" }
 ];
 
 function bootstrap() {

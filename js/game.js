@@ -95,6 +95,45 @@ class Game {
 
     document.getElementById("btn-settings").addEventListener("click", () => {
       this.setState("settings");
+      this.syncSettingsUI();
+    });
+
+    const setupToggle = (id, callback) => {
+      const el = document.getElementById(id);
+      el.addEventListener("click", () => {
+        const on = el.querySelector(".toggle-on");
+        const off = el.querySelector(".toggle-off");
+        const isCurrentlyOn = !on.classList.contains("hidden");
+        
+        if (isCurrentlyOn) {
+          on.classList.add("hidden");
+          off.classList.remove("hidden");
+          callback(false);
+        } else {
+          on.classList.remove("hidden");
+          off.classList.add("hidden");
+          callback(true);
+        }
+      });
+    };
+
+    setupToggle("toggle-bgm", (on) => {
+      this.audio.setBgmVolume(on ? 0.7 : 0);
+    });
+    setupToggle("toggle-sfx", (on) => {
+      this.audio.setSfxVolume(on ? 0.8 : 0);
+    });
+    setupToggle("toggle-visuals", (on) => {
+      this.audio.setParticlesEnabled(on);
+    });
+
+    document.getElementById("btn-settings-save").addEventListener("click", () => {
+      // Save settings logic could go here (e.g., localStorage)
+      this.setState("main");
+    });
+
+    document.getElementById("btn-settings-back").addEventListener("click", () => {
+      this.setState("main");
     });
 
     document.getElementById("btn-tutorial").addEventListener("click", () => {
@@ -107,20 +146,6 @@ class Game {
 
     document.getElementById("btn-exit").addEventListener("click", () => {
       window.alert("Exit is disabled in browser mode. Close the tab to exit.");
-    });
-
-    document.getElementById("btn-settings-close").addEventListener("click", () => {
-      this.setState("main");
-    });
-
-    document.getElementById("bgm-volume").addEventListener("input", (event) => {
-      this.audio.setBgmVolume(Number(event.target.value) / 100);
-    });
-    document.getElementById("sfx-volume").addEventListener("input", (event) => {
-      this.audio.setSfxVolume(Number(event.target.value) / 100);
-    });
-    document.getElementById("particle-enabled").addEventListener("change", (event) => {
-      this.audio.setParticlesEnabled(event.target.checked);
     });
 
     document.getElementById("btn-rules-ok").addEventListener("click", () => this.setState("map-select"));
@@ -181,6 +206,25 @@ class Game {
 
     gameState.set(nextState);
     eventBus.emit("game:state-changed", nextState, previousState);
+  }
+
+  syncSettingsUI() {
+    const updateToggle = (id, isOn) => {
+      const el = document.getElementById(id);
+      const on = el.querySelector(".toggle-on");
+      const off = el.querySelector(".toggle-off");
+      if (isOn) {
+        on.classList.remove("hidden");
+        off.classList.add("hidden");
+      } else {
+        on.classList.add("hidden");
+        off.classList.remove("hidden");
+      }
+    };
+
+    updateToggle("toggle-bgm", this.audio.bgmVolume > 0);
+    updateToggle("toggle-sfx", this.audio.sfxVolume > 0);
+    updateToggle("toggle-visuals", this.audio.particlesEnabled);
   }
 
   shiftMap(direction) {

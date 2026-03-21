@@ -40,12 +40,12 @@
 
     <section id="screen-tutorial" class="overlay hidden panel full-screen">
       <div class="tutorial-fullscreen-container">
-        <img src="assets/sprites/environment/tutorial_platform.png" alt="Tutorial Guide" class="tutorial-fullscreen-image">
+        <img src="assets/tutorial/tutorialbg.png" alt="Tutorial Guide" class="tutorial-fullscreen-image">
         <canvas id="tutorial-canvas" width="1280" height="720"></canvas>
       </div>
-      <div class="menu-actions">
-        <button id="btn-tutorial-back" class="btn-img btn-return">
-          <img src="assets/sprites/ui/buttons/returntomainmenu - Copy.png" alt="Return to Base">
+      <div class="menu-actions tutorial-actions">
+        <button id="btn-tutorial-back" class="btn-img">
+          <img src="assets/tutorial/returntomainmenu.png" alt="Return to Main Menu">
         </button>
       </div>
     </section>
@@ -112,12 +112,46 @@
     </section>
 
     <section id="menu-settings" class="overlay hidden">
-      <h2>System Settings</h2>
-      <label>BGM <input id="bgm-volume" type="range" min="0" max="100" value="70"></label>
-      <label>SFX <input id="sfx-volume" type="range" min="0" max="100" value="80"></label>
-      <label>Particle Effects <input id="particle-enabled" type="checkbox" checked></label>
-      <p>Controls: WASD move, Left Click shoot, Space jetpack, ESC pause</p>
-      <button id="btn-settings-close">Back</button>
+      <!-- Modal Blur Overlay -->
+      <img src="assets/lava/modalblur.jpg" class="modal-blur-overlay" alt="">
+      
+      <!-- Background buttons to match Main Menu -->
+      <div class="menu-actions main-menu-copy">
+        <button class="btn-img"><img src="assets/menu/startmission.png" alt=""></button>
+        <button class="btn-img"><img src="assets/menu/settings.png" alt=""></button>
+        <button class="btn-img btn-tutorial-copy"><img src="assets/menu/tutorial.png" alt=""></button>
+        <button class="btn-img"><img src="assets/menu/exit.png" alt=""></button>
+      </div>
+
+      <!-- Settings Modal on top -->
+      <div class="settings-container">
+        <img src="assets/system_settings/systembg.png" alt="Settings Background" class="settings-bg">
+        <div class="settings-content-overlay">
+          <div class="toggles-container">
+            <div class="toggle-group" id="toggle-bgm">
+              <img src="assets/system_settings/on.png" class="toggle-on" alt="ON">
+              <img src="assets/system_settings/off.png" class="toggle-off hidden" alt="OFF">
+            </div>
+            <div class="toggle-group" id="toggle-sfx">
+              <img src="assets/system_settings/on.png" class="toggle-on" alt="ON">
+              <img src="assets/system_settings/off.png" class="toggle-off hidden" alt="OFF">
+            </div>
+            <div class="toggle-group" id="toggle-visuals">
+              <img src="assets/system_settings/on.png" class="toggle-on" alt="ON">
+              <img src="assets/system_settings/off.png" class="toggle-off hidden" alt="OFF">
+            </div>
+          </div>
+
+          <div class="settings-actions">
+            <button id="btn-settings-save" class="btn-img">
+              <img src="assets/system_settings/save&close.png" alt="Save & Close">
+            </button>
+            <button id="btn-settings-back" class="btn-img">
+              <img src="assets/system_settings/back.png" alt="Back">
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="screen-victory" class="overlay hidden panel full-screen victory">

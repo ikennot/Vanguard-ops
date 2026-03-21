@@ -462,3 +462,174 @@ button {
     gap: 0.3rem;
   }
 }
+
+/* --- Settings & Tutorial Improvements --- */
+#menu-settings {
+  padding: 0;
+  background: url("../assets/menu/mainmenu.jpeg") center / cover no-repeat !important;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.modal-blur-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.4; /* Grayish blur effect */
+  z-index: 5;
+  pointer-events: none;
+}
+
+#menu-settings .menu-actions.main-menu-copy {
+  --menu-btn-width: clamp(220px, 25vw, 300px);
+  position: absolute;
+  left: 6.5%;
+  bottom: 9%;
+  gap: 0.4rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+#menu-settings .menu-actions.main-menu-copy button {
+  position: relative;
+  display: inline-block;
+  width: var(--menu-btn-width);
+  aspect-ratio: 376 / 90;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#menu-settings .menu-actions.main-menu-copy button img {
+  position: absolute;
+  max-width: none;
+  width: calc(var(--menu-btn-width) * 1.7793);
+  left: calc(var(--menu-btn-width) * -0.4016);
+  top: calc(var(--menu-btn-width) * -0.3777);
+  image-rendering: pixelated;
+}
+
+#menu-settings .menu-actions.main-menu-copy button.btn-tutorial-copy img {
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  object-fit: contain;
+}
+
+.settings-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.settings-bg {
+  width: 85%;
+  max-width: 900px;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.settings-content-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  max-width: 900px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.toggles-container {
+  position: absolute;
+  top: 25%;
+  left: 15%;
+  width: 70%;
+  height: 30%;
+  pointer-events: auto;
+}
+
+#toggle-bgm {
+  position: absolute;
+  top: -15%;
+  left: 25%;
+  transform: scale(1.5);
+  transform-origin: top left;
+}
+
+#toggle-sfx {
+  position: absolute;
+  top: -17%;
+  left: 70%;
+  transform: scale(1.5);
+  transform-origin: top left;
+}
+
+#toggle-visuals {
+  position: absolute;
+  left: 60%;
+  bottom: 41%;
+  /* Dagdagan ito para lumaki (1.5 = 150%) */
+  /* Ang translate(-50%, 0) ay para siguradong laging nasa gitna horizontally */
+  transform: translate(-50%, 0) scale(1.5);
+  transform-origin: center; /* Dito siya magsisimulang lumaki */
+}
+
+.settings-actions {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.5rem;
+  pointer-events: auto;
+}
+
+.settings-actions button img {
+  height: 40px;
+  width: auto;
+}
+
+.toggle-group {
+  cursor: pointer;
+  display: inline-flex;
+}
+
+.toggle-group img {
+  height: 25px;
+  width: auto;
+}
+
+.tutorial-actions {
+  position: absolute;
+  top: 1.5rem !important;
+  right: 1.5rem !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.tutorial-actions button img {
+  width: 180px !important;
+}
+
+#screen-tutorial .tutorial-fullscreen-container {
+  background: #000;
+}
+
+.hidden {
+  display: none !important;
+}
+

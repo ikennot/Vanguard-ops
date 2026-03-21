@@ -19,6 +19,7 @@ import CollisionSystem from "./systems/CollisionSystem.js";
 import HealthSystem from "./systems/HealthSystem.js";
 import RenderSystem from "./systems/RenderSystem.js";
 import { Collision } from "./collision.js";
+import serviceLocator from "./core/ServiceLocator.js";
 
 class Game {
   constructor(canvas, services = {}) {
@@ -238,24 +239,12 @@ class Game {
   }
 
   startMission() {
-    this.kills = 0;
-    this.missionTime = 0;
-    eventBus.emit("game:scoreChanged", {
-      kills: this.kills,
-      target: GAME_CONST.objective.targetKills
-    });
-    this.platforms.setMap(this.currentMapId);
-    this.player.resetForSession(this.platforms.getSpawnPoint());
-    this.enemies.reset(this.platforms.platforms);
-    this.projectiles.clear();
-    this.pickups.reset(this.platforms.platforms);
-    this.particles.particles = [];
-    this.camera.reset();
-    this.entityManager.flush();
+    this.initializeMission();
     this.setState("playing");
   }
 
-  restartMission() {
+  initializeMission() {
+    this.entityManager.clear();
     this.platforms.setMap(this.currentMapId);
     this.player.resetForSession(this.platforms.getSpawnPoint());
     this.kills = 0;
@@ -268,8 +257,11 @@ class Game {
     this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
-    this.camera.reset();
-    this.entityManager.flush();
+    this.camera.resetToTarget(this.player);
+  }
+
+  restartMission() {
+    this.initializeMission();
     this.setState("playing");
   }
 
@@ -425,9 +417,11 @@ class Game {
   drawBackground() {
     const assets = serviceLocator.get("assets");
     let bgImg = null;
-    if (this.currentMapId === "space") bgImg = assets.get("bg-space");
-    if (this.currentMapId === "jungle") bgImg = assets.get("bg-jungle");
-    if (this.currentMapId === "canyon") bgImg = assets.get("bg-canyon");
+    if (assets) {
+      if (this.currentMapId === "space") bgImg = assets.get("bg-space");
+      if (this.currentMapId === "jungle") bgImg = assets.get("bg-jungle");
+      if (this.currentMapId === "canyon") bgImg = assets.get("bg-canyon");
+    }
 
     if (bgImg) {
       this.ctx.drawImage(bgImg, 0, 0, this.canvas.width, this.canvas.height);

@@ -12,7 +12,8 @@ function createSprite({
   animationTimer = 0,
   loop = true,
   scale = 1,
-  flipX = false
+  flipX = false,
+  noFlip = false
 } = {}) {
   return {
     color,
@@ -29,6 +30,7 @@ function createSprite({
     loop,
     scale,
     flipX,
+    noFlip,
     gunColor: null
   };
 }

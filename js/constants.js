@@ -1,6 +1,18 @@
 export const GAME_CONST = {
+  debug: {
+    hitboxOnly: true
+  },
   canvas: { width: 1280, height: 720 },
   world: { width: 1800, height: 720, killY: 940 },
+  entity: {
+    player: { width: 40, height: 72, color: "#00ff88", flashColor: "#f4fff8" },
+    enemy: { width: 44, height: 68, color: "#ff4444", flashColor: "#ffffff" },
+    projectile: {
+      player: { width: 10, height: 6, color: "#ffd700" },
+      enemy: { width: 8, height: 6, color: "#ff8800" }
+    },
+    pickup: { width: 28, height: 28, color: "#00cfff" }
+  },
   player: {
     maxHealth: 100,
     maxLives: 5,
@@ -42,7 +54,7 @@ export const GAME_CONST = {
       name: "Space",
       description: "Balanced open platforms over a hot star surface.",
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
-      spawn: { x: 620, y: 296 },
+      spawn: { x: 620, y: 288 },
       platforms: [
         { x: 580, y: 360, width: 340, height: 24 },
         { x: 250, y: 480, width: 260, height: 20 },
@@ -56,7 +68,7 @@ export const GAME_CONST = {
       name: "Jungle",
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
-      spawn: { x: 700, y: 196 },
+      spawn: { x: 700, y: 188 },
       platforms: [
         { x: 480, y: 180, width: 520, height: 22 },
         { x: 390, y: 260, width: 360, height: 22 },
@@ -72,7 +84,7 @@ export const GAME_CONST = {
       name: "Canyon",
       description: "Narrow central arena with high-risk edge play.",
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
-      spawn: { x: 690, y: 266 },
+      spawn: { x: 690, y: 258 },
       platforms: [
         { x: 460, y: 330, width: 560, height: 30 },
         { x: 560, y: 250, width: 190, height: 20 },

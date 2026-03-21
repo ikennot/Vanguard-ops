@@ -1,4 +1,5 @@
 import serviceLocator from "../core/ServiceLocator.js";
+import { GAME_CONST } from "../constants.js";
 
 class RenderSystem {
   drawByTag(ctx, camera, entityManager, tag) {
@@ -37,7 +38,13 @@ class RenderSystem {
       const posX = transform.position.x - camera.x;
       const posY = transform.position.y - camera.y;
 
-      if (sprite.type === "sprite" && sprite.assetKey && assets) {
+      const shouldDrawSprite =
+        !GAME_CONST.debug.hitboxOnly &&
+        sprite.type === "sprite" &&
+        sprite.assetKey &&
+        assets;
+
+      if (shouldDrawSprite) {
         const image = assets.getImage(sprite.assetKey);
         if (image) {
           const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
@@ -54,7 +61,7 @@ class RenderSystem {
           drawX -= (drawW - transform.width) / 2;
           drawY -= (drawH - transform.height); // Bottom align
 
-          if (sprite.flipX || (transform.facing === -1)) {
+          if (sprite.flipX || (!sprite.noFlip && transform.facing === -1)) {
             ctx.scale(-1, 1);
             ctx.drawImage(
               image,

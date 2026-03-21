@@ -56,6 +56,7 @@ class Game {
     this.state = "main";
     this.kills = 0;
     this.missionTime = 0;
+    this.level = 0;
     this.maps = ["space", "jungle", "canyon"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
@@ -171,6 +172,7 @@ class Game {
     };
 
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
+    document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
     document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
     document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
 
@@ -256,18 +258,25 @@ class Game {
       }
     }
 
+    const resourcesInfoImg = document.getElementById("resources-info-img");
+    if (resourcesInfoImg) {
+      let infoAsset = `assets/space/gameinfo_space.png`;
+      if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
+      if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
+      resourcesInfoImg.src = infoAsset;
+    }
     const levelInfoImg = document.getElementById("level-info-img");
     const levelInfoBg = document.getElementById("level-info-bg");
     if (levelInfoImg) {
       let infoAsset = `assets/space/gameinfo_space.png`;
-      if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
-      if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
+      if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
+      if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
       let bgAsset = `assets/space/terrainspace.jpg`;
-      if (this.currentMapId === "jungle") bgAsset = `assets/sprites/ui/buttons/terrainjungle.jpg`;
-      if (this.currentMapId === "canyon") bgAsset = `assets/sprites/ui/buttons/terrainlava.jpg`;
+      if (this.currentMapId === "jungle") bgAsset = `assets/jungle/terrainjungle.jpg`;
+      if (this.currentMapId === "canyon") bgAsset = `assets/lava/terrainlava.jpg`;
       levelInfoBg.src = bgAsset;
     }
   }
@@ -295,6 +304,10 @@ class Game {
   }
 
   restartMission() {
+    this.level = 0;
+    this.mapIndex = 0;
+    this.currentMapId = this.maps[this.mapIndex];
+    this.currentMapData = GAME_CONST.maps[this.currentMapId];
     this.initializeMission();
     this.setState("playing");
   }
@@ -313,10 +326,29 @@ class Game {
       target: GAME_CONST.objective.targetKills
     });
     if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
-      document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
-      this.updateScoreboard("victory", "Victory");
-      this.setState("victory");
+      if (this.mapIndex < this.maps.length - 1) {
+        this.advanceLevel();
+      } else {
+        document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
+        this.updateScoreboard("victory", "Victory");
+        this.setState("victory");
+      }
     }
+  }
+
+  advanceLevel() {
+    const savedLives = this.player.lives;
+    this.level += 1;
+    this.mapIndex += 1;
+    this.currentMapId = this.maps[this.mapIndex];
+    this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    this.initializeMission();
+    this.player.lives = savedLives;
+    this.setState("playing");
+  }
+
+  getEnemyKnockbackMultiplier() {
+    return 1 + this.level * 2.5;
   }
 
   triggerDefeat() {
@@ -379,7 +411,8 @@ class Game {
       player: this.player,
       projectiles: this.projectiles,
       gameState: this.state,
-      platforms: this.platforms.platforms
+      platforms: this.platforms.platforms,
+      knockbackMultiplier: this.getEnemyKnockbackMultiplier()
     });
 
     this.physicsSystem.update(this.entityManager, deltaTime);

@@ -257,7 +257,7 @@ class Player {
     this.shootTimer = Math.max(0, this.shootTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (this.shootRequested) {
+    if (this.shootRequested || inputService.isMouseDown(0)) {
       this.tryShoot({
         ...deps,
         input: inputService,

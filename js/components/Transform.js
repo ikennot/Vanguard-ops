@@ -18,7 +18,8 @@ function createTransform({
     height,
     gravity,
     onGround: false,
-    facing
+    facing,
+    oneWayPlatformIgnoreTimer: 0
   };
 }
 

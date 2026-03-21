@@ -24,6 +24,20 @@ const assetManifest = [
   { key: "player-shoot", src: "assets/sprites/player/char-shooting-animation.png", type: "image" },
   { key: "player-soldier", src: "assets/sprites/player/soldier.png", type: "image" },
   { key: "player-spartan", src: "assets/sprites/player/spartan-sheet.png", type: "image" },
+  {
+    key: "player-running-left",
+    src: "assets/sprites/player/running_facing_left.png",
+    type: "image"
+  },
+  {
+    key: "player-running-right",
+    src: "assets/sprites/player/running_facing_right.png",
+    type: "image"
+  },
+  { key: "player-flying-left", src: "assets/sprites/player/flying_left.png", type: "image" },
+  { key: "player-flying-right", src: "assets/sprites/player/flying_right.png", type: "image" },
+  { key: "player-shooting-left", src: "assets/sprites/player/shooting_left.png", type: "image" },
+  { key: "player-shooting-right", src: "assets/sprites/player/shooting_right.png", type: "image" },
   { key: "enemy-left", src: "assets/sprites/enemy/enemy-facing-left.png", type: "image" },
   { key: "enemy-right", src: "assets/sprites/enemy/enemy-facing-right.png", type: "image" },
   {

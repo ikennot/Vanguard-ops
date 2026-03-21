@@ -180,15 +180,22 @@ button {
 #screen-rules .menu-actions {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: 0%;
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
   z-index: 10;
+  width: auto; /* Hayaan nating mag-adjust ang box sa laki ng image */
+}
+
+#screen-rules .menu-actions img {
+  width: 500px; 
+  height: auto;  
+  display: block; 
 }
 
 #screen-rules .menu-actions button img {
-  width: 140px;
+  width: 200px;
   height: auto;
 }
 

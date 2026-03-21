@@ -82,13 +82,24 @@
     </section>
 
     <section id="screen-level-info" class="overlay hidden panel full-screen">
+      <!-- Background Terrain -->
       <img src="assets/space/terrainspace.jpg" id="level-info-bg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      
+      <!-- Modal Blur Overlay -->
+      <img src="assets/space/modalblur.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; opacity: 0.5;">
+      
+      <!-- Main Content Container -->
       <div class="level-info-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
-        <img src="assets/space/gameinfo_space.png" id="level-info-img" alt="Level Info" style="max-width:80%; height:auto;">
-        <div class="menu-actions" style="margin-top: -80px;">
-          <button id="btn-level-info-ok" class="btn-img">
-            <img src="assets/space/ok.png" alt="OK">
-          </button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+          <!-- Level Info Panel -->
+          <img src="assets/space/gameinfo_space.png" id="level-info-img" alt="Level Info" style="width:650px; height:auto;">
+          
+          <!-- OK Button Overlay -->
+          <div class="menu-actions" style="position:absolute; bottom:50px; right: 255px; transform:none; margin:0;">
+            <button id="btn-level-info-ok" class="btn-img">
+              <img src="assets/space/ok.png" alt="OK" style="width:150px; height:auto;">
+            </button>
+          </div>
         </div>
       </div>
     </section>

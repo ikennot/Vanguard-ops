@@ -171,7 +171,6 @@ class Game {
     };
 
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
-    document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
     document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
     document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
 

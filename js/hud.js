@@ -4,7 +4,7 @@ import serviceLocator from "./core/ServiceLocator.js";
 
 class Hud {
   constructor() {
-    this.pauseButtonRect = { x: 1220, y: 14, width: 44, height: 44 };
+    this.pauseButtonRect = { x: 1235, y: 0, width: 44, height: 44 };
     this.kills = 0;
     this.killTarget = GAME_CONST.objective.targetKills;
     eventBus.on("game:scoreChanged", ({ kills, target }) => {
@@ -22,7 +22,7 @@ class Hud {
     
     // Top HUD Bar - Score and Map Info
     ctx.fillStyle = "rgba(12, 18, 24, 0.72)";
-    ctx.fillRect(18, 18, 280, 58);
+    ctx.fillRect(15, 15, 350, 58);
     ctx.fillStyle = "#f2d17a";
     ctx.font = "700 18px sans-serif";
     ctx.fillText(`KILLS: ${String(this.kills).padStart(2, "0")}/${this.killTarget}`, 28, 54);
@@ -34,10 +34,15 @@ class Hud {
     // Bottom HUD - Lives and Ammo
     const hudY = 580;
     const hudX = 20;
-    const hudW = 340;
-    const hudH = 120;
-    
-    const hudBg = game.currentMapId === "space" ? this.assets.get("hud-bg-space") : null;
+    const hudW = 390;
+    const hudH = 150;
+
+    // Dynamic HUD background base sa map
+    let hudBgKey = "hud-bg-space";
+    if (game.currentMapId === "jungle") hudBgKey = "hud-bg-space"; // Pwedeng palitan kung may sariling jungle hud bg
+    if (game.currentMapId === "canyon") hudBgKey = "hud-bg-lava";
+
+    const hudBg = this.assets.get(hudBgKey);
     if (hudBg) {
       ctx.drawImage(hudBg, hudX, hudY, hudW, hudH);
     } else {
@@ -47,21 +52,21 @@ class Hud {
     
     // Life Icon and Count
     const lifeIcon = this.assets.get("hud-life");
-    const textBaseY = hudY + (hudBg ? 65 : 36);
+    const textBaseY = hudY + (hudBg ? 90 : 36);
     const textBaseX = hudX + (hudBg ? 20 : 54);
 
     if (!hudBg && lifeIcon) {
       ctx.drawImage(lifeIcon, hudX + 12, hudY + 12, 32, 32);
     }
     ctx.fillStyle = hudBg ? "#000" : "#121a20";
-    ctx.font = "700 22px monospace";
+    ctx.font = "700 30px monospace";
     ctx.fillText(String(game.player.lives), hudBg ? hudX + 100 : 72, textBaseY);
 
     // Ammo Count
     ctx.fillText(`${game.player.weapon.getCurrentAmmo()}/${game.player.weapon.getReserveAmmo()}`, hudBg ? hudX + 230 : 150, textBaseY);
     
     // Weapon Label
-    ctx.font = "600 14px sans-serif";
+    ctx.font = "600 12px sans-serif";
     ctx.fillText(game.player.weapon.current.toUpperCase(), hudBg ? hudX + 230 : 158, textBaseY + 25);
 
 

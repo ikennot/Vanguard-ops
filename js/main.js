@@ -70,6 +70,7 @@ const assetManifest = [
   { key: "pause-bg-space", src: "assets/space/gamepaused.png", type: "image" },
   { key: "win-bg-space", src: "assets/win1/win1.jpeg", type: "image" },
   { key: "hud-bg-space", src: "assets/space/info.png", type: "image" },
+  { key: "hud-bg-lava", src: "assets/lava/info.png", type: "image" },
   { key: "pause-icon", src: "assets/space/pause.jpg", type: "image" }
 ];
 

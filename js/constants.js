@@ -10,7 +10,7 @@ export const GAME_CONST = {
       height: 72,
       color: "#00ff88",
       flashColor: "#f4fff8",
-      spriteOffsetY: 12
+      spriteOffsetY: 24
     },
     enemy: { width: 96, height: 96, color: "#ff4444", flashColor: "#ffffff" },
     projectile: {
@@ -38,7 +38,7 @@ export const GAME_CONST = {
     speed: 95,
     shootRange: 420,
     shootCooldown: 0.5,
-    damage: 14,
+    damage: 5,
     difficultyStepEveryKills: 4,
     maxDifficultyStep: 3
   },
@@ -64,11 +64,11 @@ export const GAME_CONST = {
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
       spawn: { x: 620, y: 288 },
       platforms: [
-        { x: 580, y: 360, width: 340, height: 24 },
-        { x: 250, y: 480, width: 260, height: 20 },
-        { x: 1080, y: 480, width: 260, height: 20 },
-        { x: 260, y: 210, width: 300, height: 20 },
-        { x: 1060, y: 210, width: 300, height: 20 }
+        { x: 580, y: 360, width: 450, height: 120 },
+        { x: 250, y: 480, width: 260, height: 120 },
+        { x: 1080, y: 480, width: 260, height: 120 },
+        { x: 260, y: 210, width: 300, height: 120 },
+        { x: 1060, y: 210, width: 300, height: 120 }
       ]
     },
     jungle: {
@@ -76,15 +76,12 @@ export const GAME_CONST = {
       name: "Jungle",
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
-      spawn: { x: 700, y: 188 },
+      spawn: { x: 1100, y: 200 },
       platforms: [
-        { x: 480, y: 180, width: 520, height: 22 },
-        { x: 390, y: 260, width: 360, height: 22 },
-        { x: 910, y: 260, width: 360, height: 22 },
-        { x: 520, y: 340, width: 420, height: 22 },
-        { x: 320, y: 430, width: 420, height: 22 },
-        { x: 900, y: 430, width: 420, height: 22 },
-        { x: 420, y: 520, width: 840, height: 24 }
+        { x: 480, y: 180, width: 1000, height: 60 },
+        { x: 1100, y: 365, width: 360, height: 60 },
+        { x: 300, y: 365, width: 360, height: 60 },
+        { x: 950, y: 525, width: 500, height: 60 }
       ]
     },
     canyon: {
@@ -94,11 +91,9 @@ export const GAME_CONST = {
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
       spawn: { x: 690, y: 258 },
       platforms: [
-        { x: 460, y: 330, width: 560, height: 30 },
-        { x: 560, y: 250, width: 190, height: 20 },
-        { x: 820, y: 250, width: 190, height: 20 },
-        { x: 480, y: 430, width: 170, height: 20 },
-        { x: 830, y: 430, width: 170, height: 20 }
+        { x: 500, y: 330, width: 600, height: 30 },
+        { x: 400, y: 500, width: 500, height: 30 },
+        { x: 1200, y: 600, width: 400, height: 30 },
       ]
     }
   }

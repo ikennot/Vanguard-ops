@@ -5,7 +5,13 @@ export const GAME_CONST = {
   canvas: { width: 1280, height: 720 },
   world: { width: 1800, height: 720, killY: 940 },
   entity: {
-    player: { width: 40, height: 72, color: "#00ff88", flashColor: "#f4fff8" },
+    player: {
+      width: 40,
+      height: 72,
+      color: "#00ff88",
+      flashColor: "#f4fff8",
+      spriteOffsetY: 12
+    },
     enemy: { width: 96, height: 96, color: "#ff4444", flashColor: "#ffffff" },
     projectile: {
       player: { width: 10, height: 6, color: "#ffd700" },
@@ -22,7 +28,9 @@ export const GAME_CONST = {
     jetpackForce: 980,
     jetpackDrain: 30,
     jetpackRegen: 18,
-    shootCooldown: 0.16
+    shootCooldown: 0.16,
+    dropThroughDuration: 0.18,
+    dropDownVelocity: 220
   },
   enemy: {
     gravity: 1300,

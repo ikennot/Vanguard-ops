@@ -10,6 +10,10 @@ class PhysicsSystem {
       transform.prevPosition.x = transform.position.x;
       transform.prevPosition.y = transform.position.y;
       transform.onGround = false;
+      transform.oneWayPlatformIgnoreTimer = Math.max(
+        0,
+        (transform.oneWayPlatformIgnoreTimer || 0) - deltaTime
+      );
 
       if (transform.gravity !== 0) Physics.applyGravity(transform, deltaTime);
       Physics.integrate(transform, deltaTime);

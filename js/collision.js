@@ -18,6 +18,8 @@ export const Collision = {
   },
 
   resolvePlatforms(entity, platforms) {
+    if ((entity.oneWayPlatformIgnoreTimer || 0) > 0) return;
+
     const prevY = entity.prevPosition ? entity.prevPosition.y : entity.position.y;
     const prevBottom = prevY + entity.height;
     const currBottom = entity.position.y + entity.height;

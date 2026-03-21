@@ -19,10 +19,10 @@ export class TutorialManager {
 
     this.bullets = [];
     
-    // Lowered both platforms to keep character away from middle text/hints
+    // Adjusted platforms to match the reference image layout
     this.platforms = [
-      { x: 90, y: 680, width: 1120, height: 100 }, // 1st Floor (Pinaka malaki sa baba)
-      { x: 440, y: 480, width: 400, height: 40 }  // 2nd Floor (Medyo maliit sa gitna)
+      { x: 180, y: 615, width: 920, height: 40 }, // Bottom long platform
+      { x: 350, y: 480, width: 580, height: 30 }  // Top middle platform
     ];
 
     this.keys = {};
@@ -33,6 +33,12 @@ export class TutorialManager {
         this.spriteReady = true;
     };
     this.soldierSprite.src = "assets/sprites/player/soldier_breathing_idle.png";
+
+    this.platformSprite = new Image();
+    this.platformSprite.onload = () => {
+        this.platformReady = true;
+    };
+    this.platformSprite.src = "assets/tutorial/tutorialplatform.png";
     
     this.frame = 0;
     this.frameTimer = 0;
@@ -143,6 +149,13 @@ export class TutorialManager {
   draw() {
     this.ctx.clearRect(0, 0, this.width, this.height);
     const p = this.player;
+
+    // Draw platforms
+    if (this.platformReady) {
+      for (const plat of this.platforms) {
+        this.ctx.drawImage(this.platformSprite, plat.x, plat.y, plat.width, plat.height);
+      }
+    }
 
     if (this.spriteReady) {
         const sw = this.soldierSprite.width / 8;

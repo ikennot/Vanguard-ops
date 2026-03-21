@@ -29,7 +29,7 @@ export const GAME_CONST = {
     maxHealth: 100,
     speed: 95,
     shootRange: 420,
-    shootCooldown: 1.8,
+    shootCooldown: 0.5,
     damage: 14,
     difficultyStepEveryKills: 4,
     maxDifficultyStep: 3

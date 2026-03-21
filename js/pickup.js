@@ -43,10 +43,14 @@ class PickupManager {
   reset(platforms) {
     this.clear();
 
-    const types = ["weapon-crate", "ammo-small", "ammo-medium", "fuel"];
+    const ammoTypes = ["weapon-crate", "ammo-small", "ammo-medium"];
+    const types = [...ammoTypes, "fuel"];
+    let ammoSpawned = false;
+
     for (const platform of platforms) {
       if (Math.random() < 0.65) {
         const type = types[Math.floor(Math.random() * types.length)];
+        if (ammoTypes.includes(type)) ammoSpawned = true;
         this.createPickup(
           type,
           platform.x + platform.width * 0.5 - GAME_CONST.entity.pickup.width * 0.5,
@@ -54,6 +58,16 @@ class PickupManager {
           platform
         );
       }
+    }
+
+    if (!ammoSpawned && platforms.length) {
+      const platform = platforms[Math.floor(Math.random() * platforms.length)];
+      this.createPickup(
+        ammoTypes[Math.floor(Math.random() * ammoTypes.length)],
+        platform.x + platform.width * 0.5 - GAME_CONST.entity.pickup.width * 0.5,
+        platform.y - GAME_CONST.entity.pickup.height,
+        platform
+      );
     }
   }
 

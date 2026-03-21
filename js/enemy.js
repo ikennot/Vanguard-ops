@@ -145,7 +145,7 @@ class Enemy {
         GAME_CONST.enemy.damage + Math.floor((difficultyScale - 1) * 5),
         "enemy",
         GAME_CONST.entity.projectile.enemy.color,
-        260 * Math.sign(dx || 1)
+        650 * (deps.knockbackMultiplier || 1) * Math.sign(dx || 1)
       );
       ai.shootTimer =
         GAME_CONST.enemy.shootCooldown / difficultyScale + Utils.randomRange(-0.15, 0.25);

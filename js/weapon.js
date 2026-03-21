@@ -39,6 +39,7 @@ class WeaponSystem {
       this.magSize[this.current],
       (this.magAmmo[this.current] || 0) + amount
     );
+    this.reloading = false;
   }
 
   setRandomWeapon() {

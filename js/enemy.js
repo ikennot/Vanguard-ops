@@ -46,19 +46,22 @@ class Enemy {
           patrolMinX: x - patrolWidth * 0.5,
           patrolMaxX: x + patrolWidth * 0.5,
           shootTimer: Utils.randomRange(0.2, GAME_CONST.enemy.shootCooldown),
+          shootingTimer: 0,
           type
         }
       )
       .addComponent(
         "sprite",
         createSprite({
+          type: "sprite",
+          assetKey: "enemy-left",
+          frameWidth: 48,
+          frameHeight: 48,
+          numFrames: 1,
+          animationSpeed: 0.1,
+          scale: 3,
+          noFlip: true,
           color: GAME_CONST.entity.enemy.color,
-          gunColor: "#280e0e",
-          gunWidth: 10,
-          gunHeight: 4,
-          gunOffsetY: 16,
-          gunInsetRight: 10,
-          gunInsetLeft: 0
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -92,8 +95,23 @@ class Enemy {
     const sprite = this.entity.getComponent("sprite");
 
     if (sprite) {
-      sprite.color =
-        health.knockbackTimer > 0 ? GAME_CONST.entity.enemy.flashColor : GAME_CONST.entity.enemy.color;
+      const isShooting = ai.shootingTimer > 0;
+      const facingLeft = ai.direction === -1;
+      const nextAssetKey = isShooting
+        ? (facingLeft ? "enemy-left-shooting" : "enemy-right-shooting")
+        : (facingLeft ? "enemy-left" : "enemy-right");
+      if (sprite.assetKey !== nextAssetKey) {
+        sprite.assetKey = nextAssetKey;
+        sprite.currentFrame = 0;
+        sprite.animationTimer = 0;
+      }
+      sprite.type = "sprite";
+      sprite.noFlip = true;
+      sprite.numFrames = 4;
+      sprite.animationSpeed = isShooting ? 0.08 : 0.12;
+      sprite.frameX = 0;
+      sprite.frameY = 0;
+      sprite.color = GAME_CONST.entity.enemy.color;
     }
 
     const baseMoveX = ai.direction * GAME_CONST.enemy.speed * difficultyScale;
@@ -106,6 +124,7 @@ class Enemy {
     if (transform.position.x + transform.width > ai.patrolMaxX) ai.direction = -1;
 
     ai.shootTimer -= deltaTime;
+    ai.shootingTimer = Math.max(0, ai.shootingTimer - deltaTime);
     const playerTransform = deps.player.entity.getComponent("transform");
     const centerX = transform.position.x + transform.width * 0.5;
     const centerY = transform.position.y + transform.height * 0.45;
@@ -129,6 +148,7 @@ class Enemy {
       );
       ai.shootTimer =
         GAME_CONST.enemy.shootCooldown / difficultyScale + Utils.randomRange(-0.15, 0.25);
+      ai.shootingTimer = 0.25;
     }
   }
 }

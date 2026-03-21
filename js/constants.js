@@ -1,12 +1,12 @@
 export const GAME_CONST = {
   debug: {
-    hitboxOnly: true
+    hitboxOnly: false
   },
   canvas: { width: 1280, height: 720 },
   world: { width: 1800, height: 720, killY: 940 },
   entity: {
     player: { width: 40, height: 72, color: "#00ff88", flashColor: "#f4fff8" },
-    enemy: { width: 44, height: 68, color: "#ff4444", flashColor: "#ffffff" },
+    enemy: { width: 96, height: 96, color: "#ff4444", flashColor: "#ffffff" },
     projectile: {
       player: { width: 10, height: 6, color: "#ffd700" },
       enemy: { width: 8, height: 6, color: "#ff8800" }

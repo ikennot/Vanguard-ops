@@ -24,6 +24,18 @@ const assetManifest = [
   { key: "player-shoot", src: "assets/sprites/player/char-shooting-animation.png", type: "image" },
   { key: "player-soldier", src: "assets/sprites/player/soldier.png", type: "image" },
   { key: "player-spartan", src: "assets/sprites/player/spartan-sheet.png", type: "image" },
+  { key: "enemy-left", src: "assets/sprites/enemy/enemy-facing-left.png", type: "image" },
+  { key: "enemy-right", src: "assets/sprites/enemy/enemy-facing-right.png", type: "image" },
+  {
+    key: "enemy-left-shooting",
+    src: "assets/sprites/enemy/enemy-facing-left-shooting.png",
+    type: "image"
+  },
+  {
+    key: "enemy-right-shooting",
+    src: "assets/sprites/enemy/enemy-facing-rigth-shooting.png",
+    type: "image"
+  },
   { key: "enemy-sheet", src: "assets/sprites/enemies/enemies-sprite.png", type: "image" },
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },

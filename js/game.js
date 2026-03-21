@@ -139,8 +139,6 @@ class Game {
         e.preventDefault();
         e.stopPropagation();
       }
-      // If Level 1 (Space) is selected, proceed to Resources. 
-      // Locked maps (index > 0) will not proceed.
       if (this.mapIndex === 0) {
         this.setState("resources");
       }
@@ -149,7 +147,8 @@ class Game {
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
     document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
     document.getElementById("btn-resources-back").addEventListener("click", () => this.setState("map-select"));
-    document.getElementById("btn-resources-ok").addEventListener("click", () => this.startMission());
+    document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
+    document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
 
     document.getElementById("btn-resume").addEventListener("click", () => this.setState("playing"));
     document.getElementById("btn-restart").addEventListener("click", () => this.restartMission());
@@ -199,20 +198,17 @@ class Game {
     }
     
     const previewImg = document.getElementById("map-preview-img");
-    const isLocked = this.mapIndex > 0; // Simple logic: Only Level 1 is unlocked initially
+    const isLocked = this.mapIndex > 0;
     
     if (previewImg) {
       let assetName = this.currentMapId;
       if (isLocked) {
-        // Use locked image for Jungle and Canyon (Lava)
         let lockedAsset = assetName;
         if (assetName === "canyon") lockedAsset = "lava";
         previewImg.src = `assets/sprites/ui/lock${lockedAsset}.jpg`;
-        // Remove cursor pointer if locked
         document.querySelector('.map-card-container').style.cursor = 'default';
       } else {
         previewImg.src = `assets/sprites/environment/${assetName}_selectmap.jpg`;
-        // Restore cursor pointer if unlocked
         document.querySelector('.map-card-container').style.cursor = 'pointer';
       }
     }
@@ -223,6 +219,21 @@ class Game {
       if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
       resourcesInfoImg.src = infoAsset;
+    }
+
+    const levelInfoImg = document.getElementById("level-info-img");
+    const levelInfoBg = document.getElementById("level-info-bg");
+    if (levelInfoImg) {
+      let infoAsset = `assets/sprites/ui/buttons/space map/level1_info.png`;
+      if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
+      if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
+      levelInfoImg.src = infoAsset;
+    }
+    if (levelInfoBg) {
+      let bgAsset = `assets/sprites/ui/buttons/terrainspace.jpg`;
+      if (this.currentMapId === "jungle") bgAsset = `assets/sprites/ui/buttons/terrainjungle.jpg`;
+      if (this.currentMapId === "canyon") bgAsset = `assets/sprites/ui/buttons/terrainlava.jpg`;
+      levelInfoBg.src = bgAsset;
     }
   }
 

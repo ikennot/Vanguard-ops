@@ -70,19 +70,29 @@
       </div>
     </section>
 
-    <section id="screen-resources" class="overlay hidden panel">
-      <img src="assets/sprites/ui/buttons/space map/level1_info.png" id="resources-info-img" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1;">
-      <h2>Resources</h2>
-      <div class="resources-grid">
-        <p>Armored Weapon Crate: random weapon swap and ammo refill.</p>
-        <p>Ammo Packs: small, medium, and large ammo boosts.</p>
-        <p>Compact Booster Unit: restores jetpack fuel.</p>
+    <section id="screen-resources" class="overlay hidden panel full-screen">
+      <div class="resources-fullscreen-container">
+        <img src="assets/resources_menu/resources.png" id="resources-info-img" alt="Game Resources" class="resources-fullscreen-image">
       </div>
-      <div class="menu-actions row">
+      <div class="menu-actions">
         <button id="btn-resources-back" class="btn-img btn-return">
           <img src="assets/sprites/ui/buttons/returntomainmenu - Copy.png" alt="Back">
         </button>
-        <button id="btn-resources-ok">Start Deployment</button>
+        <button id="btn-resources-ok" class="btn-img">
+          <img src="assets/sprites/ui/buttons/ok.png" alt="Start Deployment">
+        </button>
+      </div>
+    </section>
+
+    <section id="screen-level-info" class="overlay hidden panel full-screen">
+      <img src="assets/space/terrainspace.jpg" id="level-info-bg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <div class="level-info-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
+        <img src="assets/space/gameinfo_space.png" id="level-info-img" alt="Level Info" style="max-width:80%; height:auto;">
+        <div class="menu-actions" style="margin-top: -80px;">
+          <button id="btn-level-info-ok" class="btn-img">
+            <img src="assets/space/ok.png" alt="OK">
+          </button>
+        </div>
       </div>
     </section>
 

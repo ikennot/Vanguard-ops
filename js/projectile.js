@@ -23,10 +23,17 @@ class ProjectileManager {
     speed,
     damage,
     owner,
-    color = "#ffd27f",
+    color = null,
     knockback = GAME_CONST.projectile.knockback
   ) {
     const norm = Math.hypot(direction.x, direction.y) || 1;
+    const projectileSize =
+      owner === "enemy" ? GAME_CONST.entity.projectile.enemy : GAME_CONST.entity.projectile.player;
+    const projectileColor =
+      color ||
+      (owner === "enemy"
+        ? GAME_CONST.entity.projectile.enemy.color
+        : GAME_CONST.entity.projectile.player.color);
     const projectile = this.entityManager
       .createEntity()
       .addTag("projectile")
@@ -39,12 +46,12 @@ class ProjectileManager {
           y: origin.y,
           vx: (direction.x / norm) * speed,
           vy: (direction.y / norm) * speed,
-          width: 8,
-          height: 4,
+          width: projectileSize.width,
+          height: projectileSize.height,
           gravity: 0
         })
       )
-      .addComponent("sprite", createSprite({ color }))
+      .addComponent("sprite", createSprite({ color: projectileColor }))
       .addComponent("hitbox", createHitbox())
       .addComponent("projectile", {
         life: GAME_CONST.projectile.life,

@@ -44,6 +44,7 @@ class HealthSystem {
     if (!health || !transform) return;
 
     health.health -= amount;
+    health.wasHitByPlayer = true;
     const healthRatio = Math.max(0, health.health) / GAME_CONST.enemy.maxHealth;
     const multiplier = healthRatio > 0.35 ? 2.6 : 4.2;
     health.knockbackVelocityX += knockback * multiplier;
@@ -76,7 +77,7 @@ class HealthSystem {
 
       if (transform.position.y > GAME_CONST.world.killY) {
         if (entity.hasTag("enemy")) {
-          if (!health.killCounted) {
+          if (!health.killCounted && health.wasHitByPlayer) {
             health.killCounted = true;
             eventBus.emit("entity:death", { tag: "enemy" });
           }

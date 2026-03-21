@@ -22,8 +22,8 @@ class Enemy {
           x,
           y,
           vx: -GAME_CONST.enemy.speed,
-          width: 40,
-          height: 60,
+          width: GAME_CONST.entity.enemy.width,
+          height: GAME_CONST.entity.enemy.height,
           gravity: GAME_CONST.enemy.gravity,
           facing: -1
         })
@@ -35,7 +35,8 @@ class Enemy {
           maxHealth: GAME_CONST.enemy.maxHealth,
           knockbackVelocityX: 0,
           knockbackTimer: 0,
-          killCounted: false
+          killCounted: false,
+          wasHitByPlayer: false
         })
       )
       .addComponent(
@@ -51,7 +52,7 @@ class Enemy {
       .addComponent(
         "sprite",
         createSprite({
-          color: "#c97474",
+          color: GAME_CONST.entity.enemy.color,
           gunColor: "#280e0e",
           gunWidth: 10,
           gunHeight: 4,
@@ -88,6 +89,12 @@ class Enemy {
     const transform = this.transform;
     const ai = this.ai;
     const health = this.health;
+    const sprite = this.entity.getComponent("sprite");
+
+    if (sprite) {
+      sprite.color =
+        health.knockbackTimer > 0 ? GAME_CONST.entity.enemy.flashColor : GAME_CONST.entity.enemy.color;
+    }
 
     const baseMoveX = ai.direction * GAME_CONST.enemy.speed * difficultyScale;
     transform.facing = ai.direction;
@@ -117,7 +124,7 @@ class Enemy {
         GAME_CONST.projectile.enemySpeed * (0.95 + difficultyScale * 0.08),
         GAME_CONST.enemy.damage + Math.floor((difficultyScale - 1) * 5),
         "enemy",
-        "#ff8f6c",
+        GAME_CONST.entity.projectile.enemy.color,
         260 * Math.sign(dx || 1)
       );
       ai.shootTimer =
@@ -157,11 +164,10 @@ class EnemyManager {
   }
 
   spawnFromPlatforms(platforms) {
-    if (this.totalSpawned >= GAME_CONST.objective.targetKills) return;
     if (!platforms.length) return;
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
     const x = platform.x + platform.width * (0.2 + Math.random() * 0.6);
-    const y = platform.y - 60;
+    const y = platform.y - GAME_CONST.entity.enemy.height;
     const patrolWidth = Math.max(120, platform.width - 20);
     this.enemies.push(new Enemy(this.entityManager, x, y, patrolWidth));
     this.totalSpawned += 1;
@@ -184,7 +190,7 @@ class EnemyManager {
     if (
       deps.gameState === "playing" &&
       this.enemies.length < this.maxActive &&
-      this.totalSpawned < GAME_CONST.objective.targetKills &&
+      this.kills < GAME_CONST.objective.targetKills &&
       this.spawnTimer <= 0
     ) {
       this.spawnFromPlatforms(deps.platforms);

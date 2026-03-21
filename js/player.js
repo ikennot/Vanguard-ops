@@ -52,8 +52,8 @@ class Player {
         createTransform({
           x: spawnPoint.x,
           y: spawnPoint.y,
-          width: 44,
-          height: 64,
+          width: GAME_CONST.entity.player.width,
+          height: GAME_CONST.entity.player.height,
           gravity: GAME_CONST.player.gravity,
           facing: 1
         })
@@ -81,13 +81,14 @@ class Player {
         "sprite",
         createSprite({
           type: "sprite",
-          assetKey: "player-soldier",
-          frameWidth: 64,
-          frameHeight: 64,
+          assetKey: "player-spartan",
+          frameWidth: 72,
+          frameHeight: 172,
           numFrames: 1,
-          animationSpeed: 0.1,
-          scale: 1.2,
-          color: "#6fc18d"
+          animationSpeed: 0.12,
+          scale: 0.82,
+          noFlip: true,
+          color: GAME_CONST.entity.player.color
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -273,9 +274,57 @@ class Player {
     else this.state = "idle";
 
     const sprite = this.entity.getComponent("sprite");
-    sprite.assetKey = "player-soldier";
-    sprite.numFrames = 1;
-    sprite.color = this.invulnTimer > 0 ? "rgba(153, 223, 232, 0.5)" : "transparent";
+    const isShooting = this.shootTimer > 0;
+    const facingRight = this.facing === 1;
+
+    sprite.assetKey = "player-spartan";
+    sprite.noFlip = true;
+    sprite.gunColor = null;
+    sprite.frameWidth = 72;
+    sprite.frameHeight = 172;
+    sprite.scale = 0.82;
+
+    let frameY = 0;
+    let leftFrameX = 3;
+    let rightFrameX = 3;
+    let numFrames = 1;
+    let animationSpeed = 0.12;
+
+    if (isShooting && (this.state === "idle" || this.state === "running")) {
+      frameY = 3;
+      leftFrameX = 2;
+      rightFrameX = 0;
+      numFrames = 2;
+      animationSpeed = 0.08;
+    } else if (this.state === "jetpack") {
+      frameY = 2;
+      leftFrameX = 2;
+      rightFrameX = 0;
+      numFrames = 2;
+      animationSpeed = 0.1;
+    } else if (this.state === "running" || this.state === "jumping" || this.state === "falling") {
+      frameY = 1;
+      leftFrameX = 4;
+      rightFrameX = 0;
+      numFrames = 4;
+      animationSpeed = 0.12;
+    } else {
+      // Idle row in this sheet is center-packed and not aligned to the frame grid.
+      // Use a full-body run frame as idle to avoid half-cropped rendering.
+      frameY = 1;
+      leftFrameX = 4;
+      rightFrameX = 0;
+      numFrames = 1;
+      animationSpeed = 0.12;
+    }
+
+    sprite.frameY = frameY;
+    sprite.frameX = facingRight ? rightFrameX : leftFrameX;
+    sprite.numFrames = numFrames;
+    sprite.animationSpeed = animationSpeed;
+    sprite.currentFrame %= numFrames;
+    sprite.color =
+      this.invulnTimer > 0 ? GAME_CONST.entity.player.flashColor : GAME_CONST.entity.player.color;
   }
 
   tryShoot(deps = {}) {
@@ -311,7 +360,7 @@ class Player {
       GAME_CONST.projectile.playerSpeed,
       34,
       "player",
-      "#ffd36f",
+      GAME_CONST.entity.projectile.player.color,
       GAME_CONST.projectile.knockback * this.facing
     );
     this.weapon.consumeAmmo(1);

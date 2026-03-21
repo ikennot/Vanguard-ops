@@ -23,6 +23,7 @@ const assetManifest = [
   { key: "player-main", src: "assets/sprites/player/main-char.png", type: "image" },
   { key: "player-shoot", src: "assets/sprites/player/char-shooting-animation.png", type: "image" },
   { key: "player-soldier", src: "assets/sprites/player/soldier.png", type: "image" },
+  { key: "player-spartan", src: "assets/sprites/player/spartan-sheet.png", type: "image" },
   { key: "enemy-sheet", src: "assets/sprites/enemies/enemies-sprite.png", type: "image" },
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },

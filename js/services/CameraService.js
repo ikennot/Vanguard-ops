@@ -14,6 +14,12 @@ class CameraService {
     this.y = 0;
   }
 
+  resetToTarget(target) {
+    this.reset();
+    if (!target) return;
+    this.follow(target);
+  }
+
   follow(target) {
     this.x = Utils.clamp(target.position.x - this.width * 0.35, 0, GAME_CONST.world.width - this.width);
     this.y = Utils.clamp(

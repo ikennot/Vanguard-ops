@@ -7,7 +7,8 @@ function createHealth({
   knockbackTimer = 0,
   controlLockTimer = 0,
   knockbackVelocityX = 0,
-  killCounted = false
+  killCounted = false,
+  wasHitByPlayer = false
 } = {}) {
   return {
     health,
@@ -18,7 +19,8 @@ function createHealth({
     knockbackTimer,
     controlLockTimer,
     knockbackVelocityX,
-    killCounted
+    killCounted,
+    wasHitByPlayer
   };
 }
 

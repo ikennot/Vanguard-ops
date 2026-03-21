@@ -5,21 +5,20 @@ class WeaponSystem {
     this.weapons = [...GAME_CONST.weapons.types];
     this.magSize = { ...GAME_CONST.weapons.magSize };
     this.reloadTime = { ...GAME_CONST.weapons.reloadTime };
-    this.infiniteAmmo = true;
+    this.infiniteAmmo = false;
     this.reset();
   }
 
   reset() {
-    this.current = "rifle";
+    this.current = "machinegun";
     this.reserveAmmo = { ...GAME_CONST.weapons.reserveAmmo };
     this.magAmmo = { pistol: 0, rifle: 0, smg: 0, machinegun: 0, rocket: 0 };
     this.reloading = false;
     this.reloadTimer = 0;
 
     for (const weapon of this.weapons) {
-      const loaded = Math.min(this.magSize[weapon], this.reserveAmmo[weapon]);
-      this.magAmmo[weapon] = loaded;
-      this.reserveAmmo[weapon] -= loaded;
+      this.magAmmo[weapon] = this.magSize[weapon];
+      this.reserveAmmo[weapon] = 0;
     }
   }
 
@@ -36,13 +35,14 @@ class WeaponSystem {
 
   addAmmo(amount = 5) {
     if (this.infiniteAmmo) return;
-    this.reserveAmmo[this.current] = (this.reserveAmmo[this.current] || 0) + amount;
-    if ((this.magAmmo[this.current] || 0) === 0 && !this.reloading) this.startReload();
+    this.magAmmo[this.current] = Math.min(
+      this.magSize[this.current],
+      (this.magAmmo[this.current] || 0) + amount
+    );
   }
 
   setRandomWeapon() {
-    const index = Math.floor(Math.random() * this.weapons.length);
-    this.current = this.weapons[index];
+    this.current = "machinegun";
     if ((this.magAmmo[this.current] || 0) === 0) this.startReload();
   }
 
@@ -53,7 +53,7 @@ class WeaponSystem {
 
   getReserveAmmo() {
     if (this.infiniteAmmo) return "INF";
-    return this.reserveAmmo[this.current] || 0;
+    return this.magSize[this.current];
   }
 
   startReload() {

@@ -105,17 +105,21 @@
     </section>
 
     <section id="menu-pause" class="overlay hidden panel full-screen">
-      <img src="assets/space/gamepaused.png" alt="Game Paused" class="pause-fullscreen-image" style="max-width:80%; height:auto;">
-      <div class="menu-actions pause-actions" style="position: absolute; bottom: 15%; display: flex; gap: 20px;">
-        <button id="btn-resume" class="btn-img">
-          <img src="assets/space/resume.png" alt="Resume">
-        </button>
-        <button id="btn-restart" class="btn-img">
-          <img src="assets/space/restart.png" alt="Restart">
-        </button>
-        <button id="btn-main" class="btn-img btn-return">
-          <img src="assets/space/returntomainmenu.png" alt="Return to Main Menu">
-        </button>
+      <div class="pause-card-wrapper">
+        <img src="assets/space/gamepaused.png" alt="Game Paused" class="pause-card-bg">
+        <div class="pause-actions">
+          <div class="pause-top-btns">
+            <button id="btn-resume" class="btn-img">
+              <img src="assets/space/resume.png" alt="Resume">
+            </button>
+            <button id="btn-restart" class="btn-img">
+              <img src="assets/space/restart.png" alt="Restart">
+            </button>
+          </div>
+          <button id="btn-main" class="btn-img btn-return">
+            <img src="assets/space/returntomainmenu.png" alt="Return to Main Menu">
+          </button>
+        </div>
       </div>
     </section>
 

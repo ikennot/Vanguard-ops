@@ -43,17 +43,20 @@ const assetManifest = [
   { key: "hud-life", src: "assets/sprites/ui/buttons/life.png", type: "image" },
   { key: "hud-bullet", src: "assets/sprites/ui/buttons/bullet.png", type: "image" },
   { key: "hud-gun", src: "assets/sprites/ui/buttons/gun.png", type: "image" },
-  { key: "platform-space", src: "assets/sprites/ui/buttons/spaceplatform.png", type: "image" },
+  { key: "platform-space", src: "assets/space/spaceplatform.png", type: "image" },
   { key: "platform-jungle-1", src: "assets/sprites/ui/buttons/jungleplatform_1_3.png", type: "image" },
   { key: "platform-jungle-2", src: "assets/sprites/ui/buttons/jungleplatform_2.png", type: "image" },
   { key: "platform-canyon", src: "assets/sprites/ui/buttons/lavaplatform.png", type: "image" },
-  { key: "bg-space", src: "assets/sprites/ui/buttons/terrainspace.jpg", type: "image" },
+  { key: "bg-space", src: "assets/space/terrainspace.jpg", type: "image" },
   { key: "bg-jungle", src: "assets/sprites/ui/buttons/terrainjungle.jpg", type: "image" },
   { key: "bg-canyon", src: "assets/sprites/ui/buttons/terrainlava.jpg", type: "image" },
-  { key: "info-space", src: "assets/sprites/ui/buttons/space map/level1_info.png", type: "image" },
+  { key: "info-space", src: "assets/space/gameinfo_space.png", type: "image" },
   { key: "info-jungle", src: "assets/sprites/ui/buttons/jungle map/level2_info.png", type: "image" },
   { key: "info-canyon", src: "assets/sprites/ui/buttons/labva map/gameinfo_lava.png", type: "image" },
-  { key: "pause-icon", src: "assets/sprites/ui/buttons/pause.jpg", type: "image" }
+  { key: "pause-bg-space", src: "assets/space/gamepaused.png", type: "image" },
+  { key: "win-bg-space", src: "assets/win1/win1.jpeg", type: "image" },
+  { key: "hud-bg-space", src: "assets/space/info.png", type: "image" },
+  { key: "pause-icon", src: "assets/space/pause.jpg", type: "image" }
 ];
 
 function bootstrap() {

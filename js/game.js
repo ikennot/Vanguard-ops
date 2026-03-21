@@ -216,7 +216,7 @@ class Game {
 
     const resourcesInfoImg = document.getElementById("resources-info-img");
     if (resourcesInfoImg) {
-      let infoAsset = `assets/sprites/ui/buttons/space map/level1_info.png`;
+      let infoAsset = `assets/space/gameinfo_space.png`;
       if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
       resourcesInfoImg.src = infoAsset;
@@ -225,13 +225,13 @@ class Game {
     const levelInfoImg = document.getElementById("level-info-img");
     const levelInfoBg = document.getElementById("level-info-bg");
     if (levelInfoImg) {
-      let infoAsset = `assets/sprites/ui/buttons/space map/level1_info.png`;
+      let infoAsset = `assets/space/gameinfo_space.png`;
       if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
-      let bgAsset = `assets/sprites/ui/buttons/terrainspace.jpg`;
+      let bgAsset = `assets/space/terrainspace.jpg`;
       if (this.currentMapId === "jungle") bgAsset = `assets/sprites/ui/buttons/terrainjungle.jpg`;
       if (this.currentMapId === "canyon") bgAsset = `assets/sprites/ui/buttons/terrainlava.jpg`;
       levelInfoBg.src = bgAsset;

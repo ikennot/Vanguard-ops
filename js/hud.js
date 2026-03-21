@@ -32,33 +32,38 @@ class Hud {
     ctx.fillText(`THREAT x${game.getDifficultyScale().toFixed(2)}`, 158, 58);
 
     // Bottom HUD - Lives and Ammo
-    const hudY = 604;
-    ctx.fillStyle = "rgba(230, 236, 240, 0.92)";
-    ctx.fillRect(18, hudY, 240, 86);
+    const hudY = 580;
+    const hudX = 20;
+    const hudW = 340;
+    const hudH = 120;
+    
+    const hudBg = game.currentMapId === "space" ? this.assets.get("hud-bg-space") : null;
+    if (hudBg) {
+      ctx.drawImage(hudBg, hudX, hudY, hudW, hudH);
+    } else {
+      ctx.fillStyle = "rgba(230, 236, 240, 0.92)";
+      ctx.fillRect(hudX, hudY, 240, 86);
+    }
     
     // Life Icon and Count
     const lifeIcon = this.assets.get("hud-life");
-    if (lifeIcon) {
-      ctx.drawImage(lifeIcon, 30, hudY + 12, 32, 32);
-    }
-    ctx.fillStyle = "#121a20";
-    ctx.font = "700 18px sans-serif";
-    ctx.fillText(String(game.player.lives), 72, hudY + 36);
+    const textBaseY = hudY + (hudBg ? 65 : 36);
+    const textBaseX = hudX + (hudBg ? 20 : 54);
 
-    // Ammo Icon and Count
-    const ammoIcon = this.assets.get("hud-bullet");
-    if (ammoIcon) {
-      ctx.drawImage(ammoIcon, 118, hudY + 12, 24, 24);
+    if (!hudBg && lifeIcon) {
+      ctx.drawImage(lifeIcon, hudX + 12, hudY + 12, 32, 32);
     }
-    ctx.fillText(`${game.player.weapon.getCurrentAmmo()}/${game.player.weapon.getReserveAmmo()}`, 150, hudY + 32);
+    ctx.fillStyle = hudBg ? "#000" : "#121a20";
+    ctx.font = "700 22px monospace";
+    ctx.fillText(String(game.player.lives), hudBg ? hudX + 100 : 72, textBaseY);
+
+    // Ammo Count
+    ctx.fillText(`${game.player.weapon.getCurrentAmmo()}/${game.player.weapon.getReserveAmmo()}`, hudBg ? hudX + 230 : 150, textBaseY);
     
-    // Weapon Icon
-    const gunIcon = this.assets.get("hud-gun");
-    if (gunIcon) {
-      ctx.drawImage(gunIcon, 118, hudY + 44, 32, 24);
-    }
+    // Weapon Label
     ctx.font = "600 14px sans-serif";
-    ctx.fillText(game.player.weapon.current.toUpperCase(), 158, hudY + 62);
+    ctx.fillText(game.player.weapon.current.toUpperCase(), hudBg ? hudX + 230 : 158, textBaseY + 25);
+
 
     if (game.player.weapon.isReloading()) {
       ctx.fillStyle = "#ff4444";

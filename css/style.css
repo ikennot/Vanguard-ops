@@ -348,7 +348,7 @@ button {
 .resources-fullscreen-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -359,19 +359,19 @@ button {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 15px; /* Dagdag space sa pagitan ng mga buttons/images */
   z-index: 10;
 }
 
-#screen-resources .menu-actions button img {
-  width: 140px;
-  height: auto;
+/* Target ang images sa loob */
+#screen-resources .menu-actions img {
+  width: 80px; /* Halimbawa ng laki */
+  transition: transform 0.2s; /* Optional: smooth transition */
 }
 
-#screen-resources .btn-return {
-  position: absolute;
-  bottom: -1rem;
-  right: -40vw;
+#screen-resources .menu-actions button img {
+  width: 200px;
+  height: auto;
 }
 
 #level-info-img {

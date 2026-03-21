@@ -172,7 +172,6 @@ class Game {
 
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
     document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
-    document.getElementById("btn-resources-back").addEventListener("click", () => this.setState("map-select"));
     document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
     document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
 
@@ -256,14 +255,6 @@ class Game {
         previewImg.src = `assets/sprites/environment/${assetName}_selectmap.jpg`;
         document.querySelector('.map-card-container').style.cursor = 'pointer';
       }
-    }
-
-    const resourcesInfoImg = document.getElementById("resources-info-img");
-    if (resourcesInfoImg) {
-      let infoAsset = `assets/space/gameinfo_space.png`;
-      if (this.currentMapId === "jungle") infoAsset = `assets/sprites/ui/buttons/jungle map/level2_info.png`;
-      if (this.currentMapId === "canyon") infoAsset = `assets/sprites/ui/buttons/labva map/gameinfo_lava.png`;
-      resourcesInfoImg.src = infoAsset;
     }
 
     const levelInfoImg = document.getElementById("level-info-img");

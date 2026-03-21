@@ -60,6 +60,7 @@ class RenderSystem {
           // Simple centering if frame size differs from transform size
           drawX -= (drawW - transform.width) / 2;
           drawY -= (drawH - transform.height); // Bottom align
+          drawY += sprite.offsetY || 0;
 
           if (sprite.flipX || (!sprite.noFlip && transform.facing === -1)) {
             ctx.scale(-1, 1);

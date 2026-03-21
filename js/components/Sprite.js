@@ -13,7 +13,8 @@ function createSprite({
   loop = true,
   scale = 1,
   flipX = false,
-  noFlip = false
+  noFlip = false,
+  offsetY = 0
 } = {}) {
   return {
     color,
@@ -31,6 +32,7 @@ function createSprite({
     scale,
     flipX,
     noFlip,
+    offsetY,
     gunColor: null
   };
 }

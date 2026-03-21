@@ -62,6 +62,7 @@ class Enemy {
           scale: 3,
           noFlip: true,
           color: GAME_CONST.entity.enemy.color,
+          offsetY: 24,
         })
       )
       .addComponent("hitbox", createHitbox());

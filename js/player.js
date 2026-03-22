@@ -12,6 +12,7 @@ class Player {
   constructor(entityManager) {
     this.entityManager = entityManager;
     this.maxJetpackFuel = 100;
+    this.maxLives = GAME_CONST.player.maxLives;
     this.weapon = new WeaponSystem();
     this.entity = null;
     this.jumpRequested = false;
@@ -62,8 +63,8 @@ class Player {
       .addComponent(
         "health",
         createHealth({
-          lives: GAME_CONST.player.maxLives,
-          maxLives: GAME_CONST.player.maxLives,
+          lives: this.maxLives,
+          maxLives: this.maxLives,
           invulnTimer: 0,
           controlLockTimer: 0,
           knockbackVelocityX: 0

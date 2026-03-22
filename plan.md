@@ -175,7 +175,7 @@ Remove the following local variables that belong to the old row/column system:
 
 ---
 
-## Files to Change
+## Files to Change (Player Sprite Animation)
 
 | File                          | Change                                           |
 |-------------------------------|--------------------------------------------------|
@@ -183,3 +183,174 @@ Remove the following local variables that belong to the old row/column system:
 | `js/player.js`                | Update initial `createSprite()` call             |
 | `js/player.js`                | Replace sprite state block in `player.update()`  |
 | `js/systems/RenderSystem.js`  | No changes needed                                |
+
+---
+
+# Resources Menu Implementation Plan
+
+## Context
+
+After the player clicks the **map OK button** (`btn-map-confirm`) on the map select screen,
+the game calls `this.setState("resources")` (see `js/game.js` line ~170), which reveals
+`#screen-resources`.
+
+Currently that screen only displays `assets/resources_menu/resources.png` as a background panel.
+The three bullet-pack images are never shown.
+
+All 5 assets in `assets/resources_menu/` must be used:
+
+```
+assets/resources_menu/
+  resources.png      — full-panel background/header image (already in HTML)
+  5xbullet.png       — "5 bullets" pickup option card
+  10xbullets.png     — "10 bullets" pickup option card
+  20xbullets.png     — "20 bullets" pickup option card
+  ok.png             — OK / confirm button (already in HTML)
+```
+
+---
+
+## Step 1 — Register new assets in `js/main.js`
+
+Add 3 entries to the `assetManifest` array (after the existing hud entries, around line 59):
+
+```js
+{ key: "res-5x-bullets",  src: "assets/resources_menu/5xbullet.png",   type: "image" },
+{ key: "res-10x-bullets", src: "assets/resources_menu/10xbullets.png",  type: "image" },
+{ key: "res-20x-bullets", src: "assets/resources_menu/20xbullets.png",  type: "image" },
+```
+
+> `resources.png` and `ok.png` are already loaded as `<img src="…">` tags directly in the HTML —
+> no need to add them to the manifest.
+
+---
+
+## Step 2 — Update `#screen-resources` HTML in `index.html`
+
+Replace the current `#screen-resources` section (lines ~73-82) with:
+
+```html
+<section id="screen-resources" class="overlay hidden panel full-screen">
+  <!-- Full-panel header / background graphic -->
+  <div class="resources-fullscreen-container">
+    <img
+      src="assets/resources_menu/resources.png"
+      id="resources-info-img"
+      alt="Game Resources"
+      class="resources-fullscreen-image"
+    >
+  </div>
+
+  <!-- Bullet-pack option cards -->
+  <div class="resources-options">
+    <button class="resource-option-btn" data-resource="5x">
+      <img src="assets/resources_menu/5xbullet.png"  alt="5 Bullets">
+    </button>
+    <button class="resource-option-btn" data-resource="10x">
+      <img src="assets/resources_menu/10xbullets.png" alt="10 Bullets">
+    </button>
+    <button class="resource-option-btn" data-resource="20x">
+      <img src="assets/resources_menu/20xbullets.png" alt="20 Bullets">
+    </button>
+  </div>
+
+  <!-- Confirm button -->
+  <div class="menu-actions">
+    <button id="btn-resources-ok" class="btn-img">
+      <img src="assets/resources_menu/ok.png" alt="OK">
+    </button>
+  </div>
+</section>
+```
+
+---
+
+## Step 3 — Handle resource selection in `js/game.js`
+
+Inside `bindUi()`, **before** the existing `btn-resources-ok` listener, add selection logic
+for the bullet-pack cards:
+
+```js
+// Resources menu — bullet pack selection
+document.querySelectorAll(".resource-option-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    // Deselect all, then mark chosen
+    document.querySelectorAll(".resource-option-btn").forEach((b) =>
+      b.classList.remove("selected")
+    );
+    btn.classList.add("selected");
+    this.selectedResource = btn.dataset.resource; // "5x" | "10x" | "20x"
+  });
+});
+```
+
+Then update the existing `btn-resources-ok` handler to pass the selection to the next screen
+(currently it just calls `this.setState("level-info")`). No change needed to the line unless
+you want to consume `this.selectedResource` — leave the state transition as-is for now:
+
+```js
+document.getElementById("btn-resources-ok").addEventListener("click", () => {
+  this.setState("level-info");   // existing behaviour — keep unchanged
+});
+```
+
+---
+
+## Step 4 — Add minimal CSS for the new layout
+
+In the project's CSS file (search for `.resources-fullscreen-container`), add below it:
+
+```css
+.resources-options {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.resource-option-btn {
+  background: none;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 4px;
+  transition: border-color 0.15s;
+}
+
+.resource-option-btn img {
+  display: block;
+  width: 160px;
+  height: auto;
+}
+
+.resource-option-btn.selected {
+  border-color: #ffe066;
+}
+```
+
+---
+
+## Flow After This Change
+
+```
+Map Select → [click OK / map card]
+  └─▶ screen-resources  (shows resources.png + bullet cards + ok.png button)
+        └─▶ [click OK]
+              └─▶ screen-level-info
+                    └─▶ [click OK] → startMission()
+```
+
+**No changes needed to `confirmMap` or `setState("resources")` in `js/game.js`** —
+the trigger already works correctly.
+
+---
+
+## Files to Change (Resources Menu)
+
+| File          | Change                                                          |
+|---------------|-----------------------------------------------------------------|
+| `js/main.js`  | Add 3 asset entries (`res-5x-bullets`, `res-10x-bullets`, `res-20x-bullets`) |
+| `index.html`  | Replace `#screen-resources` section to include bullet-pack cards |
+| `js/game.js`  | Add `.resource-option-btn` click listeners in `bindUi()`        |
+| CSS file      | Add `.resources-options` + `.resource-option-btn` styles        |

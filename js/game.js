@@ -173,7 +173,10 @@ class Game {
 
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
     document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
-    document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
+
+    document.getElementById("btn-resources-ok").addEventListener("click", () => {
+      this.setState("level-info");
+    });
     document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
 
     document.getElementById("btn-resume").addEventListener("click", () => this.setState("playing"));
@@ -203,9 +206,48 @@ class Game {
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
     else this.menu.show(nextState);
+    this.syncOverlayVisibility(nextState);
 
     gameState.set(nextState);
     eventBus.emit("game:state-changed", nextState, previousState);
+  }
+
+  syncOverlayVisibility(nextState) {
+    const overlayIds = [
+      "menu-main",
+      "menu-pause",
+      "menu-settings",
+      "screen-rules",
+      "screen-map-select",
+      "screen-resources",
+      "screen-victory",
+      "screen-defeat",
+      "screen-tutorial",
+      "screen-level-info"
+    ];
+    const stateToOverlay = {
+      main: "menu-main",
+      pause: "menu-pause",
+      settings: "menu-settings",
+      rules: "screen-rules",
+      "map-select": "screen-map-select",
+      resources: "screen-resources",
+      victory: "screen-victory",
+      defeat: "screen-defeat",
+      tutorial: "screen-tutorial",
+      "level-info": "screen-level-info"
+    };
+
+    for (const id of overlayIds) {
+      const element = document.getElementById(id);
+      if (element) element.classList.add("hidden");
+    }
+
+    const activeOverlayId = stateToOverlay[nextState];
+    if (!activeOverlayId) return;
+
+    const activeOverlay = document.getElementById(activeOverlayId);
+    if (activeOverlay) activeOverlay.classList.remove("hidden");
   }
 
   syncSettingsUI() {
@@ -258,13 +300,6 @@ class Game {
       }
     }
 
-    const resourcesInfoImg = document.getElementById("resources-info-img");
-    if (resourcesInfoImg) {
-      let infoAsset = `assets/space/gameinfo_space.png`;
-      if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
-      if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
-      resourcesInfoImg.src = infoAsset;
-    }
     const levelInfoImg = document.getElementById("level-info-img");
     const levelInfoBg = document.getElementById("level-info-bg");
     if (levelInfoImg) {

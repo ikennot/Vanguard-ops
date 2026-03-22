@@ -90,6 +90,13 @@ class Game {
   }
 
   bindUi() {
+    document.addEventListener("click", (e) => {
+      const button = e.target.closest("button");
+      if (button || e.target.id === "map-preview-img") {
+        this.audio.playSfx("sfx-button");
+      }
+    });
+
     document.getElementById("btn-start").addEventListener("click", () => {
       this.setState("rules");
     });
@@ -149,7 +156,10 @@ class Game {
       window.alert("Exit is disabled in browser mode. Close the tab to exit.");
     });
 
-    document.getElementById("btn-rules-ok").addEventListener("click", () => this.setState("map-select"));
+    document.getElementById("btn-rules-ok").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
+      this.setState("map-select");
+    });
     document.getElementById("btn-map-prev").addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -167,14 +177,21 @@ class Game {
         e.stopPropagation();
       }
       if (this.mapIndex === 0) {
+        this.audio.playSfx("sfx-button");
         this.setState("resources");
       }
     };
 
     document.getElementById("map-preview-img").addEventListener("click", confirmMap);
     document.getElementById("btn-map-confirm").addEventListener("click", confirmMap);
-    document.getElementById("btn-resources-ok").addEventListener("click", () => this.setState("level-info"));
-    document.getElementById("btn-level-info-ok").addEventListener("click", () => this.startMission());
+    document.getElementById("btn-resources-ok").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
+      this.setState("level-info");
+    });
+    document.getElementById("btn-level-info-ok").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
+      this.startMission();
+    });
 
     document.getElementById("btn-resume").addEventListener("click", () => this.setState("playing"));
     document.getElementById("btn-restart").addEventListener("click", () => this.restartMission());
@@ -203,6 +220,17 @@ class Game {
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
     else this.menu.show(nextState);
+
+    // Audio state transitions
+    if (["main", "settings", "rules", "tutorial", "map-select", "resources", "level-info"].includes(nextState)) {
+      this.audio.playBgm("bgm-opening");
+    } else if (["playing", "pause"].includes(nextState)) {
+      this.audio.playBgm("bgm-bg");
+    } else if (nextState === "victory") {
+      this.audio.playBgm("bgm-victory");
+    } else if (nextState === "defeat") {
+      this.audio.playBgm("bgm-lose");
+    }
 
     gameState.set(nextState);
     eventBus.emit("game:state-changed", nextState, previousState);
@@ -258,13 +286,6 @@ class Game {
       }
     }
 
-    const resourcesInfoImg = document.getElementById("resources-info-img");
-    if (resourcesInfoImg) {
-      let infoAsset = `assets/space/gameinfo_space.png`;
-      if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
-      if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
-      resourcesInfoImg.src = infoAsset;
-    }
     const levelInfoImg = document.getElementById("level-info-img");
     const levelInfoBg = document.getElementById("level-info-bg");
     if (levelInfoImg) {

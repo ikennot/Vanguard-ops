@@ -83,6 +83,8 @@ const assetManifest = [
   { key: "sfx-laser-gun", src: "assets/audio/sfx/laser-gun.mp3", type: "audio" },
   { key: "bgm-lose", src: "assets/audio/sfx/lose.mp3", type: "audio" },
   { key: "bgm-opening", src: "assets/audio/sfx/opening.mp3", type: "audio" },
+  { key: "bgm-jungle", src: "assets/audio/sfx/jungle.mp3", type: "audio" },
+  { key: "bgm-volcano", src: "assets/audio/sfx/volcano.mp3", type: "audio" },
   { key: "sfx-respawn-fall", src: "assets/audio/sfx/respawn-fall.mp3", type: "audio" },
   { key: "bgm-victory", src: "assets/audio/sfx/victory.mp3", type: "audio" }
 ];

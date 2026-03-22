@@ -58,6 +58,7 @@ class Game {
     this.kills = 0;
     this.missionTime = 0;
     this.level = 0;
+    this.livesAtStartOfLevel = 3; // Default starting lives
     this.maps = ["space", "jungle", "canyon"];
     this.unlockedMaps = ["space"];
     this.mapIndex = 0;
@@ -269,7 +270,13 @@ class Game {
     if (["main", "settings", "rules", "tutorial", "map-select", "resources", "level-info"].includes(nextState)) {
       this.audio.playBgm("bgm-opening");
     } else if (["playing", "pause"].includes(nextState)) {
-      this.audio.playBgm("bgm-bg");
+      if (this.currentMapId === "jungle") {
+        this.audio.playBgm("bgm-jungle");
+      } else if (this.currentMapId === "canyon") {
+        this.audio.playBgm("bgm-volcano");
+      } else {
+        this.audio.playBgm("bgm-bg");
+      }
     } else if (nextState === "victory") {
       this.audio.playBgm("bgm-victory");
     } else if (nextState === "defeat") {
@@ -348,6 +355,7 @@ class Game {
   }
 
   startMission() {
+    this.livesAtStartOfLevel = this.player.lives;
     this.initializeMission();
     this.setState("playing");
   }
@@ -370,10 +378,8 @@ class Game {
   }
 
   restartMission() {
-    this.level = 0;
-    this.mapIndex = 0;
-    this.currentMapId = this.maps[this.mapIndex];
-    this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    // Restore lives from the start of the current failed level
+    this.player.lives = this.livesAtStartOfLevel;
     this.initializeMission();
     this.setState("playing");
   }
@@ -393,7 +399,7 @@ class Game {
 
   applyUpgrade(id) {
     if (id === "upgrade-life") {
-      this.player.maxLives += 2;
+      this.player.maxLives += 1;
       this.player.lives = this.player.maxLives;
     } else if (id === "upgrade-jetpack") {
       this.player.maxJetpackFuel += 50;
@@ -424,14 +430,17 @@ class Game {
   }
 
   advanceLevel() {
-    const savedLives = this.player.lives;
     this.level += 1;
     this.mapIndex += 1;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
     this.unlockMap(this.currentMapId);
+
+    // Save lives count at the start of this new level
+    this.livesAtStartOfLevel = this.player.lives;
+
     this.initializeMission();
-    this.player.lives = savedLives;
+    this.player.lives = this.livesAtStartOfLevel;
     this.setState("playing");
   }
 

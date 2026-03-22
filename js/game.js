@@ -54,6 +54,7 @@ class Game {
     this.renderSystem = services.renderSystem || new RenderSystem();
 
     this.state = "main";
+    this.selectedUpgrade = null;
     this.kills = 0;
     this.missionTime = 0;
     this.level = 0;
@@ -65,7 +66,7 @@ class Game {
 
     this.bindUi();
     this.bindEvents();
-    this.menu.show("main");
+    this.setState("main");
     this.updateMapPreview();
     gameState.set(this.state);
     eventBus.emit("game:scoreChanged", {
@@ -205,8 +206,34 @@ class Game {
         this.backToMainMenu();
       }
     });
+
+    const upgradeAmmo = document.getElementById("upgrade-ammo");
+    const upgradeJetpack = document.getElementById("upgrade-jetpack");
+    const upgradeLife = document.getElementById("upgrade-life");
+
+    const selectUpgrade = (id) => {
+      this.selectedUpgrade = id;
+      [upgradeAmmo, upgradeJetpack, upgradeLife].forEach((el) => {
+        if (el) el.classList.remove("selected");
+      });
+      const selectedEl = document.getElementById(id);
+      if (selectedEl) selectedEl.classList.add("selected");
+      this.audio.playSfx("sfx-button");
+    };
+
+    if (upgradeAmmo) upgradeAmmo.addEventListener("click", () => selectUpgrade("upgrade-ammo"));
+    if (upgradeJetpack) upgradeJetpack.addEventListener("click", () => selectUpgrade("upgrade-jetpack"));
+    if (upgradeLife) upgradeLife.addEventListener("click", () => selectUpgrade("upgrade-life"));
+
     document.getElementById("btn-upgrade-ok").addEventListener("click", () => {
       this.audio.playSfx("sfx-button");
+      if (this.selectedUpgrade) {
+        this.applyUpgrade(this.selectedUpgrade);
+        this.selectedUpgrade = null;
+        [upgradeAmmo, upgradeJetpack, upgradeLife].forEach((el) => {
+          if (el) el.classList.remove("selected");
+        });
+      }
       this.advanceLevel();
     });
     document.getElementById("btn-victory-back").addEventListener("click", () => this.setState("map-select"));
@@ -228,6 +255,12 @@ class Game {
   setState(nextState) {
     const previousState = this.state;
     this.state = nextState;
+    
+    // Stop any lingering SFX when changing screens
+    if (this.audio) {
+      this.audio.stopAllSfx();
+    }
+
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
     else this.menu.show(nextState);
@@ -355,6 +388,19 @@ class Game {
   unlockMap(mapId) {
     if (!this.unlockedMaps.includes(mapId)) {
       this.unlockedMaps.push(mapId);
+    }
+  }
+
+  applyUpgrade(id) {
+    if (id === "upgrade-life") {
+      this.player.maxLives += 2;
+      this.player.lives = this.player.maxLives;
+    } else if (id === "upgrade-jetpack") {
+      this.player.maxJetpackFuel += 50;
+      this.player.jetpackFuel = this.player.maxJetpackFuel;
+    } else if (id === "upgrade-ammo") {
+      this.player.weapon.magSize.machinegun += 20;
+      this.player.weapon.magAmmo.machinegun = this.player.weapon.magSize.machinegun;
     }
   }
 

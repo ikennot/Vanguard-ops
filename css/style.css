@@ -735,3 +735,5 @@ button {
   display: none !important;
 }
 
+.upgrade-card:hover { transform: scale(1.05); }
+.upgrade-card.selected { border-color: #f2d17a !important; background: rgba(242, 209, 122, 0.2); transform: scale(1.05); }

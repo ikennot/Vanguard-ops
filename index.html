@@ -168,9 +168,39 @@
 
     <section id="screen-upgrade" class="overlay hidden panel full-screen">
       <div class="upgrade-fullscreen-container">
+        <!-- Background -->
         <img src="assets/sprites/ui/upgrade.png" alt="Upgrades available" class="upgrade-fullscreen-image">
+        
+        <!-- Upgrades Content Overlay -->
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; z-index: 5; margin-top: 400px;">
+          
+          <!-- Upgrade Option: Ammo -->
+          <div id="upgrade-ammo" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
+            <img src="assets/sprites/ui/ammo.png" alt="Ammo Upgrade" style="width: 300px; height: auto;">
+            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+              MAX AMMO
+            </div>
+          </div>
+
+          <!-- Upgrade Option: Jetpack -->
+          <div id="upgrade-jetpack" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
+            <img src="assets/sprites/ui/jetpack.png" alt="Jetpack Upgrade" style="width: 300px; height: auto;">
+            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+              JETPACK
+            </div>
+          </div>
+
+          <!-- Upgrade Option: Life-up -->
+          <div id="upgrade-life" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
+            <img src="assets/sprites/ui/life-up.png" alt="Life Up" style="width: 300px; height: auto;">
+            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+              EXTRA LIFE
+            </div>
+          </div>
+          
+        </div>
       </div>
-      <div class="menu-actions">
+      <div class="menu-actions" style="z-index: 10;">
         <button id="btn-upgrade-ok" class="btn-img">
           <img src="assets/sprites/ui/buttons/ok.png" alt="OK">
         </button>

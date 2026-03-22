@@ -11,6 +11,7 @@ class AudioService {
     this.lastEnemyHitAt = 0;
     this.currentBgm = null;
     this.bgmName = null;
+    this.activeSfx = [];
     
     eventBus.on("enemy:hit", () => {
       const now = performance.now();
@@ -95,6 +96,14 @@ class AudioService {
     this.bgmName = null;
   }
 
+  stopAllSfx() {
+    this.activeSfx.forEach(sfx => {
+      sfx.pause();
+      sfx.currentTime = 0;
+    });
+    this.activeSfx = [];
+  }
+
   playSfx(name) {
     if (this.sfxVolume <= 0) return;
     const context = this.getAudioContext();
@@ -126,6 +135,10 @@ class AudioService {
       if (audioAsset) {
         const soundInstance = audioAsset.cloneNode();
         soundInstance.volume = this.sfxVolume;
+        this.activeSfx.push(soundInstance);
+        soundInstance.onended = () => {
+          this.activeSfx = this.activeSfx.filter(s => s !== soundInstance);
+        };
         soundInstance.play().catch(e => console.warn(`Failed to play SFX ${name}:`, e));
       }
     }

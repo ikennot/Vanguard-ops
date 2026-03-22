@@ -70,7 +70,7 @@ class Game {
     gameState.set(this.state);
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: GAME_CONST.objective.targetKills
+      target: this.currentMapData.targetKills
     });
   }
 
@@ -323,7 +323,7 @@ class Game {
     this.missionTime = 0;
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: GAME_CONST.objective.targetKills
+      target: this.currentMapData.targetKills
     });
     this.enemies.reset(this.platforms.platforms);
     this.projectiles.clear();
@@ -358,9 +358,9 @@ class Game {
     this.kills += 1;
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: GAME_CONST.objective.targetKills
+      target: this.currentMapData.targetKills
     });
-    if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
+    if (this.kills >= this.currentMapData.targetKills && this.state === "playing") {
       // Show victory screen instead of auto-advancing
       this.updateScoreboard("victory", "Victory");
       this.setState("victory");
@@ -389,6 +389,13 @@ class Game {
     return 1 + this.level * 2.5;
   }
 
+  getGameplayScale() {
+    const raw = this.getDifficultyScale();
+    // Square root dampening so 15x threat becomes ~3.8x difficulty
+    // 1.5x threat remains ~1.2x
+    return Math.sqrt(raw);
+  }
+
   triggerDefeat() {
     if (this.state !== "playing") return;
     this.updateScoreboard("defeat", "Defeat");
@@ -414,10 +421,10 @@ class Game {
     const scoreboard = document.getElementById(elementId);
     scoreboard.innerHTML = [
       `Map: ${this.currentMapData.name}`,
-      `Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`,
+      `Kills: ${this.kills}/${this.currentMapData.targetKills}`,
       `Lives: ${this.player.lives}`,
       `Time: ${this.getFormattedTime()}`,
-      `Difficulty: x${this.getDifficultyScale().toFixed(2)}`
+      `Threat: x${this.getDifficultyScale().toFixed(2)}`
     ].join("<br>");
   }
 
@@ -447,7 +454,8 @@ class Game {
       projectiles: this.projectiles,
       gameState: this.state,
       platforms: this.platforms.platforms,
-      knockbackMultiplier: this.getEnemyKnockbackMultiplier()
+      knockbackMultiplier: this.getEnemyKnockbackMultiplier(),
+      difficultyScale: this.getGameplayScale()
     });
 
     this.physicsSystem.update(this.entityManager, deltaTime);

@@ -54,12 +54,12 @@ export const GAME_CONST = {
     reloadTime: { pistol: 0.9, rifle: 1.05, smg: 1.1, machinegun: 1.25, rocket: 1.4 },
     reserveAmmo: { pistol: 36, rifle: 80, smg: 120, machinegun: 160, rocket: 10 }
   },
-  objective: { targetKills: 15 },
   controls: { left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", jetpack: "Space", pause: "Escape" },
   maps: {
     space: {
       id: "space",
       name: "Space",
+      targetKills: 15,
       description: "Balanced open platforms over a hot star surface.",
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
       spawn: { x: 620, y: 288 },
@@ -74,6 +74,7 @@ export const GAME_CONST = {
     jungle: {
       id: "jungle",
       name: "Jungle",
+      targetKills: 20,
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
       spawn: { x: 1100, y: 200 },
@@ -87,6 +88,7 @@ export const GAME_CONST = {
     canyon: {
       id: "canyon",
       name: "Canyon",
+      targetKills: 25,
       description: "Narrow central arena with high-risk edge play.",
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
       spawn: { x: 690, y: 258 },

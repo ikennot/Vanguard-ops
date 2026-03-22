@@ -6,7 +6,7 @@ class Hud {
   constructor() {
     this.pauseButtonRect = { x: 1235, y: 0, width: 44, height: 44 };
     this.kills = 0;
-    this.killTarget = GAME_CONST.objective.targetKills;
+    this.killTarget = 15;
     eventBus.on("game:scoreChanged", ({ kills, target }) => {
       this.kills = kills;
       this.killTarget = target;

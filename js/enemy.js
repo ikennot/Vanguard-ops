@@ -169,16 +169,11 @@ class EnemyManager {
     this.maxActive = 4;
     this.totalSpawned = 0;
     this.kills = 0;
-    eventBus.on("game:scoreChanged", ({ kills }) => {
+    this.killTarget = 15;
+    eventBus.on("game:scoreChanged", ({ kills, target }) => {
       this.kills = kills;
+      this.killTarget = target;
     });
-  }
-
-  getDifficultyScale() {
-    const step = GAME_CONST.enemy.difficultyStepEveryKills;
-    const maxStep = GAME_CONST.enemy.maxDifficultyStep;
-    const difficultyStep = Math.min(maxStep, Math.floor(this.kills / step));
-    return 1 + difficultyStep * 0.15;
   }
 
   reset(platforms) {
@@ -203,7 +198,7 @@ class EnemyManager {
 
   update(deltaTime, deps) {
     this.spawnTimer -= deltaTime;
-    const difficultyScale = this.getDifficultyScale();
+    const difficultyScale = deps.difficultyScale || 1.0;
 
     for (const enemy of this.enemies) {
       if (enemy.entity.markedForRemoval) continue;
@@ -218,7 +213,7 @@ class EnemyManager {
     if (
       deps.gameState === "playing" &&
       this.enemies.length < this.maxActive &&
-      this.kills < GAME_CONST.objective.targetKills &&
+      this.kills < this.killTarget &&
       this.spawnTimer <= 0
     ) {
       this.spawnFromPlatforms(deps.platforms);

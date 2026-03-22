@@ -109,6 +109,32 @@ class RenderSystem {
       if (sprite.gunColor) {
         this.drawGun(ctx, posX, posY, transform.width, transform.height, transform.facing || 1, sprite);
       }
+
+      // Fuel Indicator above player's head
+      const playerState = entity.getComponent("playerState");
+      if (playerState && playerState.jetpackFuel !== undefined) {
+        const barWidth = 40;
+        const barHeight = 4;
+        const barX = posX + (transform.width - barWidth) / 2;
+        const barY = posY - 20;
+        const fuelRatio = playerState.jetpackFuel / 100;
+
+        // Background (gray)
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // Foreground (colored based on fuel level)
+        if (fuelRatio > 0.5) ctx.fillStyle = "#00ff88"; // Green
+        else if (fuelRatio > 0.25) ctx.fillStyle = "#ffcc00"; // Orange/Yellow
+        else ctx.fillStyle = "#ff4444"; // Red
+
+        ctx.fillRect(barX, barY, barWidth * fuelRatio, barHeight);
+        
+        // Border
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+      }
     }
   }
 

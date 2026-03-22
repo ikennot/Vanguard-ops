@@ -238,6 +238,11 @@ class Player {
 
     let jetpackActive = false;
     if (inputService.isDown(GAME_CONST.controls.jetpack) && this.jetpackFuel > 0) {
+      // If we are on the ground, give a small nudge to break contact
+      if (this.onGround) {
+        this.velocity.y = -10; // Tiny upward nudge just to break ground contact
+        this.onGround = false;
+      }
       this.velocity.y -= GAME_CONST.player.jetpackForce * deltaTime;
       this.jetpackFuel = Math.max(0, this.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
       jetpackActive = true;

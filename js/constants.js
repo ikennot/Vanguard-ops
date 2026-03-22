@@ -25,7 +25,7 @@ export const GAME_CONST = {
     speed: 260,
     jumpForce: -560,
     gravity: 1350,
-    jetpackForce: 980,
+    jetpackForce: 2000,
     jetpackDrain: 30,
     jetpackRegen: 18,
     shootCooldown: 0.16,

@@ -81,6 +81,10 @@ class HealthSystem {
             health.killCounted = true;
             eventBus.emit("entity:death", { tag: "enemy" });
           }
+          const audio = this.audio || serviceLocator.get("audio");
+          if (audio && !entity.markedForRemoval) {
+            audio.playSfx("sfx-enemy-fall");
+          }
           entity.markedForRemoval = true;
         }
 

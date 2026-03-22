@@ -47,9 +47,6 @@ class RenderSystem {
       if (shouldDrawSprite) {
         const image = assets.getImage(sprite.assetKey);
         if (image) {
-          const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
-          const frameY = sprite.frameY * sprite.frameHeight;
-
           ctx.save();
           
           let drawX = posX;
@@ -57,24 +54,49 @@ class RenderSystem {
           let drawW = sprite.frameWidth * sprite.scale;
           let drawH = sprite.frameHeight * sprite.scale;
 
-          // Simple centering if frame size differs from transform size
-          drawX -= (drawW - transform.width) / 2;
-          drawY -= (drawH - transform.height); // Bottom align
-          drawY += sprite.offsetY || 0;
-
-          if (sprite.flipX || (!sprite.noFlip && transform.facing === -1)) {
-            ctx.scale(-1, 1);
-            ctx.drawImage(
-              image,
-              frameX, frameY, sprite.frameWidth, sprite.frameHeight,
-              -drawX - drawW, drawY, drawW, drawH
-            );
+          if (sprite.assetKey && (sprite.assetKey.includes("pickup-5x") || sprite.assetKey.includes("pickup-10x") || sprite.assetKey.includes("pickup-20x"))) {
+             // For single images, use the pre-calculated frameWidth/height and scale
+             drawW = sprite.frameWidth * sprite.scale;
+             drawH = sprite.frameHeight * sprite.scale;
+             drawX = posX - (drawW - transform.width) / 2;
+             
+             // --- EDIT THIS TO MOVE AMMO UP OR DOWN ---
+             // Negative numbers move it UP (e.g., -10)
+             // Positive numbers move it DOWN (e.g., 5)
+             const pickupYOffset = 30; 
+             
+             // Bottom align so it touches the platform, plus the offset
+             drawY = posY - (drawH - transform.height) + pickupYOffset;
+             
+             if (sprite.flipX || (!sprite.noFlip && transform.facing === -1)) {
+               ctx.scale(-1, 1);
+               ctx.drawImage(image, 0, 0, image.naturalWidth || image.width, image.naturalHeight || image.height, -drawX - drawW, drawY, drawW, drawH);
+             } else {
+               ctx.drawImage(image, 0, 0, image.naturalWidth || image.width, image.naturalHeight || image.height, drawX, drawY, drawW, drawH);
+             }
           } else {
-            ctx.drawImage(
-              image,
-              frameX, frameY, sprite.frameWidth, sprite.frameHeight,
-              drawX, drawY, drawW, drawH
-            );
+            const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
+            const frameY = sprite.frameY * sprite.frameHeight;
+
+            // Simple centering if frame size differs from transform size
+            drawX -= (drawW - transform.width) / 2;
+            drawY -= (drawH - transform.height); // Bottom align
+            drawY += sprite.offsetY || 0;
+
+            if (sprite.flipX || (!sprite.noFlip && transform.facing === -1)) {
+              ctx.scale(-1, 1);
+              ctx.drawImage(
+                image,
+                frameX, frameY, sprite.frameWidth, sprite.frameHeight,
+                -drawX - drawW, drawY, drawW, drawH
+              );
+            } else {
+              ctx.drawImage(
+                image,
+                frameX, frameY, sprite.frameWidth, sprite.frameHeight,
+                drawX, drawY, drawW, drawH
+              );
+            }
           }
           ctx.restore();
         } else {

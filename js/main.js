@@ -71,7 +71,20 @@ const assetManifest = [
   { key: "win-bg-space", src: "assets/win1/win1.jpeg", type: "image" },
   { key: "hud-bg-space", src: "assets/space/info.png", type: "image" },
   { key: "hud-bg-lava", src: "assets/lava/info.png", type: "image" },
-  { key: "pause-icon", src: "assets/space/pause.jpg", type: "image" }
+  { key: "pause-icon", src: "assets/space/pause.jpg", type: "image" },
+  { key: "pickup-5x", src: "assets/resources_menu/pickup-5x.png", type: "image" },
+  { key: "pickup-10x", src: "assets/resources_menu/pickup-10x.png", type: "image" },
+  { key: "pickup-20x", src: "assets/resources_menu/pickup-20x.png", type: "image" },
+  { key: "bgm-bg", src: "assets/audio/sfx/bg.mp3", type: "audio" },
+  { key: "sfx-button", src: "assets/audio/sfx/button.mp3", type: "audio" },
+  { key: "sfx-enemy-fall", src: "assets/audio/sfx/enemy-fall.mp3", type: "audio" },
+  { key: "sfx-gun", src: "assets/audio/sfx/gun.mp3", type: "audio" },
+  { key: "sfx-jet-pack", src: "assets/audio/sfx/jet-pack.mp3", type: "audio" },
+  { key: "sfx-laser-gun", src: "assets/audio/sfx/laser-gun.mp3", type: "audio" },
+  { key: "bgm-lose", src: "assets/audio/sfx/lose.mp3", type: "audio" },
+  { key: "bgm-opening", src: "assets/audio/sfx/opening.mp3", type: "audio" },
+  { key: "sfx-respawn-fall", src: "assets/audio/sfx/respawn-fall.mp3", type: "audio" },
+  { key: "bgm-victory", src: "assets/audio/sfx/victory.mp3", type: "audio" }
 ];
 
 function bootstrap() {
@@ -113,25 +126,43 @@ function bootstrap() {
     serviceLocator.register(key, instance);
   }
 
-  assets.preload(assetManifest).catch(() => null);
-
   serviceLocator.register("eventBus", eventBus);
   serviceLocator.register("gameState", gameState);
 
-  const game = new Game(canvas, services);
-  serviceLocator.register("game", game);
+  assets.preload(assetManifest).then(() => {
+    console.log("Assets preloaded successfully.");
+    const game = new Game(canvas, services);
+    serviceLocator.register("game", game);
 
-  let last = performance.now();
+    let last = performance.now();
 
-  function loop(now) {
-    const deltaTime = Math.min(0.033, (now - last) / 1000);
-    last = now;
-    game.update(deltaTime);
-    game.render();
+    function loop(now) {
+      const deltaTime = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      game.update(deltaTime);
+      game.render();
+      requestAnimationFrame(loop);
+    }
+
     requestAnimationFrame(loop);
-  }
+  }).catch((e) => {
+    console.error("Failed to preload assets", e);
+    // Start game even if some assets fail to load
+    const game = new Game(canvas, services);
+    serviceLocator.register("game", game);
 
-  requestAnimationFrame(loop);
+    let last = performance.now();
+
+    function loop(now) {
+      const deltaTime = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      game.update(deltaTime);
+      game.render();
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+  });
 }
 
 bootstrap();

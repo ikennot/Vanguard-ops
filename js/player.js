@@ -16,6 +16,7 @@ class Player {
     this.entity = null;
     this.jumpRequested = false;
     this.shootRequested = false;
+    this.lastJetpackSfxAt = 0;
     eventBus.on("input:jump", () => {
       if (gameState.get() !== "playing") return;
       this.jumpRequested = true;
@@ -241,6 +242,14 @@ class Player {
       this.jetpackFuel = Math.max(0, this.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
       jetpackActive = true;
 
+      if (audioService) {
+        const now = performance.now();
+        if (now - this.lastJetpackSfxAt > 150) {
+          audioService.playSfx("sfx-jet-pack");
+          this.lastJetpackSfxAt = now;
+        }
+      }
+
       if (audioService?.particlesEnabled && particleSystem) {
         particleSystem.spawn(
           { x: this.position.x + this.width * 0.5, y: this.position.y + this.height },
@@ -374,6 +383,11 @@ class Player {
     );
     this.weapon.consumeAmmo(1);
     this.shootTimer = GAME_CONST.player.shootCooldown;
+    
+    if (audioService) {
+      audioService.playSfx("sfx-gun");
+    }
+    
     if (audioService?.particlesEnabled && particleSystem) {
       particleSystem.spawn(
         { x: this.position.x + this.width * 0.5 + this.facing * 14, y: this.position.y + 26 },
@@ -386,6 +400,12 @@ class Player {
   loseLife() {
     this.lives = Math.max(0, this.lives - 1);
     this.weapon.reset();
+
+    const audioService = serviceLocator.get("audio");
+    if (audioService) {
+      audioService.playSfx("sfx-respawn-fall");
+    }
+
     if (this.lives <= 0) {
       eventBus.emit("player:died", { lives: this.lives });
       return;

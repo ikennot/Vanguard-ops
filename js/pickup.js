@@ -19,6 +19,43 @@ class PickupManager {
   }
 
   createPickup(type, x, y, sourcePlatform) {
+    let assetKey = "pickup-sheet";
+    let frameX = 0;
+    let frameWidth = 32;
+    let frameHeight = 32;
+    let scale = 1;
+    
+    // Default physical dimensions in game world
+    let physicalWidth = GAME_CONST.entity.pickup.width;
+    let physicalHeight = GAME_CONST.entity.pickup.height;
+    
+    // Add custom sprite based on pickup type using the images you mentioned
+    // Adjust scaling based on the ammo pack size
+    switch(type) {
+      case "weapon-crate": // 20x bullets
+        assetKey = "pickup-20x";
+        frameWidth = 552;
+        frameHeight = 452;
+        scale = 80 / 552; // Largest
+        break;
+      case "ammo-medium": // 10x bullets
+        assetKey = "pickup-10x";
+        frameWidth = 547;
+        frameHeight = 456;
+        scale = 70 / 547; // Medium
+        break;
+      case "ammo-small": // 5x bullets
+        assetKey = "pickup-5x";
+        frameWidth = 496;
+        frameHeight = 503;
+        scale = 60 / 496; // Smallest (60px wide)
+        break;
+      case "fuel":
+        assetKey = "pickup-sheet"; // Fuel retains the old sprite sheet (if any) or fallback to colored rect
+        frameX = 1;
+        break;
+    }
+
     const pickup = this.entityManager
       .createEntity()
       .addTag("pickup")
@@ -28,12 +65,21 @@ class PickupManager {
         createTransform({
           x,
           y,
-          width: GAME_CONST.entity.pickup.width,
-          height: GAME_CONST.entity.pickup.height,
+          width: physicalWidth,
+          height: physicalHeight,
           gravity: 0
         })
       )
-      .addComponent("sprite", createSprite({ color: GAME_CONST.entity.pickup.color }))
+      .addComponent("sprite", createSprite({ 
+        type: "sprite",
+        assetKey: assetKey,
+        frameWidth: frameWidth,
+        frameHeight: frameHeight,
+        frameX: frameX,
+        numFrames: 1,
+        scale: scale,
+        color: GAME_CONST.entity.pickup.color 
+      }))
       .addComponent("hitbox", createHitbox())
       .addComponent("pickup", { type, sourcePlatform });
 
@@ -44,13 +90,12 @@ class PickupManager {
     this.clear();
 
     const ammoTypes = ["weapon-crate", "ammo-small", "ammo-medium"];
-    const types = [...ammoTypes, "fuel"];
     let ammoSpawned = false;
 
     for (const platform of platforms) {
       if (Math.random() < 0.65) {
-        const type = types[Math.floor(Math.random() * types.length)];
-        if (ammoTypes.includes(type)) ammoSpawned = true;
+        const type = ammoTypes[Math.floor(Math.random() * ammoTypes.length)];
+        ammoSpawned = true;
         this.createPickup(
           type,
           platform.x + platform.width * 0.5 - GAME_CONST.entity.pickup.width * 0.5,
@@ -128,13 +173,13 @@ class PickupManager {
     switch (type) {
       case "weapon-crate":
         player.weapon.setRandomWeapon();
-        player.weapon.addAmmo(24);
+        player.weapon.addAmmo(20);
         break;
       case "ammo-small":
-        player.weapon.addAmmo(8);
+        player.weapon.addAmmo(5);
         break;
       case "ammo-medium":
-        player.weapon.addAmmo(16);
+        player.weapon.addAmmo(10);
         break;
       case "fuel":
         player.jetpackFuel = Math.min(player.maxJetpackFuel, player.jetpackFuel + 40);

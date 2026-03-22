@@ -5,6 +5,7 @@ import { createHealth } from "./components/Health.js";
 import { createSprite } from "./components/Sprite.js";
 import { createHitbox } from "./components/Hitbox.js";
 import eventBus from "./core/EventBus.js";
+import serviceLocator from "./core/ServiceLocator.js";
 
 class Enemy {
   constructor(entityManager, x, y, patrolWidth = 180, type = "rival") {
@@ -147,6 +148,12 @@ class Enemy {
         GAME_CONST.entity.projectile.enemy.color,
         650 * (deps.knockbackMultiplier || 1) * Math.sign(dx || 1)
       );
+
+      const audioService = serviceLocator.get("audio");
+      if (audioService) {
+        audioService.playSfx("sfx-laser-gun");
+      }
+
       ai.shootTimer =
         GAME_CONST.enemy.shootCooldown / difficultyScale + Utils.randomRange(-0.15, 0.25);
       ai.shootingTimer = 0.25;

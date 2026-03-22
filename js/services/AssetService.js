@@ -26,14 +26,15 @@ class AssetService {
     const cached = this.images.get(key);
     if (cached) return Promise.resolve(cached);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const image = this.imageFactory();
       image.onload = () => {
         this.images.set(key, image);
         resolve(image);
       };
       image.onerror = () => {
-        reject(new Error(`Failed to load image: ${src}`));
+        console.warn(`Failed to load image: ${src}`);
+        resolve(null);
       };
       image.src = src;
     });
@@ -43,7 +44,7 @@ class AssetService {
     const cached = this.audios.get(key);
     if (cached) return Promise.resolve(cached);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const audio = this.audioFactory();
       const cleanup = () => {
         audio.removeEventListener("canplaythrough", onReady);
@@ -56,7 +57,9 @@ class AssetService {
       };
       const onError = () => {
         cleanup();
-        reject(new Error(`Failed to load audio: ${src}`));
+        console.warn(`Failed to load audio: ${src}`);
+        // Resolve anyway so we don't block the game from starting
+        resolve(null);
       };
 
       audio.preload = "auto";

@@ -198,8 +198,14 @@ class Game {
     document.getElementById("btn-restart").addEventListener("click", () => this.restartMission());
     document.getElementById("btn-main").addEventListener("click", () => this.backToMainMenu());
 
-    document.getElementById("btn-victory-replay").addEventListener("click", () => this.restartMission());
-    document.getElementById("btn-victory-main").addEventListener("click", () => this.backToMainMenu());
+    document.getElementById("btn-victory-next").addEventListener("click", () => {
+      if (this.mapIndex < this.maps.length - 1) {
+        this.advanceLevel();
+      } else {
+        this.backToMainMenu();
+      }
+    });
+    document.getElementById("btn-victory-back").addEventListener("click", () => this.setState("map-select"));
     document.getElementById("btn-defeat-restart").addEventListener("click", () => this.restartMission());
     document.getElementById("btn-defeat-main").addEventListener("click", () => this.backToMainMenu());
 
@@ -355,14 +361,14 @@ class Game {
       target: GAME_CONST.objective.targetKills
     });
     if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
+      // Show victory screen instead of auto-advancing
+      this.updateScoreboard("victory", "Victory");
+      this.setState("victory");
+
+      // Unlock next map if available (for selection in menu later)
       if (this.mapIndex < this.maps.length - 1) {
         const nextMap = this.maps[this.mapIndex + 1];
         this.unlockMap(nextMap);
-        this.advanceLevel();
-      } else {
-        document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
-        this.updateScoreboard("victory", "Victory");
-        this.setState("victory");
       }
     }
   }
@@ -385,7 +391,6 @@ class Game {
 
   triggerDefeat() {
     if (this.state !== "playing") return;
-    document.getElementById("defeat-lives").textContent = `Lives Remaining: ${this.player.lives}`;
     this.updateScoreboard("defeat", "Defeat");
     this.setState("defeat");
   }
@@ -408,13 +413,11 @@ class Game {
     const elementId = target === "victory" ? "scoreboard-victory" : "scoreboard-defeat";
     const scoreboard = document.getElementById(elementId);
     scoreboard.innerHTML = [
-      `<strong>Scoreboard</strong>`,
       `Map: ${this.currentMapData.name}`,
-      `Result: ${resultLabel}`,
-      `Final Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`,
-      `Lives Left: ${this.player.lives}`,
-      `Mission Time: ${this.getFormattedTime()}`,
-      `Difficulty Tier: x${this.getDifficultyScale().toFixed(2)}`
+      `Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`,
+      `Lives: ${this.player.lives}`,
+      `Time: ${this.getFormattedTime()}`,
+      `Difficulty: x${this.getDifficultyScale().toFixed(2)}`
     ].join("<br>");
   }
 

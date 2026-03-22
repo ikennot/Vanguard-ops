@@ -151,9 +151,9 @@ button {
   border: none !important;
   padding: 0 !important;
 }
-
 .btn-return img {
-  width: 210px !important;
+  height: auto;
+}
   height: auto;
   display: block;
 }

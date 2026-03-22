@@ -167,32 +167,30 @@
     </section>
 
     <section id="screen-victory" class="overlay hidden panel full-screen victory">
-      <img src="assets/win1/win1.jpeg" alt="Mission Success" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
-      <div class="victory-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
-        <div id="victory-kills" style="color: #ffd700; font-size: 24px; margin-top: 250px; font-family: sans-serif; font-weight: bold; text-shadow: 2px 2px 4px #000;">Target Kills: 15/15</div>
-        <div id="scoreboard-victory" class="scoreboard" style="display:none;"></div>
-        <div class="menu-actions row" style="margin-top: 30px; display: flex; gap: 20px;">
-          <button id="btn-victory-replay" class="btn-img">
-            <img src="assets/win1/playagain.png" alt="Play Again">
+      <img src="assets/win1/victory.png" alt="Mission Success" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <div class="victory-container" style="position:relative; z-index:10; width:100%; height:100%;">
+        <div id="scoreboard-victory" class="scoreboard" style="position: absolute; top: -100 px; right: 400px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2rem; line-height: 1.6; min-width: 250px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
+        <div class="menu-actions row" style="position: absolute; top: 200px; right: 120px; display: flex; gap: 15px; margin: 0;">
+          <button id="btn-victory-back" class="btn-img btn-return">
+            <img src="assets/menu/back.png" alt="Back" style="width: 300px; height: auto;">
           </button>
-          <button id="btn-victory-main" class="btn-img btn-return">
-            <img src="assets/win1/mainmenu.png" alt="Main Menu">
+          <button id="btn-victory-next" class="btn-img">
+            <img src="assets/menu/nextlevel.png" alt="Next Level" style="width: 300px; height: auto;">
           </button>
         </div>
       </div>
     </section>
 
     <section id="screen-defeat" class="overlay hidden panel full-screen defeat">
-      <img src="assets/lose/lose.png" alt="Mission Failure" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
-      <div class="defeat-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
-        <div id="defeat-lives" style="color: #ff4444; font-size: 24px; margin-top: 250px; font-family: sans-serif; font-weight: bold; text-shadow: 2px 2px 4px #000;">Lives Remaining: 0</div>
-        <div id="scoreboard-defeat" class="scoreboard" style="display:none;"></div>
-        <div class="menu-actions row" style="margin-top: 30px; display: flex; gap: 20px;">
+      <img src="assets/win1/defeat.png" alt="Mission Failure" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <div class="defeat-container" style="position:relative; z-index:10; width:100%; height:100%;">
+        <div id="scoreboard-defeat" class="scoreboard" style="position: absolute; top: -100px; right: 400px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2rem; line-height: 1.6; min-width: 250px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
+        <div class="menu-actions row" style="position: absolute; top: 200px; right: 120px; display: flex; gap: 15px; margin: 0;">
           <button id="btn-defeat-restart" class="btn-img">
-            <img src="assets/lose/restartmission.png" alt="Restart Mission">
+            <img src="assets/lose/restartmission.png" alt="Restart Mission" style="width: 300px; height: auto;">
           </button>
           <button id="btn-defeat-main" class="btn-img btn-return">
-            <img src="assets/lose/EXITlose.png" alt="Main Menu">
+            <img src="assets/lose/EXITlose.png" alt="Main Menu" style="width: 300px; height: auto;">
           </button>
         </div>
       </div>

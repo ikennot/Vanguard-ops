@@ -40,7 +40,10 @@ export const GAME_CONST = {
     shootCooldown: 0.5,
     damage: 5,
     difficultyStepEveryKills: 4,
-    maxDifficultyStep: 3
+    maxDifficultyStep: 3,
+    jumpForce: -480,
+    jumpCooldownMin: 2.5,
+    jumpCooldownMax: 5.0
   },
   projectile: {
     playerSpeed: 760,

@@ -1,185 +1,186 @@
-# Player Sprite Animation Implementation Plan
+# Enemy Jump Implementation Plan
 
-## Context
+## Architecture Summary
 
-The existing player uses a single sprite sheet (`spartan-sheet.png`) with row/column frame selection.
-The new sprites follow the **enemy pattern**: one PNG per state+direction, each animated horizontally.
+- **Enemy update loop** (`js/enemy.js`, `Enemy.update()`): handles AI direction patrol, knockback, shooting. Currently sets `sprite.numFrames = 4` unconditionally and picks walk/shooting asset keys. No jump state exists.
+- **Physics** (`js/systems/PhysicsSystem.js`): gravity applied and position integrated for all `physics`-tagged entities (enemies included).
+- **Collision** (`js/systems/CollisionSystem.js`): sets `transform.onGround = true` on landing. Enemies already have `platform-collide` tag — `transform.onGround` is accurate and usable.
+- **Transform component**: has `position`, `velocity`, `onGround`, `gravity`. Everything needed for jump is already present.
+- **Sprite rendering** (`js/systems/RenderSystem.js`, line 78):
+  ```js
+  const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
+  ```
+  Setting `sprite.frameX = 1` and `sprite.numFrames = 2` displays frames 1 and 2 (0-indexed) — no RenderSystem changes needed.
+- **Asset manifest** (`js/main.js`): `enemy-left` and `enemy-right` are already registered. Jump frames live in those same sheets — no new assets needed.
 
-All 6 new player sprites are **240×48 px** → **5 frames of 48×48 px** each.
+## Jump Trigger Strategy
 
-```
-assets/sprites/player/
-  flying_left.png          (240×48)  5 frames
-  flying_right.png         (240×48)  5 frames
-  running_facing_left.png  (240×48)  5 frames
-  running_facing_right.png (240×48)  5 frames
-  shooting_left.png        (240×48)  5 frames
-  shooting_right.png       (240×48)  5 frames
-```
+Use a **periodic timer jump**: the enemy jumps every N seconds when on the ground.
+- Works on all maps without platform-edge geometry
+- Easy to tune
+- Follows the existing `shootTimer` pattern in `enemyAi`
 
 ---
 
-## Step 1 — Register new assets in `js/main.js`
+## Step 1 — Add Jump Constants to `js/constants.js`
 
-Add 6 entries to the `assetManifest` array (lines 22-60), after the existing player entries:
+Inside the `enemy` object, add three new fields after `maxDifficultyStep`:
 
 ```js
-{ key: "player-running-left",  src: "assets/sprites/player/running_facing_left.png",  type: "image" },
-{ key: "player-running-right", src: "assets/sprites/player/running_facing_right.png", type: "image" },
-{ key: "player-flying-left",   src: "assets/sprites/player/flying_left.png",          type: "image" },
-{ key: "player-flying-right",  src: "assets/sprites/player/flying_right.png",         type: "image" },
-{ key: "player-shooting-left", src: "assets/sprites/player/shooting_left.png",        type: "image" },
-{ key: "player-shooting-right",src: "assets/sprites/player/shooting_right.png",       type: "image" },
+enemy: {
+  gravity: 1300,
+  maxHealth: 100,
+  speed: 95,
+  shootRange: 420,
+  shootCooldown: 0.5,
+  damage: 5,
+  difficultyStepEveryKills: 4,
+  maxDifficultyStep: 3,
+  // --- NEW ---
+  jumpForce: -480,         // upward velocity (negative = up)
+  jumpCooldownMin: 2.5,    // min seconds between jumps
+  jumpCooldownMax: 5.0     // max seconds between jumps
+},
 ```
 
 ---
 
-## Step 2 — Update initial sprite component in `js/player.js`
+## Step 2 — Extend the `enemyAi` Component in `js/enemy.js`
 
-Find the `.addComponent("sprite", createSprite({...}))` call (~line 81) and replace its values:
+In the `.addComponent("enemyAi", {...})` call, add two new fields:
 
 ```js
 .addComponent(
-  "sprite",
-  createSprite({
-    type: "sprite",
-    assetKey: "player-running-right",   // default starting asset
-    frameWidth: 48,
-    frameHeight: 48,
-    numFrames: 5,
-    animationSpeed: 0.1,
-    scale: 3,
-    noFlip: true,
-    color: GAME_CONST.entity.player.color,
-    offsetY: 0,
-  })
+  "enemyAi",
+  {
+    direction: -1,
+    patrolMinX: x - patrolWidth * 0.5,
+    patrolMaxX: x + patrolWidth * 0.5,
+    shootTimer: Utils.randomRange(0.2, GAME_CONST.enemy.shootCooldown),
+    shootingTimer: 0,
+    type,
+    // --- NEW ---
+    jumpTimer: Utils.randomRange(GAME_CONST.enemy.jumpCooldownMin, GAME_CONST.enemy.jumpCooldownMax),
+    isJumping: false
+  }
 )
 ```
 
+`jumpTimer` is initialised with a random offset so enemies spawned simultaneously do not jump in sync.
+
 ---
 
-## Step 3 — Rewrite sprite state logic in `player.update()` (`js/player.js`)
+## Step 3 — Implement Jump Logic in `Enemy.update()` (`js/enemy.js`)
 
-Replace the entire block that currently sets `sprite.assetKey`, `frameY`, `frameX`, `numFrames`,
-`animationSpeed` (approximately lines 276-328) with the following logic:
+### 3a — Tick the jump timer and trigger the jump
+
+Insert this block after the knockback decay lines and before the patrol boundary check:
 
 ```js
-const sprite = this.entity.getComponent("sprite");
-if (sprite) {
-  const isShooting  = this.shootTimer > 0;
-  const facingLeft  = this.facing === -1;
-  const isFlying    = this.state === "jetpack";
-  const isMoving    = ["running", "jumping", "falling"].includes(this.state);
-
-  // Determine the correct asset key based on state priority:
-  // shooting > flying > running/jumping/falling > idle (reuse running, frame 0)
-  let nextAssetKey;
-  if (isShooting) {
-    nextAssetKey = facingLeft ? "player-shooting-left" : "player-shooting-right";
-  } else if (isFlying) {
-    nextAssetKey = facingLeft ? "player-flying-left" : "player-flying-right";
-  } else {
-    // running, jumping, falling, and idle all use the running sprite
-    nextAssetKey = facingLeft ? "player-running-left" : "player-running-right";
-  }
-
-  // Reset animation when switching state
-  if (sprite.assetKey !== nextAssetKey) {
-    sprite.assetKey       = nextAssetKey;
-    sprite.currentFrame   = 0;
-    sprite.animationTimer = 0;
-  }
-
-  // Frame & speed config
-  sprite.type          = "sprite";
-  sprite.noFlip        = true;
-  sprite.frameX        = 0;
-  sprite.frameY        = 0;
-  sprite.frameWidth    = 48;
-  sprite.frameHeight   = 48;
-  sprite.scale         = 3;
-
-  if (isShooting) {
-    sprite.numFrames      = 5;
-    sprite.animationSpeed = 0.08;   // faster when shooting
-  } else if (isFlying) {
-    sprite.numFrames      = 5;
-    sprite.animationSpeed = 0.1;
-  } else if (isMoving) {
-    sprite.numFrames      = 5;
-    sprite.animationSpeed = 0.1;
-  } else {
-    // idle — freeze on first frame
-    sprite.numFrames      = 1;
-    sprite.animationSpeed = 0.12;
-  }
-
-  // Keep currentFrame in bounds after numFrames change
-  sprite.currentFrame %= sprite.numFrames;
-
-  // Flash color when invulnerable
-  sprite.color =
-    this.invulnTimer > 0
-      ? GAME_CONST.entity.player.flashColor
-      : GAME_CONST.entity.player.color;
+// Jump logic
+ai.jumpTimer -= deltaTime;
+if (ai.jumpTimer <= 0 && transform.onGround) {
+  transform.velocity.y = GAME_CONST.enemy.jumpForce;
+  transform.onGround = false;
+  ai.isJumping = true;
+  ai.jumpTimer = Utils.randomRange(
+    GAME_CONST.enemy.jumpCooldownMin,
+    GAME_CONST.enemy.jumpCooldownMax
+  );
+}
+// Clear jumping flag when landed
+if (transform.onGround) {
+  ai.isJumping = false;
 }
 ```
 
----
+### 3b — Update the sprite selection block
 
-## Step 4 — Verify `RenderSystem` draws frames correctly
-
-`js/systems/RenderSystem.js` already computes the source X as:
+Replace the existing sprite block with:
 
 ```js
-const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
-const frameY = sprite.frameY * sprite.frameHeight;
+if (sprite) {
+  const isShooting = ai.shootingTimer > 0;
+  const isJumping  = ai.isJumping;
+  const facingLeft = ai.direction === -1;
+
+  const nextAssetKey = isShooting
+    ? (facingLeft ? "enemy-left-shooting" : "enemy-right-shooting")
+    : (facingLeft ? "enemy-left" : "enemy-right");
+
+  if (sprite.assetKey !== nextAssetKey) {
+    sprite.assetKey = nextAssetKey;
+    sprite.currentFrame = 0;
+    sprite.animationTimer = 0;
+  }
+
+  sprite.type = "sprite";
+  sprite.noFlip = true;
+  sprite.frameY = 0;
+  sprite.color = GAME_CONST.entity.enemy.color;
+
+  if (isShooting) {
+    // Shooting: all 4 frames quickly
+    sprite.frameX = 0;
+    sprite.numFrames = 4;
+    sprite.animationSpeed = 0.08;
+  } else if (isJumping) {
+    // Jump: frames 1 and 2 only
+    sprite.frameX = 1;       // offset into the strip
+    sprite.numFrames = 2;    // 2 frames starting at index 1
+    sprite.animationSpeed = 0.12;
+  } else {
+    // Walk/idle: all 4 frames
+    sprite.frameX = 0;
+    sprite.numFrames = 4;
+    sprite.animationSpeed = 0.12;
+  }
+
+  sprite.currentFrame %= sprite.numFrames;
+}
 ```
 
-With the new sprites:
-- `sprite.frameX = 0` (always start from column 0)
-- `sprite.frameY = 0` (all sprites are single-row)
-- `sprite.currentFrame` walks 0 → 4
-
-**No changes needed in `RenderSystem.js`** — the existing logic handles it correctly.
+**Frame math**: `(sprite.frameX + sprite.currentFrame) * frameWidth`
+- `frameX = 1`, `currentFrame` cycles 0→1 → source X: `48` and `96` → frames 1 and 2 ✓
 
 ---
 
-## Step 5 — Clean up old sprite fields in `js/player.js`
+## Step 4 — No Changes Needed to Other Files
 
-Remove the following local variables that belong to the old row/column system:
-- `frameY`, `leftFrameX`, `rightFrameX` local variables inside `player.update()`
-- Any remaining reference to `assetKey: "player-spartan"`
-- `sprite.gunColor = null` (no longer needed)
-
----
-
-## Player State → Asset Key Mapping (Summary)
-
-| Player State        | Facing | Asset Key               | Frames | Speed |
-|---------------------|--------|-------------------------|--------|-------|
-| idle                | left   | player-running-left     | 1      | 0.12  |
-| idle                | right  | player-running-right    | 1      | 0.12  |
-| running             | left   | player-running-left     | 5      | 0.10  |
-| running             | right  | player-running-right    | 5      | 0.10  |
-| jumping             | left   | player-running-left     | 5      | 0.10  |
-| jumping             | right  | player-running-right    | 5      | 0.10  |
-| falling             | left   | player-running-left     | 5      | 0.10  |
-| falling             | right  | player-running-right    | 5      | 0.10  |
-| jetpack             | left   | player-flying-left      | 5      | 0.10  |
-| jetpack             | right  | player-flying-right     | 5      | 0.10  |
-| shooting (any)      | left   | player-shooting-left    | 5      | 0.08  |
-| shooting (any)      | right  | player-shooting-right   | 5      | 0.08  |
-
-> **Priority:** shooting > flying (jetpack) > running/jumping/falling > idle
+| File | Status | Reason |
+|---|---|---|
+| `js/systems/PhysicsSystem.js` | No change | Already applies gravity to all `physics`-tagged entities |
+| `js/systems/CollisionSystem.js` | No change | Already sets `transform.onGround` for `platform-collide` entities |
+| `js/systems/RenderSystem.js` | No change | `frameX` offset pattern already supports frame windowing |
+| `js/main.js` | No change | `enemy-left` and `enemy-right` already registered; jump frames are in those sheets |
+| `js/components/Transform.js` | No change | `onGround` and `velocity.y` already exist |
 
 ---
 
 ## Files to Change
 
-| File                          | Change                                           |
-|-------------------------------|--------------------------------------------------|
-| `js/main.js`                  | Add 6 new asset entries to `assetManifest`       |
-| `js/player.js`                | Update initial `createSprite()` call             |
-| `js/player.js`                | Replace sprite state block in `player.update()`  |
-| `js/systems/RenderSystem.js`  | No changes needed                                |
+| File | Change |
+|---|---|
+| `js/constants.js` | Add `jumpForce`, `jumpCooldownMin`, `jumpCooldownMax` to `GAME_CONST.enemy` |
+| `js/enemy.js` | Add `jumpTimer` + `isJumping` to `enemyAi`; add jump timer logic in `update()`; update sprite block |
+
+---
+
+## New Variables / Constants Reference
+
+| Name | Location | Type | Value | Purpose |
+|---|---|---|---|---|
+| `GAME_CONST.enemy.jumpForce` | `constants.js` | number | `-480` | Upward velocity applied on jump |
+| `GAME_CONST.enemy.jumpCooldownMin` | `constants.js` | number | `2.5` | Min seconds between jumps |
+| `GAME_CONST.enemy.jumpCooldownMax` | `constants.js` | number | `5.0` | Max seconds between jumps |
+| `ai.jumpTimer` | `enemyAi` component | number | random [2.5, 5.0] | Countdown to next jump |
+| `ai.isJumping` | `enemyAi` component | boolean | `false` | Whether enemy is airborne from a jump |
+
+---
+
+## Edge Cases
+
+1. **Shooting while jumping**: `isShooting` takes sprite priority over `isJumping` — shooting animation shows mid-air. Jump state and timer remain active underneath.
+2. **Knockback while in air**: `knockbackVelocityX` applies to `velocity.x` only. No interaction with jump logic.
+3. **Patrol boundary reversal mid-air**: Only modifies `ai.direction` / `velocity.x`. Does not affect `velocity.y`.
+4. **Spawn settling**: Initial `jumpTimer` random delay (2.5–5 s) ensures the enemy is grounded before the first jump attempt.

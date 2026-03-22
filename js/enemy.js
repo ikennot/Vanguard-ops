@@ -48,7 +48,12 @@ class Enemy {
           patrolMaxX: x + patrolWidth * 0.5,
           shootTimer: Utils.randomRange(0.2, GAME_CONST.enemy.shootCooldown),
           shootingTimer: 0,
-          type
+          type,
+          jumpTimer: Utils.randomRange(
+            GAME_CONST.enemy.jumpCooldownMin,
+            GAME_CONST.enemy.jumpCooldownMax
+          ),
+          isJumping: false
         }
       )
       .addComponent(
@@ -96,34 +101,65 @@ class Enemy {
     const health = this.health;
     const sprite = this.entity.getComponent("sprite");
 
-    if (sprite) {
-      const isShooting = ai.shootingTimer > 0;
-      const facingLeft = ai.direction === -1;
-      const nextAssetKey = isShooting
-        ? (facingLeft ? "enemy-left-shooting" : "enemy-right-shooting")
-        : (facingLeft ? "enemy-left" : "enemy-right");
-      if (sprite.assetKey !== nextAssetKey) {
-        sprite.assetKey = nextAssetKey;
-        sprite.currentFrame = 0;
-        sprite.animationTimer = 0;
-      }
-      sprite.type = "sprite";
-      sprite.noFlip = true;
-      sprite.numFrames = 4;
-      sprite.animationSpeed = isShooting ? 0.08 : 0.12;
-      sprite.frameX = 0;
-      sprite.frameY = 0;
-      sprite.color = GAME_CONST.entity.enemy.color;
-    }
-
     const baseMoveX = ai.direction * GAME_CONST.enemy.speed * difficultyScale;
     transform.facing = ai.direction;
     transform.velocity.x = baseMoveX + health.knockbackVelocityX;
     health.knockbackVelocityX *= 0.92;
     if (Math.abs(health.knockbackVelocityX) < 8) health.knockbackVelocityX = 0;
 
+    ai.jumpTimer -= deltaTime;
+    if (ai.jumpTimer <= 0 && transform.onGround) {
+      transform.velocity.y = GAME_CONST.enemy.jumpForce;
+      transform.onGround = false;
+      ai.isJumping = true;
+      ai.jumpTimer = Utils.randomRange(
+        GAME_CONST.enemy.jumpCooldownMin,
+        GAME_CONST.enemy.jumpCooldownMax
+      );
+    }
+    if (transform.onGround) {
+      ai.isJumping = false;
+    }
+
     if (transform.position.x < ai.patrolMinX) ai.direction = 1;
     if (transform.position.x + transform.width > ai.patrolMaxX) ai.direction = -1;
+
+    if (sprite) {
+      const isShooting = ai.shootingTimer > 0;
+      const isJumping = ai.isJumping;
+      const facingLeft = ai.direction === -1;
+
+      const nextAssetKey = isShooting
+        ? (facingLeft ? "enemy-left-shooting" : "enemy-right-shooting")
+        : (facingLeft ? "enemy-left" : "enemy-right");
+
+      if (sprite.assetKey !== nextAssetKey) {
+        sprite.assetKey = nextAssetKey;
+        sprite.currentFrame = 0;
+        sprite.animationTimer = 0;
+      }
+
+      sprite.type = "sprite";
+      sprite.noFlip = true;
+      sprite.frameY = 0;
+      sprite.color = GAME_CONST.entity.enemy.color;
+
+      if (isShooting) {
+        sprite.frameX = 0;
+        sprite.numFrames = 4;
+        sprite.animationSpeed = 0.08;
+      } else if (isJumping) {
+        sprite.frameX = 1;
+        sprite.numFrames = 2;
+        sprite.animationSpeed = 0.12;
+      } else {
+        sprite.frameX = 0;
+        sprite.numFrames = 4;
+        sprite.animationSpeed = 0.12;
+      }
+
+      sprite.currentFrame %= sprite.numFrames;
+    }
 
     ai.shootTimer -= deltaTime;
     ai.shootingTimer = Math.max(0, ai.shootingTimer - deltaTime);

@@ -106,6 +106,10 @@ export class TutorialManager {
     this.frameDuration = 0.1;
     this.shootTimer = 0;
 
+    this.audio = {
+      gun: new Audio("assets/audio/sfx/laser-gun.mp3")
+    };
+
     this.bindEvents();
   }
 
@@ -153,6 +157,12 @@ export class TutorialManager {
       life: 60
     });
     this.shootTimer = 0.3; // Animation duration for shooting
+
+    // Play gun sound
+    if (this.audio && this.audio.gun) {
+      this.audio.gun.currentTime = 0; // Reset to start for rapid fire
+      this.audio.gun.play().catch(e => console.log("Audio play failed:", e));
+    }
   }
 
   update(dt) {

@@ -52,15 +52,17 @@ class Hud {
     
     // Life Icon and Count
     const lifeIcon = this.assets.get("hud-life");
+    const iconSize = 32;
+    const iconX = hudBg ? hudX + 55 : hudX + 12;
+    const iconY = hudY + (hudBg ? 66 : 12);
     const textBaseY = hudY + (hudBg ? 90 : 36);
-    const textBaseX = hudX + (hudBg ? 20 : 54);
 
-    if (!hudBg && lifeIcon) {
-      ctx.drawImage(lifeIcon, hudX + 12, hudY + 12, 32, 32);
+    if (lifeIcon) {
+      ctx.drawImage(lifeIcon, iconX, iconY, iconSize, iconSize);
     }
     ctx.fillStyle = hudBg ? "#000" : "#121a20";
     ctx.font = "700 30px monospace";
-    ctx.fillText(String(game.player.lives), hudBg ? hudX + 100 : 72, textBaseY);
+    ctx.fillText(String(game.player.lives), iconX + iconSize + 10, textBaseY);
 
     // Ammo Count
     ctx.fillText(`${game.player.weapon.getCurrentAmmo()}/${game.player.weapon.getReserveAmmo()}`, hudBg ? hudX + 230 : 150, textBaseY);

@@ -54,7 +54,7 @@ const assetManifest = [
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },
   { key: "effect-explosion", src: "assets/sprites/effects/effects-particles-explosion-sprite.png", type: "image" },
-  { key: "hud-life", src: "assets/sprites/ui/buttons/life.png", type: "image" },
+  { key: "hud-life", src: "assets/sprites/ui/life.png", type: "image" },
   { key: "hud-bullet", src: "assets/sprites/ui/buttons/bullet.png", type: "image" },
   { key: "hud-gun", src: "assets/sprites/ui/buttons/gun.png", type: "image" },
   { key: "platform-space", src: "assets/space/spaceplatform.png", type: "image" },

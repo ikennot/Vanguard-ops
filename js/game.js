@@ -58,6 +58,7 @@ class Game {
     this.missionTime = 0;
     this.level = 0;
     this.maps = ["space", "jungle", "canyon"];
+    this.unlockedMaps = ["space"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
@@ -176,7 +177,7 @@ class Game {
         e.preventDefault();
         e.stopPropagation();
       }
-      if (this.mapIndex === 0) {
+      if (this.unlockedMaps.includes(this.currentMapId)) {
         this.audio.playSfx("sfx-button");
         this.setState("resources");
       }
@@ -271,17 +272,18 @@ class Game {
     }
     
     const previewImg = document.getElementById("map-preview-img");
-    const isLocked = this.mapIndex > 0;
+    const isLocked = !this.unlockedMaps.includes(this.currentMapId);
     
     if (previewImg) {
       let assetName = this.currentMapId;
+      if (assetName === "canyon") assetName = "lava";
+      
       if (isLocked) {
-        let lockedAsset = assetName;
-        if (assetName === "canyon") lockedAsset = "lava";
-        previewImg.src = `assets/sprites/ui/lock${lockedAsset}.jpg`;
+        previewImg.src = `assets/select_map/lock${assetName}.jpg`;
         document.querySelector('.map-card-container').style.cursor = 'default';
       } else {
-        previewImg.src = `assets/sprites/environment/${assetName}_selectmap.jpg`;
+        previewImg.src = `assets/select_map/${assetName}_selectmap.jpg`;
+        document.querySelector('.map-card-container').style.pointerEvents = 'auto';
         document.querySelector('.map-card-container').style.cursor = 'pointer';
       }
     }
@@ -340,6 +342,12 @@ class Game {
     this.setState("main");
   }
 
+  unlockMap(mapId) {
+    if (!this.unlockedMaps.includes(mapId)) {
+      this.unlockedMaps.push(mapId);
+    }
+  }
+
   registerKill() {
     this.kills += 1;
     eventBus.emit("game:scoreChanged", {
@@ -348,6 +356,8 @@ class Game {
     });
     if (this.kills >= GAME_CONST.objective.targetKills && this.state === "playing") {
       if (this.mapIndex < this.maps.length - 1) {
+        const nextMap = this.maps[this.mapIndex + 1];
+        this.unlockMap(nextMap);
         this.advanceLevel();
       } else {
         document.getElementById("victory-kills").textContent = `Target Kills: ${this.kills}/${GAME_CONST.objective.targetKills}`;
@@ -363,6 +373,7 @@ class Game {
     this.mapIndex += 1;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    this.unlockMap(this.currentMapId);
     this.initializeMission();
     this.player.lives = savedLives;
     this.setState("playing");

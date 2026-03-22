@@ -96,26 +96,30 @@ class Enemy {
 
   update(deltaTime, deps) {
     const difficultyScale = deps.difficultyScale;
+    const threatScale = Math.max(0, difficultyScale - 1);
     const transform = this.transform;
     const ai = this.ai;
     const health = this.health;
     const sprite = this.entity.getComponent("sprite");
 
-    const baseMoveX = ai.direction * GAME_CONST.enemy.speed * difficultyScale;
+    const speedScale = 1 + threatScale * GAME_CONST.enemy.threatSpeedScale;
+    const baseMoveX = ai.direction * GAME_CONST.enemy.speed * speedScale;
     transform.facing = ai.direction;
     transform.velocity.x = baseMoveX + health.knockbackVelocityX;
     health.knockbackVelocityX *= 0.92;
     if (Math.abs(health.knockbackVelocityX) < 8) health.knockbackVelocityX = 0;
 
-    ai.jumpTimer -= deltaTime;
+    ai.jumpTimer -= deltaTime * (1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale);
     if (ai.jumpTimer <= 0 && transform.onGround) {
-      transform.velocity.y = GAME_CONST.enemy.jumpForce;
+      const jumpForceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpForceScale;
+      transform.velocity.y = GAME_CONST.enemy.jumpForce * jumpForceScale;
       transform.onGround = false;
       ai.isJumping = true;
+      const jumpCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale;
       ai.jumpTimer = Utils.randomRange(
         GAME_CONST.enemy.jumpCooldownMin,
         GAME_CONST.enemy.jumpCooldownMax
-      );
+      ) / jumpCadenceScale;
     }
     if (transform.onGround) {
       ai.isJumping = false;
@@ -172,14 +176,14 @@ class Enemy {
 
     if (
       health.knockbackTimer <= 0 &&
-      distance < GAME_CONST.enemy.shootRange + 40 * (difficultyScale - 1) &&
+      distance < GAME_CONST.enemy.shootRange + GAME_CONST.enemy.threatRangeBonusPerScale * threatScale &&
       ai.shootTimer <= 0
     ) {
       deps.projectiles.spawn(
         { x: centerX, y: centerY },
         { x: dx, y: dy * 0.3 },
-        GAME_CONST.projectile.enemySpeed * (0.95 + difficultyScale * 0.08),
-        GAME_CONST.enemy.damage + Math.floor((difficultyScale - 1) * 5),
+        GAME_CONST.projectile.enemySpeed * (0.95 + difficultyScale * GAME_CONST.enemy.threatProjectileSpeedScale),
+        GAME_CONST.enemy.damage + Math.floor(threatScale * GAME_CONST.enemy.threatDamageBonusPerScale),
         "enemy",
         GAME_CONST.entity.projectile.enemy.color,
         650 * (deps.knockbackMultiplier || 1) * Math.sign(dx || 1)
@@ -190,8 +194,9 @@ class Enemy {
         audioService.playSfx("sfx-laser-gun");
       }
 
-      ai.shootTimer =
-        GAME_CONST.enemy.shootCooldown / difficultyScale + Utils.randomRange(-0.15, 0.25);
+      const shootCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatShootCadenceScale;
+      const baseCooldown = GAME_CONST.enemy.shootCooldown / shootCadenceScale;
+      ai.shootTimer = Math.max(0.16, baseCooldown + Utils.randomRange(-0.08, 0.12));
       ai.shootingTimer = 0.25;
     }
   }
@@ -235,6 +240,9 @@ class EnemyManager {
   update(deltaTime, deps) {
     this.spawnTimer -= deltaTime;
     const difficultyScale = deps.difficultyScale || 1.0;
+    const difficultyStep = Math.max(0, Math.floor((difficultyScale - 1) / 0.15));
+    const dynamicMaxActive = this.maxActive +
+      difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
 
     for (const enemy of this.enemies) {
       if (enemy.entity.markedForRemoval) continue;
@@ -248,12 +256,16 @@ class EnemyManager {
 
     if (
       deps.gameState === "playing" &&
-      this.enemies.length < this.maxActive &&
+      this.enemies.length < dynamicMaxActive &&
       this.kills < this.killTarget &&
       this.spawnTimer <= 0
     ) {
       this.spawnFromPlatforms(deps.platforms);
-      this.spawnTimer = Utils.randomRange(1.6, 2.8);
+      const spawnCadenceScale = Math.max(
+        GAME_CONST.enemy.minSpawnCadenceScale,
+        1 - difficultyStep * GAME_CONST.enemy.threatSpawnCadencePerStep
+      );
+      this.spawnTimer = Utils.randomRange(1.6, 2.8) * spawnCadenceScale;
     }
   }
 }

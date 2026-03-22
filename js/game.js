@@ -394,10 +394,7 @@ class Game {
   }
 
   getGameplayScale() {
-    const raw = this.getDifficultyScale();
-    // Square root dampening so 15x threat becomes ~3.8x difficulty
-    // 1.5x threat remains ~1.2x
-    return Math.sqrt(raw);
+    return this.getDifficultyScale();
   }
 
   triggerDefeat() {

@@ -43,7 +43,17 @@ export const GAME_CONST = {
     maxDifficultyStep: 3,
     jumpForce: -480,
     jumpCooldownMin: 2.5,
-    jumpCooldownMax: 5.0
+    jumpCooldownMax: 5.0,
+    threatSpeedScale: 1.2,
+    threatJumpCadenceScale: 1.6,
+    threatJumpForceScale: 0.35,
+    threatShootCadenceScale: 1.35,
+    threatProjectileSpeedScale: 0.2,
+    threatRangeBonusPerScale: 120,
+    threatDamageBonusPerScale: 7,
+    threatExtraActivePerStep: 1,
+    threatSpawnCadencePerStep: 0.12,
+    minSpawnCadenceScale: 0.55
   },
   projectile: {
     playerSpeed: 760,

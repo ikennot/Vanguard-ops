@@ -153,8 +153,6 @@ button {
 }
 .btn-return img {
   height: auto;
-}
-  height: auto;
   display: block;
 }
 
@@ -201,6 +199,12 @@ button {
 #screen-rules .menu-actions button img {
   width: 200px;
   height: auto;
+}
+
+.victory-container .menu-actions button:hover,
+.defeat-container .menu-actions button:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
 }
 
 .end-screen {
@@ -393,6 +397,40 @@ button {
 
 #screen-level-info .menu-actions {
   margin-top: -120px !important;
+}
+
+.upgrade-fullscreen-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 1;
+}
+
+.upgrade-fullscreen-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+#screen-upgrade .menu-actions {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+
+#screen-upgrade .menu-actions button img {
+  width: 200px;
+  height: auto;
 }
 
 .hud-corner {

@@ -10,6 +10,7 @@ class MenuController {
     this.defeat = document.getElementById("screen-defeat");
     this.tutorial = document.getElementById("screen-tutorial");
     this.levelInfo = document.getElementById("screen-level-info");
+    this.upgrade = document.getElementById("screen-upgrade");
     this.overlays = [
       this.main,
       this.pause,
@@ -20,7 +21,8 @@ class MenuController {
       this.victory,
       this.defeat,
       this.tutorial,
-      this.levelInfo
+      this.levelInfo,
+      this.upgrade
     ];
   }
 
@@ -41,6 +43,7 @@ class MenuController {
     if (state === "map-select") this.mapSelect.classList.remove("hidden");
     if (state === "resources") this.resources.classList.remove("hidden");
     if (state === "level-info") this.levelInfo.classList.remove("hidden");
+    if (state === "upgrade") this.upgrade.classList.remove("hidden");
     if (state === "pause") this.pause.classList.remove("hidden");
     if (state === "victory") this.victory.classList.remove("hidden");
     if (state === "defeat") this.defeat.classList.remove("hidden");

@@ -200,10 +200,14 @@ class Game {
 
     document.getElementById("btn-victory-next").addEventListener("click", () => {
       if (this.mapIndex < this.maps.length - 1) {
-        this.advanceLevel();
+        this.setState("upgrade");
       } else {
         this.backToMainMenu();
       }
+    });
+    document.getElementById("btn-upgrade-ok").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
+      this.advanceLevel();
     });
     document.getElementById("btn-victory-back").addEventListener("click", () => this.setState("map-select"));
     document.getElementById("btn-defeat-restart").addEventListener("click", () => this.restartMission());

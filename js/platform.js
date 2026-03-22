@@ -31,10 +31,27 @@ class PlatformManager {
         img = (i % 2 === 0) ? this.assets.get("platform-jungle-1") : this.assets.get("platform-jungle-2");
       } else if (this.currentMap.id === "canyon") {
         img = this.assets.get("platform-canyon");
+      } else if (this.currentMap.id === "boss") {
+        img = this.assets.get("platform-boss");
       }
       
       if (img) {
-        ctx.drawImage(img, p.x - camera.x, p.y - camera.y, p.width, p.height);
+        const trim = this.currentMap.id === "space" ? 0 : GAME_CONST.render.platformEdgeTrimPx;
+        if (trim > 0 && p.width > trim * 2) {
+          ctx.drawImage(
+            img,
+            trim,
+            0,
+            img.width - trim * 2,
+            img.height,
+            p.x - camera.x,
+            p.y - camera.y,
+            p.width,
+            p.height
+          );
+        } else {
+          ctx.drawImage(img, p.x - camera.x, p.y - camera.y, p.width, p.height);
+        }
       } else {
         const color = this.currentMap.theme.platform;
         ctx.fillStyle = color;

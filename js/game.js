@@ -57,8 +57,15 @@ class Game {
     this.kills = 0;
     this.missionTime = 0;
     this.level = 0;
-    this.maps = ["space", "jungle", "canyon"];
+    this.maps = ["space", "jungle", "canyon", "boss"];
     this.unlockedMaps = ["space"];
+    const savedMaps = localStorage.getItem("vanguard-unlocked-maps");
+    if (savedMaps) {
+      const parsedMaps = savedMaps.split(",").map((value) => value.trim()).filter(Boolean);
+      for (const mapId of parsedMaps) {
+        if (this.maps.includes(mapId)) this.unlockMap(mapId);
+      }
+    }
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
@@ -276,25 +283,35 @@ class Game {
   updateMapPreview() {
     const frameImg = document.getElementById("map-select-bg-frame");
     if (frameImg) {
-      let assetName = this.currentMapId;
-      if (assetName === "canyon") assetName = "lava";
-      frameImg.src = `assets/sprites/ui/selectmap${assetName}.png`;
+      if (this.currentMapId === "boss") {
+        frameImg.src = "assets/select_map/Selectboss.png";
+      } else {
+        let assetName = this.currentMapId;
+        if (assetName === "canyon") assetName = "lava";
+        frameImg.src = `assets/sprites/ui/selectmap${assetName}.png`;
+      }
     }
     
     const previewImg = document.getElementById("map-preview-img");
     const isLocked = !this.unlockedMaps.includes(this.currentMapId);
+    const mapCard = document.querySelector(".map-card-container");
     
     if (previewImg) {
-      let assetName = this.currentMapId;
-      if (assetName === "canyon") assetName = "lava";
-      
-      if (isLocked) {
-        previewImg.src = `assets/select_map/lock${assetName}.jpg`;
-        document.querySelector('.map-card-container').style.cursor = 'default';
+      if (this.currentMapId === "boss") {
+        previewImg.src = isLocked
+          ? "assets/select_map/lockboss.png"
+          : "assets/select_map/Selectboss.png";
       } else {
-        previewImg.src = `assets/select_map/${assetName}_selectmap.jpg`;
-        document.querySelector('.map-card-container').style.pointerEvents = 'auto';
-        document.querySelector('.map-card-container').style.cursor = 'pointer';
+        let assetName = this.currentMapId;
+        if (assetName === "canyon") assetName = "lava";
+        previewImg.src = isLocked
+          ? `assets/select_map/lock${assetName}.jpg`
+          : `assets/select_map/${assetName}_selectmap.jpg`;
+      }
+
+      if (mapCard) {
+        mapCard.style.pointerEvents = isLocked ? "none" : "auto";
+        mapCard.style.cursor = isLocked ? "default" : "pointer";
       }
     }
 
@@ -304,14 +321,19 @@ class Game {
       let infoAsset = `assets/space/gameinfo_space.png`;
       if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
+      if (this.currentMapId === "boss") infoAsset = `assets/finalboss/gameinfo_lava.png`;
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
       let bgAsset = `assets/space/terrainspace.jpg`;
       if (this.currentMapId === "jungle") bgAsset = `assets/jungle/terrainjungle.jpg`;
       if (this.currentMapId === "canyon") bgAsset = `assets/lava/terrainlava.jpg`;
+      if (this.currentMapId === "boss") bgAsset = `assets/finalboss/bossterrain.jpeg`;
       levelInfoBg.src = bgAsset;
     }
+
+    this.updatePauseScreen();
+    this.updateEndScreens();
   }
 
   startMission() {
@@ -355,7 +377,67 @@ class Game {
   unlockMap(mapId) {
     if (!this.unlockedMaps.includes(mapId)) {
       this.unlockedMaps.push(mapId);
+      localStorage.setItem("vanguard-unlocked-maps", this.unlockedMaps.join(","));
     }
+  }
+
+  updatePauseScreen() {
+    const assetPaths = {
+      space: {
+        card: "assets/space/gamepaused.png",
+        resume: "assets/space/resume.png",
+        restart: "assets/space/restart.png",
+        back: "assets/space/returntomainmenu.png"
+      },
+      jungle: {
+        card: "assets/jungle/gamepaused.png",
+        resume: "assets/jungle/resume.png",
+        restart: "assets/jungle/restart.png",
+        back: "assets/jungle/returntomainmenu.png"
+      },
+      canyon: {
+        card: "assets/lava/gamepaused.png",
+        resume: "assets/lava/resume.png",
+        restart: "assets/lava/restart.png",
+        back: "assets/lava/returntomainmenu.png"
+      },
+      boss: {
+        card: "assets/finalboss/gamepaused.png",
+        resume: "assets/finalboss/resume.png",
+        restart: "assets/finalboss/restart.png",
+        back: "assets/finalboss/returntomainmenu.png"
+      }
+    };
+    const set = assetPaths[this.currentMapId] || assetPaths.space;
+    const card = document.querySelector(".pause-card-bg");
+    const resume = document.querySelector("#btn-resume img");
+    const restart = document.querySelector("#btn-restart img");
+    const back = document.querySelector("#btn-main img");
+    if (card) card.src = set.card;
+    if (resume) resume.src = set.resume;
+    if (restart) restart.src = set.restart;
+    if (back) back.src = set.back;
+  }
+
+  updateEndScreens() {
+    const sbVictory = document.getElementById("scoreboard-victory");
+    const sbDefeat = document.getElementById("scoreboard-defeat");
+    const applyScoreboardStyle = (element) => {
+      if (!element) return;
+      if (this.currentMapId === "boss") {
+        element.style.backgroundImage = "url('assets/finalboss/scoreboard.png')";
+        element.style.backgroundSize = "contain";
+        element.style.backgroundRepeat = "no-repeat";
+        element.style.padding = "40px 60px";
+        return;
+      }
+      element.style.backgroundImage = "";
+      element.style.backgroundSize = "";
+      element.style.backgroundRepeat = "";
+      element.style.padding = "0";
+    };
+    applyScoreboardStyle(sbVictory);
+    applyScoreboardStyle(sbDefeat);
   }
 
   registerKill() {
@@ -535,6 +617,7 @@ class Game {
       if (this.currentMapId === "space") bgImg = assets.get("bg-space");
       if (this.currentMapId === "jungle") bgImg = assets.get("bg-jungle");
       if (this.currentMapId === "canyon") bgImg = assets.get("bg-canyon");
+      if (this.currentMapId === "boss") bgImg = assets.get("bg-boss");
     }
 
     if (bgImg) {

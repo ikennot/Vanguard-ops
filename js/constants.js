@@ -4,6 +4,9 @@ export const GAME_CONST = {
   },
   canvas: { width: 1280, height: 720 },
   world: { width: 1800, height: 720, killY: 940 },
+  render: {
+    platformEdgeTrimPx: 18
+  },
   entity: {
     player: {
       width: 40,
@@ -96,6 +99,22 @@ export const GAME_CONST = {
         { x: 500, y: 330, width: 600, height: 30 },
         { x: 400, y: 500, width: 500, height: 30 },
         { x: 1200, y: 600, width: 400, height: 30 },
+      ]
+    },
+    boss: {
+      id: "boss",
+      name: "Boss Arena",
+      targetKills: 30,
+      description: "The final battle. Survive the lava arena and destroy the boss forces.",
+      theme: { bgTop: "#1a0000", bgBottom: "#6b1a00", platform: "#4a1500" },
+      spawn: { x: 860, y: 258 },
+      platforms: [
+        { x: 490, y: 330, width: 760, height: 35 },
+        { x: 180, y: 200, width: 280, height: 35 },
+        { x: 1340, y: 200, width: 280, height: 35 },
+        { x: 100, y: 500, width: 320, height: 35 },
+        { x: 1380, y: 500, width: 320, height: 35 },
+        { x: 20, y: 90, width: 200, height: 35 }
       ]
     }
   }

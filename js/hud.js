@@ -41,6 +41,7 @@ class Hud {
     let hudBgKey = "hud-bg-space";
     if (game.currentMapId === "jungle") hudBgKey = "hud-bg-space"; // Pwedeng palitan kung may sariling jungle hud bg
     if (game.currentMapId === "canyon") hudBgKey = "hud-bg-lava";
+    if (game.currentMapId === "boss") hudBgKey = "hud-bg-boss";
 
     const hudBg = this.assets.get(hudBgKey);
     if (hudBg) {

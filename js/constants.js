@@ -19,6 +19,10 @@ export const GAME_CONST = {
     },
     pickup: { width: 28, height: 28, color: "#00cfff" }
   },
+  camera: {
+    zoom: 1.5,
+    lerpSpeed: 0.08
+  },
   player: {
     maxHealth: 100,
     maxLives: 5,
@@ -72,7 +76,7 @@ export const GAME_CONST = {
     space: {
       id: "space",
       name: "Space",
-      targetKills: 20,
+      targetKills: 10,
       description: "Balanced open platforms over a hot star surface.",
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
       spawn: { x: 620, y: 288 },
@@ -87,7 +91,7 @@ export const GAME_CONST = {
     jungle: {
       id: "jungle",
       name: "Jungle",
-      targetKills: 30,
+      targetKills: 15,
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
       spawn: { x: 1100, y: 200 },
@@ -101,7 +105,7 @@ export const GAME_CONST = {
     canyon: {
       id: "canyon",
       name: "Canyon",
-      targetKills: 40,
+      targetKills: 20,
       description: "Narrow central arena with high-risk edge play.",
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
       spawn: { x: 690, y: 258 },

@@ -322,7 +322,7 @@ class Player {
       sprite.frameY = 0;
       sprite.frameWidth = 48;
       sprite.frameHeight = 48;
-      sprite.scale = 3;
+      sprite.scale = 2.5;
       sprite.offsetY = GAME_CONST.entity.player.spriteOffsetY;
 
       if (isShooting) {
@@ -367,8 +367,8 @@ class Player {
 
     const originX = this.position.x + this.width * 0.5;
     const originY = this.position.y + this.height * 0.45;
-    const mouseWorldX = inputService.mouse.x + cameraService.x;
-    const mouseWorldY = inputService.mouse.y + cameraService.y;
+    const mouseWorldX = (inputService.mouse.x / cameraService.zoom) + cameraService.x;
+    const mouseWorldY = (inputService.mouse.y / cameraService.zoom) + cameraService.y;
     const deltaX = mouseWorldX - originX;
     const deltaY = mouseWorldY - originY;
     let direction = { x: this.facing, y: 0 };

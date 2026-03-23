@@ -405,6 +405,11 @@ class Game {
     this.projectiles.clear();
     this.particles.particles = [];
     this.entityManager.flush();
+    this.mapIndex = 0;
+    this.currentMapId = this.maps[this.mapIndex];
+    this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    this.level = 0;
+    this.updateMapPreview();
     this.setState("main");
   }
 
@@ -452,11 +457,17 @@ class Game {
   }
 
   advanceLevel() {
+    if (this.mapIndex >= this.maps.length - 1) {
+      this.backToMainMenu();
+      return;
+    }
+
     this.level += 1;
     this.mapIndex += 1;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
     this.unlockMap(this.currentMapId);
+    this.updateMapPreview();
 
     // Save lives count at the start of this new level
     this.livesAtStartOfLevel = this.player.lives;
@@ -633,12 +644,17 @@ class Game {
     this.drawBackground();
 
     if (["playing", "pause", "victory", "defeat"].includes(this.state)) {
+      this.ctx.save();
+      this.ctx.scale(this.camera.zoom, this.camera.zoom);
+      
       this.platforms.draw(this.ctx, this.camera);
       this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "pickup");
       this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "enemy");
       this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "projectile");
       this.renderSystem.drawByTag(this.ctx, this.camera, this.entityManager, "player");
       this.particles.draw(this.ctx, this.camera);
+      
+      this.ctx.restore();
     }
 
     if (["playing", "pause"].includes(this.state)) {

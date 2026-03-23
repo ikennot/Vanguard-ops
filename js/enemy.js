@@ -69,7 +69,7 @@ class Enemy {
           frameHeight: 48,
           numFrames: 1,
           animationSpeed: 0.1,
-          scale: 3,
+          scale: 2.5,
           noFlip: true,
           color: GAME_CONST.entity.enemy.color,
           offsetY: 24,

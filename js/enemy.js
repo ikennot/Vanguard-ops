@@ -53,7 +53,9 @@ class Enemy {
             GAME_CONST.enemy.jumpCooldownMin,
             GAME_CONST.enemy.jumpCooldownMax
           ),
-          isJumping: false
+          isJumping: false,
+          hoverTimer: Math.random() * Math.PI * 2,
+          dropDownTimer: Utils.randomRange(2.0, 5.0)
         }
       )
       .addComponent(
@@ -109,17 +111,82 @@ class Enemy {
     health.knockbackVelocityX *= 0.92;
     if (Math.abs(health.knockbackVelocityX) < 8) health.knockbackVelocityX = 0;
 
-    ai.jumpTimer -= deltaTime * (1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale);
-    if (ai.jumpTimer <= 0 && transform.onGround) {
-      const jumpForceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpForceScale;
-      transform.velocity.y = GAME_CONST.enemy.jumpForce * jumpForceScale;
+    const canJump = deps.currentMapId === "jungle";
+    const canFly = deps.currentMapId === "canyon";
+    const player = deps.player;
+    
+    if (canFly && player) {
+      // ... (existing flight logic)
+      transform.gravity = GAME_CONST.enemy.gravity;
+      
+      const targetY = player.position.y - 120;
+      const jetpackForce = 2400; // Strong force to overcome gravity and ascend
+      
+      // If below target height, "activate jetpack"
+      if (transform.position.y > targetY) {
+        transform.velocity.y -= jetpackForce * deltaTime;
+        
+        // Match player's jetpack particles (blue)
+        const particleSystem = deps.particles || serviceLocator.get("particles");
+        if (particleSystem && Math.random() < 0.4) {
+          particleSystem.spawn(
+            { x: transform.position.x + transform.width * 0.5, y: transform.position.y + transform.height * 0.8 },
+            "#67c7ff",
+            1
+          );
+        }
+      }
+      
+      // Ensure they don't stick to the ground and use jumping animation for flight
       transform.onGround = false;
       ai.isJumping = true;
-      const jumpCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale;
-      ai.jumpTimer = Utils.randomRange(
-        GAME_CONST.enemy.jumpCooldownMin,
-        GAME_CONST.enemy.jumpCooldownMax
-      ) / jumpCadenceScale;
+    } else {
+      transform.gravity = GAME_CONST.enemy.gravity;
+      
+      if (canJump) {
+        // Drop down logic for jungle map
+        if (transform.onGround) {
+          ai.dropDownTimer -= deltaTime;
+          const isPlayerBelow = player && player.position.y > transform.position.y + 100;
+          
+          if (isPlayerBelow && ai.dropDownTimer <= 0) {
+            transform.oneWayPlatformIgnoreTimer = GAME_CONST.player.dropThroughDuration;
+            transform.velocity.y = GAME_CONST.player.dropDownVelocity;
+            transform.onGround = false;
+            ai.dropDownTimer = Utils.randomRange(3.0, 6.0);
+          }
+        } else {
+          // If we just landed on a new platform, update patrol bounds
+          if (transform.velocity.y === 0 && !ai.isJumping) {
+            const currentPlatform = deps.platforms.find(p => 
+              transform.position.x + transform.width > p.x && 
+              transform.position.x < p.x + p.width &&
+              Math.abs((transform.position.y + transform.height) - p.y) < 5
+            );
+            if (currentPlatform) {
+              const patrolWidth = Math.max(120, currentPlatform.width - 20);
+              ai.patrolMinX = currentPlatform.x + 10;
+              ai.patrolMaxX = currentPlatform.x + currentPlatform.width - 10;
+            }
+          }
+        }
+
+        ai.jumpTimer -= deltaTime * (1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale);
+        if (ai.jumpTimer <= 0 && transform.onGround) {
+          const jumpForceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpForceScale;
+          const jungleJumpMultiplier = 1.5;
+          transform.velocity.y = GAME_CONST.enemy.jumpForce * jumpForceScale * jungleJumpMultiplier;
+          transform.onGround = false;
+          ai.isJumping = true;
+          const jumpCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale;
+          ai.jumpTimer = Utils.randomRange(
+            GAME_CONST.enemy.jumpCooldownMin,
+            GAME_CONST.enemy.jumpCooldownMax
+          ) / jumpCadenceScale;
+        }
+      } else {
+        ai.isJumping = false;
+      }
     }
     if (transform.onGround) {
       ai.isJumping = false;

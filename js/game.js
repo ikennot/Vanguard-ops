@@ -509,6 +509,7 @@ class Game {
       player: this.player,
       projectiles: this.projectiles,
       gameState: this.state,
+      currentMapId: this.currentMapId,
       platforms: this.platforms.platforms,
       knockbackMultiplier: this.getEnemyKnockbackMultiplier(),
       difficultyScale: this.getGameplayScale()

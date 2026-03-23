@@ -236,6 +236,21 @@
         </div>
       </div>
     </section>
+
+    <section id="modal-confirm-upgrade" class="overlay hidden" style="z-index: 1000; background: rgba(0,0,0,0.85) !important;">
+      <div class="confirm-modal-container" style="background: rgba(13, 27, 35, 0.95); border: 2px solid #315466; padding: 2.5rem; border-radius: 15px; max-width: 550px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+        <h2 style="color: #ffb549; margin-bottom: 1.5rem; font-size: 2rem;">PROCEED WITHOUT UPGRADE?</h2>
+        <p style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 2.5rem; color: #d8eef7;">Are you sure you want to continue? You will miss out on a permanent boost for the next missions.<br><br><span style="color: #ff7f7f; font-weight: bold;">This action cannot be undone!</span></p>
+        <div class="menu-actions row" style="display: flex; justify-content: center; gap: 20px;">
+          <button id="btn-confirm-upgrade-yes" class="btn-img">
+            <img src="assets/sprites/ui/buttons/ok.png" alt="Yes, Proceed" style="width: 160px; height: auto;">
+          </button>
+          <button id="btn-confirm-upgrade-no" class="btn-img">
+            <img src="assets/system_settings/back.png" alt="No, Go Back" style="width: 160px; height: auto;">
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script type="module" src="js/main.js"></script>

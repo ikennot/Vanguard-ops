@@ -11,6 +11,7 @@ class MenuController {
     this.tutorial = document.getElementById("screen-tutorial");
     this.levelInfo = document.getElementById("screen-level-info");
     this.upgrade = document.getElementById("screen-upgrade");
+    this.confirmUpgrade = document.getElementById("modal-confirm-upgrade");
     this.overlays = [
       this.main,
       this.pause,
@@ -22,7 +23,8 @@ class MenuController {
       this.defeat,
       this.tutorial,
       this.levelInfo,
-      this.upgrade
+      this.upgrade,
+      this.confirmUpgrade
     ];
   }
 
@@ -35,7 +37,9 @@ class MenuController {
   }
 
   show(state) {
-    this.hideAll();
+    if (state !== "confirm-upgrade") {
+      this.hideAll();
+    }
     if (state === "main") this.main.classList.remove("hidden");
     if (state === "settings") this.settings.classList.remove("hidden");
     if (state === "rules") this.rules.classList.remove("hidden");
@@ -44,6 +48,7 @@ class MenuController {
     if (state === "resources") this.resources.classList.remove("hidden");
     if (state === "level-info") this.levelInfo.classList.remove("hidden");
     if (state === "upgrade") this.upgrade.classList.remove("hidden");
+    if (state === "confirm-upgrade") this.confirmUpgrade.classList.remove("hidden");
     if (state === "pause") this.pause.classList.remove("hidden");
     if (state === "victory") this.victory.classList.remove("hidden");
     if (state === "defeat") this.defeat.classList.remove("hidden");

@@ -202,7 +202,11 @@ class Game {
 
     document.getElementById("btn-victory-next").addEventListener("click", () => {
       if (this.mapIndex < this.maps.length - 1) {
-        this.setState("upgrade");
+        if (this.isNewWin) {
+          this.setState("upgrade");
+        } else {
+          this.advanceLevel();
+        }
       } else {
         this.backToMainMenu();
       }
@@ -234,8 +238,21 @@ class Game {
         [upgradeAmmo, upgradeJetpack, upgradeLife].forEach((el) => {
           if (el) el.classList.remove("selected");
         });
+        this.advanceLevel();
+      } else {
+        // No upgrade selected, show confirmation modal
+        this.setState("confirm-upgrade");
       }
+    });
+
+    document.getElementById("btn-confirm-upgrade-yes").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
       this.advanceLevel();
+    });
+
+    document.getElementById("btn-confirm-upgrade-no").addEventListener("click", () => {
+      this.audio.playSfx("sfx-button");
+      this.setState("upgrade");
     });
     document.getElementById("btn-victory-back").addEventListener("click", () => this.setState("map-select"));
     document.getElementById("btn-defeat-restart").addEventListener("click", () => this.restartMission());
@@ -424,7 +441,12 @@ class Game {
       // Unlock next map if available (for selection in menu later)
       if (this.mapIndex < this.maps.length - 1) {
         const nextMap = this.maps[this.mapIndex + 1];
+        // Check if next map is already unlocked before adding it
+        this.isNewWin = !this.unlockedMaps.includes(nextMap);
         this.unlockMap(nextMap);
+      } else {
+        // Last level completed
+        this.isNewWin = true; // Still show something? Actually last level goes back to main menu anyway.
       }
     }
   }

@@ -417,7 +417,7 @@ class Game {
   applyUpgrade(id) {
     if (id === "upgrade-life") {
       this.player.maxLives += 1;
-      this.player.lives = this.player.maxLives;
+      this.player.lives += 1;
     } else if (id === "upgrade-jetpack") {
       this.player.maxJetpackFuel += 50;
       this.player.jetpackFuel = this.player.maxJetpackFuel;

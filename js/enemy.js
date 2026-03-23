@@ -55,7 +55,9 @@ class Enemy {
           ),
           isJumping: false,
           hoverTimer: Math.random() * Math.PI * 2,
-          dropDownTimer: Utils.randomRange(2.0, 5.0)
+          dropDownTimer: Utils.randomRange(2.0, 5.0),
+          jetpackFuel: 100,
+          maxJetpackFuel: 100
         }
       )
       .addComponent(
@@ -116,16 +118,19 @@ class Enemy {
     const player = deps.player;
     
     if (canFly && player) {
-      // ... (existing flight logic)
+      // Restore gravity to match player's physics feel
       transform.gravity = GAME_CONST.enemy.gravity;
-      
+
       const targetY = player.position.y - 120;
       const jetpackForce = 2400; // Strong force to overcome gravity and ascend
-      
-      // If below target height, "activate jetpack"
-      if (transform.position.y > targetY) {
+
+      let isUsingJetpack = false;
+      // If below target height AND has fuel, "activate jetpack"
+      if (transform.position.y > targetY && ai.jetpackFuel > 0) {
         transform.velocity.y -= jetpackForce * deltaTime;
-        
+        ai.jetpackFuel = Math.max(0, ai.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
+        isUsingJetpack = true;
+
         // Match player's jetpack particles (blue)
         const particleSystem = deps.particles || serviceLocator.get("particles");
         if (particleSystem && Math.random() < 0.4) {
@@ -136,10 +141,21 @@ class Enemy {
           );
         }
       }
-      
-      // Ensure they don't stick to the ground and use jumping animation for flight
-      transform.onGround = false;
-      ai.isJumping = true;
+
+      // Fuel regeneration when on ground or not using jetpack
+      if (transform.onGround) {
+        ai.jetpackFuel = Math.min(ai.maxJetpackFuel, ai.jetpackFuel + GAME_CONST.player.jetpackRegen * deltaTime);
+      }
+
+      // Flight visual state
+      if (isUsingJetpack || !transform.onGround) {
+        ai.isJumping = true;
+      }
+
+      // In flight, enemies don't "stick" to platforms as easily unless they are landing
+      if (isUsingJetpack) {
+        transform.onGround = false;
+      }
     } else {
       transform.gravity = GAME_CONST.enemy.gravity;
       

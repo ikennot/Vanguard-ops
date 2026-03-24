@@ -59,7 +59,7 @@ class Game {
     this.missionTime = 0;
     this.level = 0;
     this.livesAtStartOfLevel = 3; // Default starting lives
-    this.maps = ["space", "jungle", "canyon", "laboratory", "warzone"];
+    this.maps = ["space", "jungle", "canyon", "warzone", "laboratory"];
     this.unlockedMaps = ["space"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
@@ -386,19 +386,32 @@ class Game {
 
     const levelInfoImg = document.getElementById("level-info-img");
     const levelInfoBg = document.getElementById("level-info-bg");
+    const levelInfoOkImg = document.querySelector("#btn-level-info-ok img");
+
     if (levelInfoImg) {
       let infoAsset = `assets/space/gameinfo_space.png`;
       if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
-      if (this.currentMapId === "laboratory") infoAsset = `assets/laboratory/gameinfo_laboratory.png`;
+      if (this.currentMapId === "warzone") infoAsset = `assets/warzone/gameobjectives.png`;
+      if (this.currentMapId === "laboratory") infoAsset = `assets/laboratory/gameobjectives.png`;
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
       let bgAsset = `assets/space/terrainspace.jpg`;
       if (this.currentMapId === "jungle") bgAsset = `assets/jungle/terrainjungle.jpg`;
       if (this.currentMapId === "canyon") bgAsset = `assets/lava/terrainlava.jpg`;
-      if (this.currentMapId === "laboratory") bgAsset = `assets/laboratory/terrainlaboratory.jpg`;
+      if (this.currentMapId === "warzone") bgAsset = `assets/warzone/warzoneterrain.png`;
+      if (this.currentMapId === "laboratory") bgAsset = `assets/laboratory/terrainlaboratory.png`;
       levelInfoBg.src = bgAsset;
+    }
+    if (levelInfoOkImg) {
+        let folder = this.currentMapId;
+        if (folder === "canyon") folder = "lava";
+        if (folder === "laboratory" || folder === "warzone") {
+            levelInfoOkImg.src = `assets/space/ok.png`;
+        } else {
+            levelInfoOkImg.src = `assets/${folder}/ok.png`;
+        }
     }
   }
 
@@ -652,6 +665,8 @@ class Game {
       if (this.currentMapId === "space") bgImg = assets.get("bg-space");
       if (this.currentMapId === "jungle") bgImg = assets.get("bg-jungle");
       if (this.currentMapId === "canyon") bgImg = assets.get("bg-canyon");
+      if (this.currentMapId === "laboratory") bgImg = assets.get("bg-laboratory");
+      if (this.currentMapId === "warzone") bgImg = assets.get("bg-warzone");
     }
 
     if (bgImg) {

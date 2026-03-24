@@ -31,6 +31,10 @@ class PlatformManager {
         img = (i % 2 === 0) ? this.assets.get("platform-jungle-1") : this.assets.get("platform-jungle-2");
       } else if (this.currentMap.id === "canyon") {
         img = this.assets.get("platform-canyon");
+      } else if (this.currentMap.id === "laboratory") {
+        img = this.assets.get("platform-laboratory");
+      } else if (this.currentMap.id === "warzone") {
+        img = this.assets.get("platform-warzone");
       }
       
       if (img) {

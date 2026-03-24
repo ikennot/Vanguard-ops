@@ -513,12 +513,7 @@ class Game {
     this.unlockMap(this.currentMapId);
     this.updateMapPreview();
 
-    // Save lives count at the start of this new level
-    this.livesAtStartOfLevel = this.player.lives;
-
-    this.initializeMission();
-    this.player.lives = this.livesAtStartOfLevel;
-    this.setState("playing");
+    this.setState("level-info");
   }
 
   getEnemyKnockbackMultiplier() {

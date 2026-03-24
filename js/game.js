@@ -59,7 +59,7 @@ class Game {
     this.missionTime = 0;
     this.level = 0;
     this.livesAtStartOfLevel = 3; // Default starting lives
-    this.maps = ["space", "jungle", "canyon"];
+    this.maps = ["space", "jungle", "canyon", "laboratory", "warzone"];
     this.unlockedMaps = ["space"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
@@ -335,7 +335,13 @@ class Game {
     if (frameImg) {
       let assetName = this.currentMapId;
       if (assetName === "canyon") assetName = "lava";
-      frameImg.src = `assets/sprites/ui/selectmap${assetName}.png`;
+      
+      // Use assets from select_map if they exist there, otherwise sprites/ui
+      if (["laboratory", "warzone", "lava", "space"].includes(assetName)) {
+        frameImg.src = `assets/select_map/selectmap${assetName}.png`;
+      } else {
+        frameImg.src = `assets/sprites/ui/selectmap${assetName}.png`;
+      }
     }
     
     const previewImg = document.getElementById("map-preview-img");
@@ -347,11 +353,34 @@ class Game {
       
       if (isLocked) {
         previewImg.src = `assets/select_map/lock${assetName}.jpg`;
+        // Handle laboratory/warzone which have .png versions
+        if (assetName === "laboratory" || assetName === "warzone") {
+            previewImg.src = `assets/select_map/lock${assetName}.png`;
+        }
         document.querySelector('.map-card-container').style.cursor = 'default';
       } else {
         previewImg.src = `assets/select_map/${assetName}_selectmap.jpg`;
+        // Handle laboratory/warzone/space which have .png versions
+        if (assetName === "laboratory" || assetName === "warzone" || assetName === "space") {
+            const ext = (assetName === "laboratory" || assetName === "warzone") ? "png" : "jpg";
+            previewImg.src = `assets/select_map/${assetName}_selectmap.${ext}`;
+        }
         document.querySelector('.map-card-container').style.pointerEvents = 'auto';
         document.querySelector('.map-card-container').style.cursor = 'pointer';
+      }
+    }
+
+    // Update confirm button
+    const confirmBtnImg = document.querySelector("#btn-map-confirm img");
+    if (confirmBtnImg) {
+      let folder = this.currentMapId;
+      if (folder === "canyon") folder = "lava";
+      
+      // Check if folder exists or use space as fallback for new maps
+      if (folder === "laboratory" || folder === "warzone") {
+        confirmBtnImg.src = `assets/space/ok.png`; // Fallback to space ok button
+      } else {
+        confirmBtnImg.src = `assets/${folder}/ok.png`;
       }
     }
 
@@ -361,12 +390,14 @@ class Game {
       let infoAsset = `assets/space/gameinfo_space.png`;
       if (this.currentMapId === "jungle") infoAsset = `assets/jungle/gameinfo_jungle.png`;
       if (this.currentMapId === "canyon") infoAsset = `assets/lava/gameinfo_lava.png`;
+      if (this.currentMapId === "laboratory") infoAsset = `assets/laboratory/gameinfo_laboratory.png`;
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
       let bgAsset = `assets/space/terrainspace.jpg`;
       if (this.currentMapId === "jungle") bgAsset = `assets/jungle/terrainjungle.jpg`;
       if (this.currentMapId === "canyon") bgAsset = `assets/lava/terrainlava.jpg`;
+      if (this.currentMapId === "laboratory") bgAsset = `assets/laboratory/terrainlaboratory.jpg`;
       levelInfoBg.src = bgAsset;
     }
   }

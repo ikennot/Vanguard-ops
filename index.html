@@ -52,17 +52,25 @@
 
     <section id="screen-map-select" class="overlay hidden panel full-screen">
       <img src="assets/sprites/ui/selectmapspace.png" id="map-select-bg-frame" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
-      <div class="map-nav-row">
-        <button id="btn-map-prev" class="btn-img btn-nav" aria-label="Previous map">
-          <img src="assets/sprites/ui/buttons/lessthan.png" alt="Prev">
-        </button>
-        <div class="map-card-container">
-          <img src="assets/sprites/environment/space_selectmap.jpg" id="map-preview-img" alt="Map Preview" class="map-preview-img">
+      
+      <div class="map-select-content">
+        <div class="map-nav-row">
+          <button id="btn-map-prev" class="btn-img btn-nav" aria-label="Previous map">
+            <img src="assets/select_map/lessthan.png" alt="Prev">
+          </button>
+          
+          <div class="map-preview-wrapper">
+            <div class="map-card-container">
+              <img src="assets/select_map/space_selectmap.jpg" id="map-preview-img" alt="Map Preview" class="map-preview-img">
+            </div>
+          </div>
+
+          <button id="btn-map-next" class="btn-img btn-nav" aria-label="Next map">
+            <img src="assets/select_map/greaterthan.png" alt="Next">
+          </button>
         </div>
-        <button id="btn-map-next" class="btn-img btn-nav" aria-label="Next map">
-          <img src="assets/sprites/ui/buttons/greaterthan.png" alt="Next">
-        </button>
       </div>
+
       <div class="menu-actions map-select-actions">
         <button id="btn-map-confirm" class="btn-img">
           <img src="assets/space/ok.png" alt="Confirm">

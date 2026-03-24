@@ -76,7 +76,7 @@ export const GAME_CONST = {
     space: {
       id: "space",
       name: "Space",
-      targetKills: 10,
+      targetKills: 1,
       description: "Balanced open platforms over a hot star surface.",
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
       spawn: { x: 620, y: 288 },
@@ -91,7 +91,7 @@ export const GAME_CONST = {
     jungle: {
       id: "jungle",
       name: "Jungle",
-      targetKills: 15,
+      targetKills: 1,
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
       spawn: { x: 1100, y: 200 },
@@ -105,7 +105,7 @@ export const GAME_CONST = {
     canyon: {
       id: "canyon",
       name: "Canyon",
-      targetKills: 20,
+      targetKills: 1,
       description: "Narrow central arena with high-risk edge play.",
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
       spawn: { x: 690, y: 258 },
@@ -114,6 +114,31 @@ export const GAME_CONST = {
         { x: 400, y: 500, width: 500, height: 30 },
         { x: 1200, y: 600, width: 400, height: 30 },
         { x: 1100, y: 150, width: 400, height: 30 }
+      ]
+    },
+    laboratory: {
+      id: "laboratory",
+      name: "Laboratory",
+      targetKills: 1,
+      description: "Sleek tech facility with hazardous experiments.",
+      theme: { bgTop: "#1a2a2a", bgBottom: "#0a1a1a", platform: "#4aeeb0" },
+      spawn: { x: 640, y: 300 },
+      platforms: [
+        { x: 300, y: 400, width: 680, height: 40 },
+        { x: 100, y: 200, width: 400, height: 40 },
+        { x: 780, y: 200, width: 400, height: 40 }
+      ]
+    },
+    warzone: {
+      id: "warzone",
+      name: "Warzone",
+      targetKills: 1,
+      description: "Battlefield with heavy machinery and destruction.",
+      theme: { bgTop: "#4a3a2a", bgBottom: "#2a1a0a", platform: "#ccaa88" },
+      spawn: { x: 640, y: 300 },
+      platforms: [
+        { x: 200, y: 500, width: 880, height: 50 },
+        { x: 400, y: 300, width: 480, height: 50 }
       ]
     }
   }

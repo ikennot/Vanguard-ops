@@ -472,7 +472,7 @@ class EnemyManager {
     const rawDynamicMax = mapMax + difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
     const dynamicMaxActive = deps.currentMapId === "laboratory"
       ? Math.min(4, rawDynamicMax)
-      : rawDynamicMax;
+      : Math.min(GAME_CONST.enemy.maxActiveCap, rawDynamicMax);
 
     let activeFlyers = this.enemies.filter((enemy) => {
       if (enemy.entity.markedForRemoval) return false;

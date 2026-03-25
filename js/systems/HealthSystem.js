@@ -22,7 +22,12 @@ class HealthSystem {
     if (!health || !transform) return;
     if (health.invulnTimer > 0) return;
 
-    health.knockbackVelocityX += knockbackX;
+    const maxPlayerKnockback = GAME_CONST.projectile.knockback;
+    const maxEnemyKnockback = maxPlayerKnockback * GAME_CONST.enemy.maxKnockbackVsPlayerRatio;
+    const limitedKnockback =
+      Math.sign(knockbackX || 1) * Math.min(Math.abs(knockbackX), maxEnemyKnockback);
+
+    health.knockbackVelocityX += limitedKnockback;
     transform.velocity.y = -180;
     health.invulnTimer = 0.45;
     health.controlLockTimer = 0.2;

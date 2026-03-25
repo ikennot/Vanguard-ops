@@ -466,7 +466,8 @@ class Game {
   startMission() {
     this.isNewWin = false;
     if (this.pendingUpgrade) {
-      this.earnedUpgradesByMap[this.currentMapId] = this.pendingUpgrade;
+      const sourceMapId = this.maps[Math.max(0, this.mapIndex - 1)] || this.currentMapId;
+      this.earnedUpgradesByMap[sourceMapId] = this.pendingUpgrade;
       this.pendingUpgrade = null;
     }
     
@@ -481,39 +482,30 @@ class Game {
   }
 
   applyProgressionForCurrentMap() {
-    // Preserve current carried lives state
-    const previousLives = Math.max(0, this.carriedLives || GAME_CONST.player.maxLives);
     this.player.maxLives = GAME_CONST.player.maxLives;
     this.player.maxJetpackFuel = 100;
     this.player.weapon.magSize = { ...GAME_CONST.weapons.magSize };
 
-    // Set lives initially to the carried amount before applying upgrades
-    this.player.lives = previousLives;
+    // Start each level at full lives after progression upgrades are applied.
+    this.player.lives = this.player.maxLives;
 
     const maxInclusive = this.mapIndex;
+    let lifeUpgradeCount = 0;
     for (let i = 0; i < maxInclusive; i += 1) {
       const mapId = this.maps[i];
       const upgradeId = this.earnedUpgradesByMap[mapId];
       if (upgradeId) {
-        // Only apply non-life upgrades so we don't double count extra lives
-        // already baked into the current carried player lives value
-        if (upgradeId !== "upgrade-life") {
-          this.applyUpgrade(upgradeId);
+        if (upgradeId === "upgrade-life") {
+          lifeUpgradeCount += 1;
         } else {
-          // just increase the max live limit, actual lives are tracked dynamically
-          this.player.maxLives += 1;
+          this.applyUpgrade(upgradeId);
         }
       }
     }
-    
-    // Apply final level's newly earned upgrade if taking one now
-    const currentMapUpgrade = this.earnedUpgradesByMap[this.maps[this.mapIndex]];
-    if (currentMapUpgrade) {
-       this.applyUpgrade(currentMapUpgrade);
-    }
-    
-    // Clamp at current max
-    this.player.lives = Math.min(this.player.maxLives, this.player.lives);
+
+    this.player.maxLives += lifeUpgradeCount;
+    this.player.lives = this.player.maxLives;
+    this.carriedLives = this.player.lives;
 
     this.player.weapon.reset();
   }

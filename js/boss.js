@@ -133,6 +133,7 @@ class FinalBoss {
       if (ai.shootTimer <= 0 && ai.burstCount === 0) {
         ai.burstCount = BURST_SIZE;
         ai.burstCooldown = 0;
+        ai.shootTimer = GAME_CONST.boss.shootCooldown;
       }
 
       if (ai.burstCount > 0 && ai.burstCooldown <= 0) {
@@ -152,12 +153,7 @@ class FinalBoss {
         }
 
         ai.burstCount -= 1;
-        if (ai.burstCount > 0) {
-          ai.burstCooldown = BURST_INTERVAL;
-        } else {
-          ai.burstCooldown = 0;
-          ai.shootTimer = GAME_CONST.boss.shootCooldown;
-        }
+        ai.burstCooldown = BURST_INTERVAL;
       }
     }
   }

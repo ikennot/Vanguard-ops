@@ -74,8 +74,18 @@ class Game {
     gameState.set(this.state);
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: this.currentMapData.targetKills
+      target: this.getKillTarget()
     });
+  }
+
+  getKillTarget() {
+    if (this.currentMapId === "laboratory") return Number.POSITIVE_INFINITY;
+    return this.currentMapData.targetKills;
+  }
+
+  getKillTargetLabel() {
+    const target = this.getKillTarget();
+    return Number.isFinite(target) ? String(target) : "∞";
   }
 
   bindEvents() {
@@ -431,7 +441,7 @@ class Game {
     this.missionTime = 0;
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: this.currentMapData.targetKills
+      target: this.getKillTarget()
     });
     this.enemies.reset(this.platforms.platforms, this.currentMapId);
     this.finalBoss.reset();
@@ -487,8 +497,9 @@ class Game {
     this.kills += 1;
     eventBus.emit("game:scoreChanged", {
       kills: this.kills,
-      target: this.currentMapData.targetKills
+      target: this.getKillTarget()
     });
+    if (this.currentMapId === "laboratory") return;
     if (this.kills >= this.currentMapData.targetKills && this.state === "playing") {
       // Show victory screen instead of auto-advancing
       this.updateScoreboard("victory", "Victory");
@@ -556,7 +567,7 @@ class Game {
     const scoreboard = document.getElementById(elementId);
     scoreboard.innerHTML = [
       `Map: ${this.currentMapData.name}`,
-      `Kills: ${this.kills}/${this.currentMapData.targetKills}`,
+      `Kills: ${this.kills}/${this.getKillTargetLabel()}`,
       `Lives: ${this.player.lives}`,
       `Time: ${this.getFormattedTime()}`,
       `Threat: x${this.getDifficultyScale().toFixed(2)}`
@@ -599,6 +610,13 @@ class Game {
         projectiles: this.projectiles,
         gameState: this.state
       });
+      const bossEntity = this.finalBoss.getEntity();
+      const bossHealth = bossEntity?.getComponent("health");
+      if (bossHealth && bossHealth.health <= 0) {
+        this.updateScoreboard("victory", "Victory");
+        this.setState("victory");
+        this.isNewWin = true;
+      }
     }
 
     this.physicsSystem.update(this.entityManager, deltaTime);

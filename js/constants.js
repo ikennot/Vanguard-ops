@@ -59,6 +59,15 @@ export const GAME_CONST = {
     threatSpawnCadencePerStep: 0.12,
     minSpawnCadenceScale: 0.55
   },
+  level5enemy: {
+    maxHealth: 220,
+    speed: 130,
+    shootRange: 560,
+    shootCooldown: 0.32,
+    damage: 14,
+    threatDamageBonusPerScale: 10,
+    color: "#ff2222"
+  },
   boss: {
     maxHealth: 1000,
     speed: 210,

@@ -25,7 +25,8 @@ class Hud {
     ctx.fillRect(15, 15, 350, 58);
     ctx.fillStyle = "#f2d17a";
     ctx.font = "700 18px sans-serif";
-    ctx.fillText(`KILLS: ${String(this.kills).padStart(2, "0")}/${this.killTarget}`, 28, 54);
+    const targetLabel = Number.isFinite(this.killTarget) ? String(this.killTarget) : "∞";
+    ctx.fillText(`KILLS: ${String(this.kills).padStart(2, "0")}/${targetLabel}`, 28, 54);
     ctx.fillStyle = "#d7ebf2";
     ctx.font = "600 14px sans-serif";
     ctx.fillText(`MAP: ${game.currentMapData.name.toUpperCase()}  TIME: ${game.getFormattedTime()}`, 158, 40);

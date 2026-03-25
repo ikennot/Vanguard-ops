@@ -93,6 +93,47 @@ const assetManifest = [
     type: "image"
   },
   {
+    key: "enemy-l4-left",
+    src: "assets/sprites/level-4_enemy/level_4-enemy_facing_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l4-right",
+    src: "assets/sprites/level-4_enemy/level_4-enemy_facing right.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l4-left-shooting",
+    src: "assets/sprites/level-4_enemy/level_4-enemy-shooting-left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l4-right-shooting",
+    src: "assets/sprites/level-4_enemy/level_4-enemy_shooting_right.png",
+    type: "image"
+  },
+  // Level 5 (laboratory) enemy sprites
+  {
+    key: "enemy-l5-left",
+    src: "assets/sprites/level-5-enemy/level_5-enemy_facing_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l5-right",
+    src: "assets/sprites/level-5-enemy/level_5-enemy_facing_right.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l5-left-shooting",
+    src: "assets/sprites/level-5-enemy/level_5-enemy-shooting_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l5-right-shooting",
+    src: "assets/sprites/level-5-enemy/level_5-enemy_shooting_right.png",
+    type: "image"
+  },
+  {
     key: "boss-facing-east",
     src: "assets/sprites/final_boss/facing_east.png",
     type: "image"

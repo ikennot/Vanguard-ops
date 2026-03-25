@@ -1,269 +1,154 @@
-# Final Boss Enhancement — Implementation Plan
+# Level 5 Enemy Integration Plan
 
-> **For Codex:** Execute sections in the order listed (Section 1 → Section 3 → Section 2). Each step shows exact file, line(s), and before/after code.
+## Overview
+
+Integrate a regular enemy for the `laboratory` (level 5) map. No stat limitations — enemy is intentionally strong. Spawn is hard-capped at **4 enemies max** to avoid crowding. Uses the sprites in `assets/sprites/level-5-enemy/`.
 
 ---
 
-## Section 1 — `js/constants.js` (all stat tuning)
+## Files to Modify
 
-### Step 1.1 — Raise max HP: 500 → 1000
-**Line 63**
+| File | What Changes |
+|---|---|
+| `js/main.js` | Add 4 sprite entries to `assetManifest` |
+| `js/enemy.js` | Add sprite routing, stat override, remove lab early-return, enforce 4-cap |
+| `js/constants.js` | Add `level5enemy` stats block |
+
+---
+
+## Step-by-Step Implementation
+
+### Step 1 — Register sprites in `main.js`
+
+Add after the level-4 entries in `assetManifest`:
+
 ```js
-// Before
-    maxHealth: 500,
-// After
-    maxHealth: 1000,
-```
-
-### Step 1.2 — Increase movement speed: 130 → 210
-**Line 64**
-```js
-// Before
-    speed: 130,
-// After
-    speed: 210,
-```
-
-### Step 1.3 — Extend shoot range: 650 → 900
-**Line 65**
-```js
-// Before
-    shootRange: 650,
-// After
-    shootRange: 900,
-```
-
-### Step 1.4 — Reduce shoot cooldown: 0.9 → 0.38 s
-**Line 66**
-```js
-// Before
-    shootCooldown: 0.9,
-// After
-    shootCooldown: 0.38,
-```
-
-### Step 1.5 — Increase damage per shot: 8 → 18
-**Line 67**
-```js
-// Before
-    damage: 8,
-// After
-    damage: 18,
-```
-
-### Step 1.6 — Increase hover oscillation speed: 1.8 → 3.2
-**Line 72**
-```js
-// Before
-    hoverSpeed: 1.8,
-// After
-    hoverSpeed: 3.2,
-```
-
-### Step 1.7 — Add projectileSpeed and projectileKnockback constants
-**After line 74 (`projectileColor` line), still inside the `boss: {}` block.**
-```js
-// Before
-    color: "#cc00ff",
-    projectileColor: "#ff00cc"
-  },
-
-// After
-    color: "#cc00ff",
-    projectileColor: "#ff00cc",
-    projectileSpeed: 680,
-    projectileKnockback: 1400
-  },
-```
-
-### Complete resulting `boss` block for reference:
-```js
-  boss: {
-    maxHealth: 1000,
-    speed: 210,
-    shootRange: 900,
-    shootCooldown: 0.38,
-    damage: 18,
-    width: 120,
-    height: 120,
-    chaseYOffset: -60,
-    hoverAmplitude: 18,
-    hoverSpeed: 3.2,
-    color: "#cc00ff",
-    projectileColor: "#ff00cc",
-    projectileSpeed: 680,
-    projectileKnockback: 1400
-  },
+// Level 5 (laboratory) enemy sprites
+{ key: "enemy-l5-left",          src: "assets/sprites/level-5-enemy/level_5-enemy_facing_left.png",    type: "image" },
+{ key: "enemy-l5-right",         src: "assets/sprites/level-5-enemy/level_5-enemy_facing_right.png",   type: "image" },
+{ key: "enemy-l5-left-shooting", src: "assets/sprites/level-5-enemy/level_5-enemy-shooting_left.png",  type: "image" },
+{ key: "enemy-l5-right-shooting",src: "assets/sprites/level-5-enemy/level_5-enemy_shooting_right.png", type: "image" },
 ```
 
 ---
 
-## Section 2 — `js/systems/HealthSystem.js`
+### Step 2 — Add `level5enemy` stats in `constants.js`
 
-### Step 2.1 — Boss-specific knockback multiplier in `applyEnemyDamage()`
+Add after the `enemy` block in `GAME_CONST`:
 
-**Lines 48-52 — replace existing multiplier block:**
 ```js
-// Before
-    const healthRatio = Math.max(0, health.health) / Math.max(1, health.maxHealth || 1);
-    const multiplier = healthRatio > 0.35 ? 2.6 : 4.2;
-    health.knockbackVelocityX += knockback * multiplier;
-    transform.velocity.y = -320;
-    health.knockbackTimer = healthRatio > 0.35 ? 0.6 : 0.95;
-
-// After
-    const isBoss = entity.hasComponent("bossAi");
-    const healthRatio = Math.max(0, health.health) / Math.max(1, health.maxHealth || 1);
-    const multiplier = isBoss
-      ? (healthRatio > 0.35 ? 5.5 : 8.0)
-      : (healthRatio > 0.35 ? 2.6 : 4.2);
-    health.knockbackVelocityX += knockback * multiplier;
-    transform.velocity.y = isBoss ? -480 : -320;
-    health.knockbackTimer = isBoss
-      ? (healthRatio > 0.35 ? 0.9 : 1.3)
-      : (healthRatio > 0.35 ? 0.6 : 0.95);
+level5enemy: {
+  maxHealth: 220,
+  speed: 130,
+  shootRange: 560,
+  shootCooldown: 0.32,
+  damage: 14,
+  threatDamageBonusPerScale: 10,
+  color: "#ff2222"
+}
 ```
 
-### Step 2.2 — Remove duplicate `isBoss` declaration
-**Lines 62-67 — delete the inner `const isBoss` (it is now declared above):**
-```js
-// Before
-    if (health.health <= 0) {
-      const isBoss = entity.hasComponent("bossAi");
-      if (!isBoss) {
-        health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
-      }
-    }
+Stats are elevated on purpose (no limitations requested).
 
-// After
-    if (health.health <= 0) {
-      if (!isBoss) {
-        health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
-      }
-    }
+---
+
+### Step 3 — Add sprite routing in `enemy.js` → `getEnemyAssetKeys()`
+
+Add before the default return:
+
+```js
+if (mapId === "laboratory") {
+  return {
+    left: "enemy-l5-left",
+    right: "enemy-l5-right",
+    leftShooting: "enemy-l5-left-shooting",
+    rightShooting: "enemy-l5-right-shooting"
+  };
+}
 ```
 
 ---
 
-## Section 3 — `js/boss.js`
+### Step 4 — Add `statOverride` to `Enemy` constructor
 
-### Step 3.1 — Add burst-fire fields to `bossAi` component (constructor, lines 42-47)
+Change constructor signature:
 ```js
-// Before
-      .addComponent(
-        "bossAi",
-        {
-          shootTimer: GAME_CONST.boss.shootCooldown * 0.5,
-          hoverTime: Math.random() * Math.PI * 2,
-          deathFalling: false
-        }
-      )
-
-// After
-      .addComponent(
-        "bossAi",
-        {
-          shootTimer: GAME_CONST.boss.shootCooldown * 0.5,
-          hoverTime: Math.random() * Math.PI * 2,
-          deathFalling: false,
-          burstCount: 0,
-          burstCooldown: 0
-        }
-      )
+constructor(entityManager, x, y, patrolWidth = 180, type = "rival", statOverride = null)
 ```
 
-### Step 3.2 — Slow knockback decay and lower zero-threshold (line 85)
+Resolve stats in constructor body:
 ```js
-// Before
-    health.knockbackVelocityX *= 0.92;
-    if (Math.abs(health.knockbackVelocityX) < 10) health.knockbackVelocityX = 0;
-
-// After
-    health.knockbackVelocityX *= 0.94;
-    if (Math.abs(health.knockbackVelocityX) < 6) health.knockbackVelocityX = 0;
+const stats = statOverride || GAME_CONST.enemy;
 ```
 
-### Step 3.3 — Replace single-fire shoot block with burst-fire logic (lines 123-146)
+Use `stats.maxHealth`, `stats.speed`, `stats.damage`, etc. throughout. Store on `ai` for use in `update()`:
 ```js
-// Before
-    ai.shootTimer -= deltaTime;
-    const distance = Math.hypot(dx, dy);
-    if (
-      deps.gameState === "playing" &&
-      ai.shootTimer <= 0 &&
-      distance <= GAME_CONST.boss.shootRange
-    ) {
-      deps.projectiles.spawn(
-        { x: bossCenterX, y: bossCenterY },
-        { x: dx, y: dy },
-        GAME_CONST.projectile.enemySpeed,
-        GAME_CONST.boss.damage,
-        "enemy",
-        GAME_CONST.boss.projectileColor,
-        750 * Math.sign(dx || 1)
-      );
-
-      const audioService = serviceLocator.get("audio");
-      if (audioService) {
-        audioService.playSfx("sfx-laser-gun");
-      }
-
-      ai.shootTimer = GAME_CONST.boss.shootCooldown;
-    }
-
-// After
-    ai.shootTimer -= deltaTime;
-    ai.burstCooldown -= deltaTime;
-    const distance = Math.hypot(dx, dy);
-
-    const BURST_SIZE = 3;
-    const BURST_INTERVAL = 0.12;
-
-    if (deps.gameState === "playing" && distance <= GAME_CONST.boss.shootRange) {
-      if (ai.shootTimer <= 0 && ai.burstCount === 0) {
-        ai.burstCount = BURST_SIZE;
-        ai.burstCooldown = 0;
-        ai.shootTimer = GAME_CONST.boss.shootCooldown;
-      }
-
-      if (ai.burstCount > 0 && ai.burstCooldown <= 0) {
-        deps.projectiles.spawn(
-          { x: bossCenterX, y: bossCenterY },
-          { x: dx, y: dy },
-          GAME_CONST.boss.projectileSpeed,
-          GAME_CONST.boss.damage,
-          "enemy",
-          GAME_CONST.boss.projectileColor,
-          GAME_CONST.boss.projectileKnockback * Math.sign(dx || 1)
-        );
-
-        const audioService = serviceLocator.get("audio");
-        if (audioService) {
-          audioService.playSfx("sfx-laser-gun");
-        }
-
-        ai.burstCount -= 1;
-        ai.burstCooldown = BURST_INTERVAL;
-      }
-    }
+ai.statOverride = statOverride;
 ```
 
 ---
 
-## Summary Table
+### Step 5 — Update `spawnFromPlatforms()` to accept `mapId`
 
-| File | Line(s) | What changes | Old | New |
-|------|---------|--------------|-----|-----|
-| `js/constants.js` | 63 | `boss.maxHealth` | `500` | `1000` |
-| `js/constants.js` | 64 | `boss.speed` | `130` | `210` |
-| `js/constants.js` | 65 | `boss.shootRange` | `650` | `900` |
-| `js/constants.js` | 66 | `boss.shootCooldown` | `0.9` | `0.38` |
-| `js/constants.js` | 67 | `boss.damage` | `8` | `18` |
-| `js/constants.js` | 72 | `boss.hoverSpeed` | `1.8` | `3.2` |
-| `js/constants.js` | after 74 | `boss.projectileSpeed` | _(new)_ | `680` |
-| `js/constants.js` | after 74 | `boss.projectileKnockback` | _(new)_ | `1400` |
-| `js/systems/HealthSystem.js` | 48-52 | knockback multiplier block | shared | boss-specific |
-| `js/systems/HealthSystem.js` | 63 | inner `const isBoss` | present | delete |
-| `js/boss.js` | 42-47 | `bossAi` init | no burst fields | add `burstCount`, `burstCooldown` |
-| `js/boss.js` | 85-86 | knockback decay | `0.92`, `< 10` | `0.94`, `< 6` |
-| `js/boss.js` | 123-146 | shoot block | single-fire | burst-fire (3 shots) |
+```js
+spawnFromPlatforms(platforms, mapId) {
+  // ...existing spawn logic...
+  const statOverride = mapId === "laboratory" ? GAME_CONST.level5enemy : null;
+  this.enemies.push(new Enemy(this.entityManager, x, y, patrolWidth, "rival", statOverride));
+  this.totalSpawned += 1;
+}
+```
+
+---
+
+### Step 6 — Remove the laboratory early-return in `EnemyManager.reset()`
+
+Remove this line:
+```js
+if (mapId === "laboratory") return;   // DELETE THIS
+```
+
+Update the seed loop to pass `mapId`:
+```js
+for (let i = 0; i < 3; i += 1) this.spawnFromPlatforms(platforms, mapId);
+```
+
+---
+
+### Step 7 — Enforce the 4-enemy hard cap in `EnemyManager.update()`
+
+```js
+const rawDynamicMax = this.maxActive +
+  difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
+const dynamicMaxActive = deps.currentMapId === "laboratory"
+  ? Math.min(4, rawDynamicMax)
+  : rawDynamicMax;
+```
+
+Also update the spawn call to pass `mapId`:
+```js
+this.spawnFromPlatforms(deps.platforms, deps.currentMapId);
+```
+
+---
+
+## Implementation Order
+
+1. `constants.js` — Add `level5enemy` stats block
+2. `main.js` — Add 4 asset manifest entries
+3. `enemy.js` — Add `laboratory` branch to `getEnemyAssetKeys()`
+4. `enemy.js` — Add `statOverride` param to `Enemy` constructor + `update()`
+5. `enemy.js` — Update `spawnFromPlatforms()` to accept and use `mapId`
+6. `enemy.js` — Remove early-return guard in `reset()`; update seed loop
+7. `enemy.js` — Apply 4-cap in `update()`; pass `currentMapId` to spawn call
+
+---
+
+## Sprite Reference
+
+| Asset Key | File |
+|---|---|
+| `enemy-l5-left` | `level_5-enemy_facing_left.png` |
+| `enemy-l5-right` | `level_5-enemy_facing_right.png` |
+| `enemy-l5-left-shooting` | `level_5-enemy-shooting_left.png` |
+| `enemy-l5-right-shooting` | `level_5-enemy_shooting_right.png` |

@@ -24,6 +24,22 @@ function getEnemyAssetKeys(mapId) {
       rightShooting: "enemy-l3-right-shooting"
     };
   }
+  if (mapId === "warzone") {
+    return {
+      left: "enemy-l4-left",
+      right: "enemy-l4-right",
+      leftShooting: "enemy-l4-left-shooting",
+      rightShooting: "enemy-l4-right-shooting"
+    };
+  }
+  if (mapId === "laboratory") {
+    return {
+      left: "enemy-l5-left",
+      right: "enemy-l5-right",
+      leftShooting: "enemy-l5-left-shooting",
+      rightShooting: "enemy-l5-right-shooting"
+    };
+  }
   return {
     left: "enemy-left",
     right: "enemy-right",
@@ -33,7 +49,8 @@ function getEnemyAssetKeys(mapId) {
 }
 
 class Enemy {
-  constructor(entityManager, x, y, patrolWidth = 180, type = "rival") {
+  constructor(entityManager, x, y, patrolWidth = 180, type = "rival", statOverride = null) {
+    const stats = statOverride || GAME_CONST.enemy;
     this.entityManager = entityManager;
     this.entity = entityManager.createEntity();
     this.entity
@@ -47,7 +64,7 @@ class Enemy {
         createTransform({
           x,
           y,
-          vx: -GAME_CONST.enemy.speed,
+          vx: -stats.speed,
           width: GAME_CONST.entity.enemy.width,
           height: GAME_CONST.entity.enemy.height,
           gravity: GAME_CONST.enemy.gravity,
@@ -57,8 +74,8 @@ class Enemy {
       .addComponent(
         "health",
         createHealth({
-          health: GAME_CONST.enemy.maxHealth,
-          maxHealth: GAME_CONST.enemy.maxHealth,
+          health: stats.maxHealth,
+          maxHealth: stats.maxHealth,
           knockbackVelocityX: 0,
           knockbackTimer: 0,
           killCounted: false,
@@ -71,9 +88,10 @@ class Enemy {
           direction: -1,
           patrolMinX: x - patrolWidth * 0.5,
           patrolMaxX: x + patrolWidth * 0.5,
-          shootTimer: Utils.randomRange(0.2, GAME_CONST.enemy.shootCooldown),
+          shootTimer: Utils.randomRange(0.2, stats.shootCooldown),
           shootingTimer: 0,
           type,
+          statOverride,
           jumpTimer: Utils.randomRange(
             GAME_CONST.enemy.jumpCooldownMin,
             GAME_CONST.enemy.jumpCooldownMax
@@ -96,7 +114,7 @@ class Enemy {
           animationSpeed: 0.1,
           scale: 2.5,
           noFlip: true,
-          color: GAME_CONST.entity.enemy.color,
+          color: stats.color || GAME_CONST.entity.enemy.color,
           offsetY: 24,
         })
       )
@@ -126,13 +144,14 @@ class Enemy {
   update(deltaTime, deps) {
     const difficultyScale = deps.difficultyScale;
     const threatScale = Math.max(0, difficultyScale - 1);
+    const stats = this.ai.statOverride || GAME_CONST.enemy;
     const transform = this.transform;
     const ai = this.ai;
     const health = this.health;
     const sprite = this.entity.getComponent("sprite");
 
     const speedScale = 1 + threatScale * GAME_CONST.enemy.threatSpeedScale;
-    const baseMoveX = ai.direction * GAME_CONST.enemy.speed * speedScale;
+    const baseMoveX = ai.direction * stats.speed * speedScale;
     transform.facing = ai.direction;
     transform.velocity.x = baseMoveX + health.knockbackVelocityX;
     health.knockbackVelocityX *= 0.92;
@@ -255,7 +274,7 @@ class Enemy {
       sprite.type = "sprite";
       sprite.noFlip = true;
       sprite.frameY = 0;
-      sprite.color = GAME_CONST.entity.enemy.color;
+      sprite.color = stats.color || GAME_CONST.entity.enemy.color;
 
       if (isShooting) {
         sprite.frameX = 0;
@@ -285,14 +304,16 @@ class Enemy {
 
     if (
       health.knockbackTimer <= 0 &&
-      distance < GAME_CONST.enemy.shootRange + GAME_CONST.enemy.threatRangeBonusPerScale * threatScale &&
+      distance < stats.shootRange + GAME_CONST.enemy.threatRangeBonusPerScale * threatScale &&
       ai.shootTimer <= 0
     ) {
+      const threatDamageBonusPerScale = stats.threatDamageBonusPerScale ??
+        GAME_CONST.enemy.threatDamageBonusPerScale;
       deps.projectiles.spawn(
         { x: centerX, y: centerY },
         { x: dx, y: dy * 0.3 },
         GAME_CONST.projectile.enemySpeed * (0.95 + difficultyScale * GAME_CONST.enemy.threatProjectileSpeedScale),
-        GAME_CONST.enemy.damage + Math.floor(threatScale * GAME_CONST.enemy.threatDamageBonusPerScale),
+        stats.damage + Math.floor(threatScale * threatDamageBonusPerScale),
         "enemy",
         GAME_CONST.entity.projectile.enemy.color,
         650 * (deps.knockbackMultiplier || 1) * Math.sign(dx || 1)
@@ -304,7 +325,7 @@ class Enemy {
       }
 
       const shootCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatShootCadenceScale;
-      const baseCooldown = GAME_CONST.enemy.shootCooldown / shootCadenceScale;
+      const baseCooldown = stats.shootCooldown / shootCadenceScale;
       ai.shootTimer = Math.max(0.16, baseCooldown + Utils.randomRange(-0.08, 0.12));
       ai.shootingTimer = 0.25;
     }
@@ -333,17 +354,19 @@ class EnemyManager {
     this.enemies = [];
     this.spawnTimer = 0;
     this.totalSpawned = 0;
-    if (mapId === "laboratory") return;
-    for (let i = 0; i < 3; i += 1) this.spawnFromPlatforms(platforms);
+    for (let i = 0; i < 3; i += 1) this.spawnFromPlatforms(platforms, mapId);
   }
 
-  spawnFromPlatforms(platforms) {
+  spawnFromPlatforms(platforms, mapId = "space") {
     if (!platforms.length) return;
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
     const x = platform.x + platform.width * (0.2 + Math.random() * 0.6);
     const y = platform.y - GAME_CONST.entity.enemy.height;
     const patrolWidth = Math.max(120, platform.width - 20);
-    this.enemies.push(new Enemy(this.entityManager, x, y, patrolWidth));
+    const statOverride = mapId === "laboratory" ? GAME_CONST.level5enemy : null;
+    this.enemies.push(
+      new Enemy(this.entityManager, x, y, patrolWidth, "rival", statOverride)
+    );
     this.totalSpawned += 1;
   }
 
@@ -351,8 +374,11 @@ class EnemyManager {
     this.spawnTimer -= deltaTime;
     const difficultyScale = deps.difficultyScale || 1.0;
     const difficultyStep = Math.max(0, Math.floor((difficultyScale - 1) / 0.15));
-    const dynamicMaxActive = this.maxActive +
+    const rawDynamicMax = this.maxActive +
       difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
+    const dynamicMaxActive = deps.currentMapId === "laboratory"
+      ? Math.min(4, rawDynamicMax)
+      : rawDynamicMax;
 
     for (const enemy of this.enemies) {
       if (enemy.entity.markedForRemoval) continue;
@@ -366,12 +392,11 @@ class EnemyManager {
 
     if (
       deps.gameState === "playing" &&
-      deps.currentMapId !== "laboratory" &&
       this.enemies.length < dynamicMaxActive &&
       this.kills < this.killTarget &&
       this.spawnTimer <= 0
     ) {
-      this.spawnFromPlatforms(deps.platforms);
+      this.spawnFromPlatforms(deps.platforms, deps.currentMapId);
       const spawnCadenceScale = Math.max(
         GAME_CONST.enemy.minSpawnCadenceScale,
         1 - difficultyStep * GAME_CONST.enemy.threatSpawnCadencePerStep

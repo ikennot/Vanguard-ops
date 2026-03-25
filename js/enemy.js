@@ -316,7 +316,7 @@ class Enemy {
         stats.damage + Math.floor(threatScale * threatDamageBonusPerScale),
         "enemy",
         GAME_CONST.entity.projectile.enemy.color,
-        650 * (deps.knockbackMultiplier || 1) * Math.sign(dx || 1)
+        650 * (1 + threatScale * GAME_CONST.enemy.threatKnockbackScale) * Math.sign(dx || 1)
       );
 
       const audioService = serviceLocator.get("audio");
@@ -374,8 +374,9 @@ class EnemyManager {
     this.spawnTimer -= deltaTime;
     const difficultyScale = deps.difficultyScale || 1.0;
     const difficultyStep = Math.max(0, Math.floor((difficultyScale - 1) / 0.15));
-    const rawDynamicMax = this.maxActive +
-      difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
+    const mapData = GAME_CONST.maps[deps.currentMapId];
+    const mapMax = mapData?.maxEnemies ?? this.maxActive;
+    const rawDynamicMax = mapMax + difficultyStep * GAME_CONST.enemy.threatExtraActivePerStep;
     const dynamicMaxActive = deps.currentMapId === "laboratory"
       ? Math.min(4, rawDynamicMax)
       : rawDynamicMax;

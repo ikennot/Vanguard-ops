@@ -601,7 +601,6 @@ class Game {
       gameState: this.state,
       currentMapId: this.currentMapId,
       platforms: this.platforms.platforms,
-      knockbackMultiplier: this.getEnemyKnockbackMultiplier(),
       difficultyScale: this.getGameplayScale()
     });
     if (this.currentMapId === "laboratory") {

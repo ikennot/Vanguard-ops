@@ -57,7 +57,8 @@ export const GAME_CONST = {
     threatDamageBonusPerScale: 7,
     threatExtraActivePerStep: 1,
     threatSpawnCadencePerStep: 0.12,
-    minSpawnCadenceScale: 0.55
+    minSpawnCadenceScale: 0.55,
+    threatKnockbackScale: 2.2
   },
   level5enemy: {
     maxHealth: 220,
@@ -101,7 +102,8 @@ export const GAME_CONST = {
     space: {
       id: "space",
       name: "Space",
-      targetKills: 1,
+      targetKills: 15,
+      maxEnemies: 4,
       description: "Balanced open platforms over a hot star surface.",
       theme: { bgTop: "#1d1742", bgBottom: "#37170f", platform: "#9fd2e8" },
       spawn: { x: 620, y: 288 },
@@ -116,7 +118,8 @@ export const GAME_CONST = {
     jungle: {
       id: "jungle",
       name: "Jungle",
-      targetKills: 1,
+      targetKills: 20,
+      maxEnemies: 5,
       description: "Dense layered platforms for close skirmishes.",
       theme: { bgTop: "#1b3a2d", bgBottom: "#4d5e2c", platform: "#9f7d41" },
       spawn: { x: 1100, y: 200 },
@@ -130,7 +133,8 @@ export const GAME_CONST = {
     canyon: {
       id: "canyon",
       name: "Canyon",
-      targetKills: 1,
+      targetKills: 25,
+      maxEnemies: 6,
       description: "Narrow central arena with high-risk edge play.",
       theme: { bgTop: "#7f5e3e", bgBottom: "#b18859", platform: "#7a5a3a" },
       spawn: { x: 690, y: 258 },
@@ -144,7 +148,8 @@ export const GAME_CONST = {
     warzone: {
       id: "warzone",
       name: "Warzone",
-      targetKills: 1,
+      targetKills: 30,
+      maxEnemies: 7,
       description: "Battlefield with heavy machinery and destruction.",
       theme: { bgTop: "#4a3a2a", bgBottom: "#2a1a0a", platform: "#ccaa88" },
       spawn: { x: 640, y: 300 },

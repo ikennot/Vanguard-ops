@@ -184,6 +184,8 @@ const assetManifest = [
   { key: "bgm-opening", src: "assets/audio/sfx/opening.mp3", type: "audio" },
   { key: "bgm-jungle", src: "assets/audio/sfx/jungle.mp3", type: "audio" },
   { key: "bgm-volcano", src: "assets/audio/sfx/volcano.mp3", type: "audio" },
+  { key: "bgm-war", src: "assets/audio/sfx/war.mp3", type: "audio" },
+  { key: "bgm-lab", src: "assets/audio/sfx/lab.mp3", type: "audio" },
   { key: "sfx-respawn-fall", src: "assets/audio/sfx/respawn-fall.mp3", type: "audio" },
   { key: "bgm-victory", src: "assets/audio/sfx/victory.mp3", type: "audio" }
 ];

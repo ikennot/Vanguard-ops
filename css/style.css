@@ -207,6 +207,49 @@ button {
   transform: scale(1.05);
 }
 
+.victory-actions {
+  position: absolute;
+  top: 200px;
+  right: 50px;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+}
+
+.victory-actions img {
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
+.victory-ok-actions {
+  position: absolute;
+  left: -220px;
+  bottom: -200px;
+  transform: translateX(-50%);
+  z-index: 15;
+}
+
+.victory-ok-actions img {
+  width: 190px;
+  display: block;
+}
+
+.defeat-actions {
+  position: absolute;
+  top: 200px;
+  right: 50px;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+}
+
+.defeat-actions img {
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
 .end-screen {
   background: radial-gradient(circle at center, rgba(18, 36, 48, 0.93), rgba(5, 10, 15, 0.94));
 }
@@ -454,18 +497,64 @@ button {
   display: block;
 }
 
-#screen-upgrade .menu-actions {
+.upgrade-options {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 300px;
+}
+
+.upgrade-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 4px solid transparent;
+  border-radius: 12px;
+  padding: 0px;
+}
+
+.upgrade-card-image {
+  width: 250px;
+  height: auto;
+}
+
+.upgrade-card-label {
+  color: #ffffff;
+  font-size: 20px;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px #000;
+  letter-spacing: 2px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px 20px;
+  border-radius: 5px;
+  border: 1px solid #555;
+}
+
+#screen-upgrade .menu-actions,
+.upgrade-actions {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: 53px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   z-index: 10;
 }
 
-#screen-upgrade .menu-actions button img {
-  width: 200px;
+#screen-upgrade .menu-actions button img,
+.upgrade-actions button img {
+  width: 150px;
   height: auto;
 }
 
@@ -538,36 +627,36 @@ button {
 
 .pause-actions {
   position: absolute;
-  bottom: 32%;
-  left: 0;
-  right: 0;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-}
-
-.pause-top-btns {
-  display: flex;
-  gap: 6px;
   justify-content: center;
+  gap: 0px;
+  padding-top: 220px;
 }
 
-/* crop white padding using aspect-ratio + object-fit: cover */
-.pause-top-btns .btn-img img {
-  width: min(175px, 28vw);
-  aspect-ratio: 4 / 1;
-  object-fit: cover;
-  object-position: center;
+.pause-image-btn {
+  width: min(280px, 42vw);
+  line-height: 100%;
+  margin-top: -120px;
+}
+
+.pause-image-btn img {
+  width: 100%;
+  height: auto;
   display: block;
 }
 
-.pause-actions .btn-return img {
-  width: min(260px, 42vw) !important;
-  aspect-ratio: 4 / 1;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+.pause-image-btn:hover,
+.pause-image-btn:focus-visible {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.pause-image-btn-main {
+  width: min(320px, 48vw);
+  margin-top: -130px;
 }
 
 .hud-pause-icon {

@@ -34,9 +34,15 @@ class RenderSystem {
       const transform = entity.getComponent("transform");
       const sprite = entity.getComponent("sprite");
       if (!transform || !sprite) continue;
+      const projectile = entity.getComponent("projectile");
 
       const posX = transform.position.x - camera.x;
       const posY = transform.position.y - camera.y;
+
+      if (projectile) {
+        this.drawProjectile(ctx, transform, sprite.color, camera);
+        continue;
+      }
 
       const shouldDrawSprite =
         !GAME_CONST.debug.hitboxOnly &&
@@ -113,11 +119,13 @@ class RenderSystem {
       // Fuel Indicator above player's head
       const playerState = entity.getComponent("playerState");
       if (playerState && playerState.jetpackFuel !== undefined) {
-        const barWidth = 40;
+        const baseBarWidth = 40;
         const barHeight = 4;
+        const maxFuel = Math.max(100, playerState.maxJetpackFuel || 100);
+        const barWidth = baseBarWidth * (maxFuel / 100);
         const barX = posX + (transform.width - barWidth) / 2;
         const barY = posY - 20;
-        const fuelRatio = playerState.jetpackFuel / 100;
+        const fuelRatio = Math.max(0, Math.min(1, playerState.jetpackFuel / maxFuel));
 
         // Background (gray)
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -141,6 +149,46 @@ class RenderSystem {
   drawFallback(ctx, x, y, w, h, color) {
     ctx.fillStyle = color;
     ctx.fillRect(x, y, w, h);
+  }
+
+  drawProjectile(ctx, transform, color, camera) {
+    const x = transform.position.x - camera.x;
+    const y = transform.position.y - camera.y;
+    const w = transform.width;
+    const h = transform.height;
+    const trailLength = GAME_CONST.effects.projectiles.trailLength;
+    const trailWidth = GAME_CONST.effects.projectiles.trailWidth;
+    const glowAlpha = GAME_CONST.effects.projectiles.glowAlpha;
+    const velocity = transform.velocity || { x: 0, y: 0 };
+    const speed = Math.hypot(velocity.x, velocity.y) || 1;
+    const dirX = velocity.x / speed;
+    const dirY = velocity.y / speed;
+    const centerX = x + w * 0.5;
+    const centerY = y + h * 0.5;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = glowAlpha;
+    ctx.lineWidth = trailWidth;
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(centerX - dirX * trailLength, centerY - dirY * trailLength);
+    ctx.stroke();
+
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, Math.max(w, h) * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    ctx.restore();
   }
 
   drawGun(ctx, x, y, w, h, dir, sprite) {

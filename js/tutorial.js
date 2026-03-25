@@ -1,3 +1,5 @@
+import { GAME_CONST } from "./constants.js";
+
 export class TutorialManager {
   constructor(canvas) {
     this.canvas = canvas;
@@ -73,7 +75,7 @@ export class TutorialManager {
     
     // Physics constants for tutorial
     this.physics = {
-      speed: 600,
+      speed: GAME_CONST.player.speed,
       jumpForce: -600,
       gravity: 1500,
       jetpackForce: 2600,
@@ -85,8 +87,8 @@ export class TutorialManager {
     this.enemy = {
       x: 800,
       y: 520,
-      width: 96,
-      height: 96,
+      width: 120,
+      height: 120,
       collHeight: 64, // Smaller collision box
       vx: 0,
       vy: 0,

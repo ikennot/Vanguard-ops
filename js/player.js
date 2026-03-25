@@ -76,6 +76,7 @@ class Player {
           state: "idle",
           shootTimer: 0,
           jetpackFuel: this.maxJetpackFuel,
+          maxJetpackFuel: this.maxJetpackFuel,
           spawnPoint: { ...spawnPoint }
         }
       )

@@ -414,6 +414,52 @@ export class TutorialManager {
     return this.audioService ? this.audioService.particlesEnabled !== false : true;
   }
 
+  drawTriangleIndicator(x, y, size) {
+    const indicator = GAME_CONST.player.indicator || {};
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.lineTo(x - size * 0.65, y - size);
+    this.ctx.lineTo(x + size * 0.65, y - size);
+    this.ctx.closePath();
+    this.ctx.fillStyle = indicator.color || "#ffe066";
+    this.ctx.fill();
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = indicator.outlineColor || "#2b1e08";
+    this.ctx.stroke();
+  }
+
+  drawPlayerIndicator() {
+    const p = this.player;
+    const indicator = GAME_CONST.player.indicator || {};
+    const size = indicator.size || 12;
+    const offsetY = indicator.offsetY || 28;
+    const visualTopY = p.y - (p.height - p.collHeight) + 29;
+    const centerX = p.x + p.width * 0.5;
+    const tipY = visualTopY - offsetY;
+    const onScreen =
+      centerX >= 0 &&
+      centerX <= this.width &&
+      tipY >= 0 &&
+      tipY <= this.height;
+
+    if (onScreen) {
+      this.drawTriangleIndicator(centerX, tipY, size);
+      return;
+    }
+
+    const edgeSize = size + 3;
+    const margin = edgeSize + 8;
+    const clampedX = Math.max(margin, Math.min(this.width - margin, centerX));
+    const clampedY = Math.max(margin, Math.min(this.height - margin, tipY));
+    const angle = Math.atan2(tipY - clampedY, centerX - clampedX);
+
+    this.ctx.save();
+    this.ctx.translate(clampedX, clampedY);
+    this.ctx.rotate(angle + Math.PI / 2);
+    this.drawTriangleIndicator(0, 0, edgeSize);
+    this.ctx.restore();
+  }
+
   draw() {
     this.ctx.clearRect(0, 0, this.width, this.height);
     const p = this.player;
@@ -512,6 +558,8 @@ export class TutorialManager {
       this.ctx.arc(Math.round(b.x), Math.round(b.y), 3, 0, Math.PI * 2);
       this.ctx.fill();
     }
+
+    this.drawPlayerIndicator();
 
     // Draw crosshair (circle cursor)
     this.ctx.strokeStyle = "rgba(119, 212, 222, 0.8)";

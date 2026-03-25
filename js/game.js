@@ -39,7 +39,7 @@ class Game {
     this.particles = services.particles || new ParticleSystem();
     this.hud = services.hud || new Hud();
     this.menu = services.menu || new MenuController();
-    this.tutorialManager = new TutorialManager(document.getElementById("tutorial-canvas"));
+    this.tutorialManager = new TutorialManager(document.getElementById("tutorial-canvas"), this.audio);
 
     this.physicsSystem =
       services.physicsSystem ||
@@ -168,7 +168,12 @@ class Game {
     });
 
     document.getElementById("btn-exit").addEventListener("click", () => {
-      window.alert("Exit is disabled in browser mode. Close the tab to exit.");
+      window.open("", "_self");
+      window.close();
+
+      if (!window.closed) {
+        window.alert("Browser blocked the tab from closing. Press Ctrl+W to close it.");
+      }
     });
 
     document.getElementById("btn-rules-ok").addEventListener("click", () => {

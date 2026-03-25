@@ -100,7 +100,13 @@ class Enemy {
           hoverTimer: Math.random() * Math.PI * 2,
           dropDownTimer: Utils.randomRange(2.0, 5.0),
           jetpackFuel: 100,
-          maxJetpackFuel: 100
+          maxJetpackFuel: 100,
+          flightBurstTimer: 0,
+          flightCooldownTimer: Utils.randomRange(
+            GAME_CONST.enemy.warzoneFlightCooldownMin,
+            GAME_CONST.enemy.warzoneFlightCooldownMax
+          ),
+          lastPlatformY: null
         }
       )
       .addComponent(
@@ -141,6 +147,23 @@ class Enemy {
     return this.transform.width;
   }
 
+  updatePatrolBounds(platforms) {
+    const transform = this.transform;
+    const ai = this.ai;
+    const currentPlatform = platforms.find((platform) =>
+      transform.position.x + transform.width > platform.x &&
+      transform.position.x < platform.x + platform.width &&
+      Math.abs((transform.position.y + transform.height) - platform.y) < 6
+    );
+
+    if (!currentPlatform) return;
+    if (ai.lastPlatformY === currentPlatform.y) return;
+
+    ai.lastPlatformY = currentPlatform.y;
+    ai.patrolMinX = currentPlatform.x + 10;
+    ai.patrolMaxX = currentPlatform.x + currentPlatform.width - 10;
+  }
+
   update(deltaTime, deps) {
     const difficultyScale = deps.difficultyScale;
     const threatScale = Math.max(0, difficultyScale - 1);
@@ -157,23 +180,69 @@ class Enemy {
     health.knockbackVelocityX *= 0.92;
     if (Math.abs(health.knockbackVelocityX) < 8) health.knockbackVelocityX = 0;
 
-    const canJump = deps.currentMapId === "jungle";
-    const canFly = deps.currentMapId === "canyon";
+    const canJump = deps.currentMapId === "jungle" || deps.currentMapId === "warzone";
+    const canFly = deps.currentMapId === "canyon" || deps.currentMapId === "warzone";
+    const isCanyon = deps.currentMapId === "canyon";
+    const isWarzone = deps.currentMapId === "warzone";
     const player = deps.player;
+
+    if (isCanyon) {
+      ai.maxJetpackFuel = GAME_CONST.enemy.canyonJetpackFuelMax;
+      ai.jetpackFuel = Math.min(ai.jetpackFuel, ai.maxJetpackFuel);
+    }
+
+    if (isWarzone) {
+      ai.maxJetpackFuel = GAME_CONST.enemy.warzoneJetpackFuelMax;
+      ai.jetpackFuel = Math.min(ai.jetpackFuel, ai.maxJetpackFuel);
+    }
     
     if (canFly && player) {
       // Restore gravity to match player's physics feel
       transform.gravity = GAME_CONST.enemy.gravity;
 
-      const targetY = player.position.y - 120;
-      const jetpackForce = 2400; // Strong force to overcome gravity and ascend
+      const targetY = player.position.y - (
+        isWarzone ? GAME_CONST.enemy.warzoneFlightHeightOffset : 120
+      );
+      const jetpackForce = isWarzone ? GAME_CONST.enemy.warzoneJetpackForce : 2400;
+      let canStartFlight = true;
+
+      if (isWarzone) {
+        ai.flightCooldownTimer = Math.max(0, ai.flightCooldownTimer - deltaTime);
+        const needsAltitude = transform.position.y > targetY + 30;
+        const hasFlightFuel = ai.jetpackFuel > GAME_CONST.enemy.warzoneFlightFuelUseThreshold;
+        const slotAvailable =
+          deps.activeFlyers < GAME_CONST.enemy.warzoneMaxConcurrentFlyers || ai.flightBurstTimer > 0;
+
+        canStartFlight = needsAltitude && hasFlightFuel && slotAvailable;
+
+        if (ai.flightBurstTimer <= 0 && ai.flightCooldownTimer <= 0 && canStartFlight) {
+          ai.flightBurstTimer = Utils.randomRange(
+            GAME_CONST.enemy.warzoneFlightBurstMin,
+            GAME_CONST.enemy.warzoneFlightBurstMax
+          );
+          ai.flightCooldownTimer = Utils.randomRange(
+            GAME_CONST.enemy.warzoneFlightCooldownMin,
+            GAME_CONST.enemy.warzoneFlightCooldownMax
+          );
+        }
+      }
 
       let isUsingJetpack = false;
       // If below target height AND has fuel, "activate jetpack"
-      if (transform.position.y > targetY && ai.jetpackFuel > 0) {
+      if (
+        transform.position.y > targetY &&
+        ai.jetpackFuel > 0 &&
+        (!isWarzone || ai.flightBurstTimer > 0)
+      ) {
         transform.velocity.y -= jetpackForce * deltaTime;
-        ai.jetpackFuel = Math.max(0, ai.jetpackFuel - GAME_CONST.player.jetpackDrain * deltaTime);
+        const drain = isWarzone
+          ? GAME_CONST.player.jetpackDrain * 1.15
+          : isCanyon
+            ? GAME_CONST.player.jetpackDrain * GAME_CONST.enemy.canyonJetpackDrainScale
+            : GAME_CONST.player.jetpackDrain;
+        ai.jetpackFuel = Math.max(0, ai.jetpackFuel - drain * deltaTime);
         isUsingJetpack = true;
+        if (isWarzone) ai.flightBurstTimer = Math.max(0, ai.flightBurstTimer - deltaTime);
 
         // Match player's jetpack particles (blue)
         const particleSystem = deps.particles || serviceLocator.get("particles");
@@ -187,8 +256,17 @@ class Enemy {
       }
 
       // Fuel regeneration when on ground or not using jetpack
-      if (transform.onGround) {
-        ai.jetpackFuel = Math.min(ai.maxJetpackFuel, ai.jetpackFuel + GAME_CONST.player.jetpackRegen * deltaTime);
+      if (transform.onGround || !isUsingJetpack) {
+        const regen = isWarzone
+          ? GAME_CONST.player.jetpackRegen * 0.65
+          : isCanyon
+            ? GAME_CONST.player.jetpackRegen * GAME_CONST.enemy.canyonJetpackRegenScale
+            : GAME_CONST.player.jetpackRegen;
+        ai.jetpackFuel = Math.min(ai.maxJetpackFuel, ai.jetpackFuel + regen * deltaTime);
+      }
+
+      if (isWarzone && !isUsingJetpack && ai.flightBurstTimer > 0) {
+        ai.flightBurstTimer = Math.max(0, ai.flightBurstTimer - deltaTime);
       }
 
       // Flight visual state
@@ -204,45 +282,59 @@ class Enemy {
       transform.gravity = GAME_CONST.enemy.gravity;
       
       if (canJump) {
-        // Drop down logic for jungle map
+        const isPlayerBelow = player && player.position.y > transform.position.y + 100;
+        const isPlayerAbove = player && player.position.y < transform.position.y - 90;
+        const horizontalFar = player && Math.abs(player.position.x - transform.position.x) > 220;
+        const needsPlatformTransfer = player && (
+          Math.abs(player.position.x - transform.position.x) > 150 ||
+          Math.abs(player.position.y - transform.position.y) > 70
+        );
+
+        // Drop down logic for jungle/warzone map
         if (transform.onGround) {
           ai.dropDownTimer -= deltaTime;
-          const isPlayerBelow = player && player.position.y > transform.position.y + 100;
           
           if (isPlayerBelow && ai.dropDownTimer <= 0) {
             transform.oneWayPlatformIgnoreTimer = GAME_CONST.player.dropThroughDuration;
             transform.velocity.y = GAME_CONST.player.dropDownVelocity;
             transform.onGround = false;
-            ai.dropDownTimer = Utils.randomRange(3.0, 6.0);
+            ai.dropDownTimer = isWarzone
+              ? Utils.randomRange(
+                  GAME_CONST.enemy.warzoneDropCadenceMin,
+                  GAME_CONST.enemy.warzoneDropCadenceMax
+                )
+              : Utils.randomRange(3.0, 6.0);
           }
         } else {
-          // If we just landed on a new platform, update patrol bounds
-          if (transform.velocity.y === 0 && !ai.isJumping) {
-            const currentPlatform = deps.platforms.find(p => 
-              transform.position.x + transform.width > p.x && 
-              transform.position.x < p.x + p.width &&
-              Math.abs((transform.position.y + transform.height) - p.y) < 5
-            );
-            if (currentPlatform) {
-              const patrolWidth = Math.max(120, currentPlatform.width - 20);
-              ai.patrolMinX = currentPlatform.x + 10;
-              ai.patrolMaxX = currentPlatform.x + currentPlatform.width - 10;
-            }
-          }
+          ai.lastPlatformY = null;
         }
 
-        ai.jumpTimer -= deltaTime * (1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale);
-        if (ai.jumpTimer <= 0 && transform.onGround) {
+        const jumpCadenceMultiplier = 1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale;
+        ai.jumpTimer -= deltaTime * jumpCadenceMultiplier;
+        if (
+          ai.jumpTimer <= 0 &&
+          transform.onGround &&
+          (
+            isPlayerAbove ||
+            (isWarzone && horizontalFar && Math.random() < 0.35) ||
+            (isWarzone && needsPlatformTransfer && Math.random() < 0.55)
+          )
+        ) {
           const jumpForceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpForceScale;
-          const jungleJumpMultiplier = 1.5;
-          transform.velocity.y = GAME_CONST.enemy.jumpForce * jumpForceScale * jungleJumpMultiplier;
+          const baseJumpForce = isWarzone ? GAME_CONST.enemy.warzoneJumpForce : GAME_CONST.enemy.jumpForce;
+          const jumpMultiplier = isWarzone ? 1 : 1.5;
+          transform.velocity.y = baseJumpForce * jumpForceScale * jumpMultiplier;
           transform.onGround = false;
           ai.isJumping = true;
-          const jumpCadenceScale = 1 + threatScale * GAME_CONST.enemy.threatJumpCadenceScale;
-          ai.jumpTimer = Utils.randomRange(
-            GAME_CONST.enemy.jumpCooldownMin,
-            GAME_CONST.enemy.jumpCooldownMax
-          ) / jumpCadenceScale;
+          ai.jumpTimer = isWarzone
+            ? Utils.randomRange(
+                GAME_CONST.enemy.warzoneJumpCadenceMin,
+                GAME_CONST.enemy.warzoneJumpCadenceMax
+              ) / jumpCadenceMultiplier
+            : Utils.randomRange(
+                GAME_CONST.enemy.jumpCooldownMin,
+                GAME_CONST.enemy.jumpCooldownMax
+              ) / jumpCadenceMultiplier;
         }
       } else {
         ai.isJumping = false;
@@ -250,6 +342,7 @@ class Enemy {
     }
     if (transform.onGround) {
       ai.isJumping = false;
+      this.updatePatrolBounds(deps.platforms);
     }
 
     if (transform.position.x < ai.patrolMinX) ai.direction = 1;
@@ -381,12 +474,22 @@ class EnemyManager {
       ? Math.min(4, rawDynamicMax)
       : rawDynamicMax;
 
+    let activeFlyers = this.enemies.filter((enemy) => {
+      if (enemy.entity.markedForRemoval) return false;
+      if (deps.currentMapId !== "warzone") return false;
+      return enemy.ai.flightBurstTimer > 0;
+    }).length;
+
     for (const enemy of this.enemies) {
       if (enemy.entity.markedForRemoval) continue;
+      const hadFlightBurst = enemy.ai.flightBurstTimer > 0;
       enemy.update(deltaTime, {
         ...deps,
-        difficultyScale
+        difficultyScale,
+        activeFlyers
       });
+      const hasFlightBurst = enemy.ai.flightBurstTimer > 0;
+      if (!hadFlightBurst && hasFlightBurst) activeFlyers += 1;
     }
 
     this.enemies = this.enemies.filter((enemy) => !enemy.entity.markedForRemoval);

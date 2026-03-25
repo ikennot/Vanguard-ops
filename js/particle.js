@@ -1,4 +1,5 @@
 import { Utils } from "./utils.js";
+import { GAME_CONST } from "./constants.js";
 
 class ParticleSystem {
   constructor() {
@@ -30,11 +31,27 @@ class ParticleSystem {
   }
 
   draw(ctx, camera) {
+    const particleSize = GAME_CONST.effects.particles.size;
+    const glowSize = GAME_CONST.effects.particles.glowSize;
     for (const p of this.particles) {
       const alpha = Math.max(0, p.life / p.maxLife);
+      const drawX = p.x - camera.x;
+      const drawY = p.y - camera.y;
+
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, glowSize * alpha, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.globalAlpha = alpha;
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x - camera.x, p.y - camera.y, 3, 3);
+      ctx.fillRect(
+        drawX - particleSize * 0.5,
+        drawY - particleSize * 0.5,
+        particleSize,
+        particleSize
+      );
     }
     ctx.globalAlpha = 1;
   }

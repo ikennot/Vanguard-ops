@@ -116,15 +116,13 @@
       <div class="pause-card-wrapper">
         <img src="assets/space/gamepaused.png" alt="Game Paused" class="pause-card-bg">
         <div class="pause-actions">
-          <div class="pause-top-btns">
-            <button id="btn-resume" class="btn-img">
-              <img src="assets/space/resume.png" alt="Resume">
-            </button>
-            <button id="btn-restart" class="btn-img">
-              <img src="assets/space/restart.png" alt="Restart">
-            </button>
-          </div>
-          <button id="btn-main" class="btn-img btn-return">
+          <button id="btn-resume" class="btn-img pause-image-btn">
+            <img src="assets/space/resume.png" alt="Resume">
+          </button>
+          <button id="btn-restart" class="btn-img pause-image-btn">
+            <img src="assets/space/restart.png" alt="Restart">
+          </button>
+          <button id="btn-main" class="btn-img pause-image-btn pause-image-btn-main">
             <img src="assets/space/returntomainmenu.png" alt="Return to Main Menu">
           </button>
         </div>
@@ -180,35 +178,35 @@
         <img src="assets/sprites/ui/upgrade.png" alt="Upgrades available" class="upgrade-fullscreen-image">
         
         <!-- Upgrades Content Overlay -->
-        <div style="position: absolute; inset: 0; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; z-index: 5; margin-top: 400px;">
+        <div class="upgrade-options">
           
           <!-- Upgrade Option: Ammo -->
-          <div id="upgrade-ammo" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
-            <img src="assets/sprites/ui/ammo.png" alt="Ammo Upgrade" style="width: 300px; height: auto;">
-            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+          <div id="upgrade-ammo" class="upgrade-card">
+            <img src="assets/sprites/ui/ammo.png" alt="Ammo Upgrade" class="upgrade-card-image">
+            <div class="upgrade-card-label">
               EXTRA AMMO
             </div>
           </div>
 
           <!-- Upgrade Option: Jetpack -->
-          <div id="upgrade-jetpack" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
-            <img src="assets/sprites/ui/jetpack.png" alt="Jetpack Upgrade" style="width: 300px; height: auto;">
-            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+          <div id="upgrade-jetpack" class="upgrade-card">
+            <img src="assets/sprites/ui/jetpack.png" alt="Jetpack Upgrade" class="upgrade-card-image">
+            <div class="upgrade-card-label">
               JETPACK
             </div>
           </div>
 
           <!-- Upgrade Option: Life-up -->
-          <div id="upgrade-life" class="upgrade-card" style="display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s; border: 4px solid transparent; border-radius: 15px; padding: 15px;">
-            <img src="assets/sprites/ui/life-up.png" alt="Life Up" style="width: 300px; height: auto;">
-            <div style="color: #ffffff; font-size: 28px; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 4px #000; letter-spacing: 2px; text-align: center; background: rgba(0, 0, 0, 0.5); padding: 5px 20px; border-radius: 5px; border: 1px solid #555;">
+          <div id="upgrade-life" class="upgrade-card">
+            <img src="assets/sprites/ui/life-up.png" alt="Life Up" class="upgrade-card-image">
+            <div class="upgrade-card-label">
               EXTRA LIFE
             </div>
           </div>
           
         </div>
       </div>
-      <div class="menu-actions" style="z-index: 10;">
+      <div class="menu-actions upgrade-actions">
         <button id="btn-upgrade-ok" class="btn-img">
           <img src="assets/sprites/ui/buttons/ok.png" alt="OK">
         </button>
@@ -216,15 +214,20 @@
     </section>
 
     <section id="screen-victory" class="overlay hidden panel full-screen victory">
-      <img src="assets/win1/victory.png" alt="Mission Success" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <img id="victory-bg" src="assets/win1/victory.png" alt="Mission Success" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
       <div class="victory-container" style="position:relative; z-index:10; width:100%; height:100%;">
-        <div id="scoreboard-victory" class="scoreboard" style="position: absolute; top: -100px; right: 360px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2.8rem; line-height: 1.5; min-width: 350px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
-        <div class="menu-actions row" style="position: absolute; top: 360px; right: 120px; display: flex; gap: 15px; margin: 0;">
+        <div id="scoreboard-victory" class="scoreboard" style="position: absolute; top: -100px; right: 100px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2.5rem; line-height: 1.5; min-width: 350px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
+        <div class="menu-actions row victory-actions">
           <button id="btn-victory-back" class="btn-img btn-return">
-            <img src="assets/menu/back.png" alt="Back" style="width: 300px; height: auto;">
+            <img src="assets/menu/back.png" alt="Back">
           </button>
           <button id="btn-victory-next" class="btn-img">
-            <img src="assets/menu/nextlevel.png" alt="Next Level" style="width: 300px; height: auto;">
+            <img src="assets/menu/nextlevel.png" alt="Next Level">
+          </button>
+        </div>
+        <div id="victory-ok-actions" class="menu-actions victory-ok-actions hidden">
+          <button id="btn-victory-ok" class="btn-img">
+            <img src="assets/sprites/ui/buttons/ok.png" alt="OK">
           </button>
         </div>
       </div>
@@ -233,13 +236,13 @@
     <section id="screen-defeat" class="overlay hidden panel full-screen defeat">
       <img src="assets/win1/defeat.png" alt="Mission Failure" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
       <div class="defeat-container" style="position:relative; z-index:10; width:100%; height:100%;">
-        <div id="scoreboard-defeat" class="scoreboard" style="position: absolute; top: -100px; right: 360px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2.8rem; line-height: 1.5; min-width: 350px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
-        <div class="menu-actions row" style="position: absolute; top: 360px; right: 120px; display: flex; gap: 15px; margin: 0;">
+        <div id="scoreboard-defeat" class="scoreboard" style="position: absolute; top: -100px; right: 100px; color: #fff; padding: 0; border: none; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; font-weight: bold; font-size: 2.5rem; line-height: 1.5; min-width: 350px; text-shadow: 1px 1px 2px #000; text-align: left; background: transparent;"></div>
+        <div class="menu-actions row defeat-actions">
           <button id="btn-defeat-restart" class="btn-img">
-            <img src="assets/lose/restartmission.png" alt="Restart Mission" style="width: 300px; height: auto;">
+            <img src="assets/lose/restartmission.png" alt="Restart Mission">
           </button>
           <button id="btn-defeat-main" class="btn-img btn-return">
-            <img src="assets/lose/EXITlose.png" alt="Main Menu" style="width: 300px; height: auto;">
+            <img src="assets/lose/EXITlose.png" alt="Main Menu">
           </button>
         </div>
       </div>

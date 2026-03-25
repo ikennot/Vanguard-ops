@@ -223,6 +223,10 @@ class Game {
         this.backToMainMenu();
       }
     });
+    const victoryOkButton = document.getElementById("btn-victory-ok");
+    if (victoryOkButton) {
+      victoryOkButton.addEventListener("click", () => this.backToMainMenu());
+    }
 
     const upgradeAmmo = document.getElementById("upgrade-ammo");
     const upgradeJetpack = document.getElementById("upgrade-jetpack");
@@ -291,6 +295,8 @@ class Game {
       this.audio.stopAllSfx();
     }
 
+    this.syncVictoryScreen();
+
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
     else this.menu.show(nextState);
@@ -314,6 +320,23 @@ class Game {
 
     gameState.set(nextState);
     eventBus.emit("game:state-changed", nextState, previousState);
+  }
+
+  syncVictoryScreen() {
+    const victoryBg = document.getElementById("victory-bg");
+    const victoryScoreboard = document.getElementById("scoreboard-victory");
+    const victoryActions = document.querySelector(".victory-actions");
+    const victoryOkActions = document.getElementById("victory-ok-actions");
+    const isLaboratoryWin = this.currentMapId === "laboratory";
+
+    if (victoryBg) {
+      victoryBg.src = isLaboratoryWin
+        ? "assets/win1/finalbosswin.png"
+        : "assets/win1/victory.png";
+    }
+    if (victoryScoreboard) victoryScoreboard.classList.toggle("hidden", isLaboratoryWin);
+    if (victoryActions) victoryActions.classList.toggle("hidden", isLaboratoryWin);
+    if (victoryOkActions) victoryOkActions.classList.toggle("hidden", !isLaboratoryWin);
   }
 
   syncSettingsUI() {
@@ -486,6 +509,7 @@ class Game {
       this.player.lives += 1;
     } else if (id === "upgrade-jetpack") {
       this.player.maxJetpackFuel += 50;
+      this.player.playerState.maxJetpackFuel = this.player.maxJetpackFuel;
       this.player.jetpackFuel = this.player.maxJetpackFuel;
     } else if (id === "upgrade-ammo") {
       this.player.weapon.magSize.machinegun += 20;

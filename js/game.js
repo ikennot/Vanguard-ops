@@ -57,15 +57,19 @@ class Game {
 
     this.state = "main";
     this.selectedUpgrade = null;
+    this.pendingUpgrade = null;
+    this.earnedUpgradesByMap = {};
+    this.carriedLives = GAME_CONST.player.maxLives; // Starts at 5 as defined in GAME_CONST
     this.kills = 0;
     this.missionTime = 0;
     this.level = 0;
-    this.livesAtStartOfLevel = 3; // Default starting lives
+    this.livesAtStartOfLevel = GAME_CONST.player.maxLives; // Base default before tracking overrides this
     this.maps = ["space", "jungle", "canyon", "warzone", "laboratory"];
     this.unlockedMaps = ["space"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
+    this.isNewWin = false;
 
     this.bindUi();
     this.bindEvents();
@@ -254,7 +258,7 @@ class Game {
     document.getElementById("btn-upgrade-ok").addEventListener("click", () => {
       this.audio.playSfx("sfx-button");
       if (this.selectedUpgrade) {
-        this.applyUpgrade(this.selectedUpgrade);
+        this.pendingUpgrade = this.selectedUpgrade;
         this.selectedUpgrade = null;
         [upgradeAmmo, upgradeJetpack, upgradeLife].forEach((el) => {
           if (el) el.classList.remove("selected");
@@ -314,6 +318,10 @@ class Game {
         this.audio.playBgm("bgm-jungle");
       } else if (this.currentMapId === "canyon") {
         this.audio.playBgm("bgm-volcano");
+      } else if (this.currentMapId === "warzone") {
+        this.audio.playBgm("bgm-war");
+      } else if (this.currentMapId === "laboratory") {
+        this.audio.playBgm("bgm-lab");
       } else {
         this.audio.playBgm("bgm-bg");
       }
@@ -456,15 +464,64 @@ class Game {
   }
 
   startMission() {
+    this.isNewWin = false;
+    if (this.pendingUpgrade) {
+      this.earnedUpgradesByMap[this.currentMapId] = this.pendingUpgrade;
+      this.pendingUpgrade = null;
+    }
+    
+    // Setup lives before resetting entity completely
+    this.applyProgressionForCurrentMap();
+    
+    // Initialize map and tell player to keep those carefully crafted lives on transition
+    this.initializeMission(true);
+    
     this.livesAtStartOfLevel = this.player.lives;
-    this.initializeMission();
     this.setState("playing");
   }
 
-  initializeMission() {
+  applyProgressionForCurrentMap() {
+    // Preserve current carried lives state
+    const previousLives = Math.max(0, this.carriedLives || GAME_CONST.player.maxLives);
+    this.player.maxLives = GAME_CONST.player.maxLives;
+    this.player.maxJetpackFuel = 100;
+    this.player.weapon.magSize = { ...GAME_CONST.weapons.magSize };
+
+    // Set lives initially to the carried amount before applying upgrades
+    this.player.lives = previousLives;
+
+    const maxInclusive = this.mapIndex;
+    for (let i = 0; i < maxInclusive; i += 1) {
+      const mapId = this.maps[i];
+      const upgradeId = this.earnedUpgradesByMap[mapId];
+      if (upgradeId) {
+        // Only apply non-life upgrades so we don't double count extra lives
+        // already baked into the current carried player lives value
+        if (upgradeId !== "upgrade-life") {
+          this.applyUpgrade(upgradeId);
+        } else {
+          // just increase the max live limit, actual lives are tracked dynamically
+          this.player.maxLives += 1;
+        }
+      }
+    }
+    
+    // Apply final level's newly earned upgrade if taking one now
+    const currentMapUpgrade = this.earnedUpgradesByMap[this.maps[this.mapIndex]];
+    if (currentMapUpgrade) {
+       this.applyUpgrade(currentMapUpgrade);
+    }
+    
+    // Clamp at current max
+    this.player.lives = Math.min(this.player.maxLives, this.player.lives);
+
+    this.player.weapon.reset();
+  }
+
+  initializeMission(preserveLives = false) {
     this.entityManager.clear();
     this.platforms.setMap(this.currentMapId);
-    this.player.resetForSession(this.platforms.getSpawnPoint());
+    this.player.resetForSession(this.platforms.getSpawnPoint(), preserveLives);
     this.kills = 0;
     this.missionTime = 0;
     eventBus.emit("game:scoreChanged", {
@@ -485,8 +542,9 @@ class Game {
 
   restartMission() {
     // Restore lives from the start of the current failed level
+    this.carriedLives = this.livesAtStartOfLevel;
     this.player.lives = this.livesAtStartOfLevel;
-    this.initializeMission();
+    this.initializeMission(true);
     this.setState("playing");
   }
 
@@ -494,6 +552,9 @@ class Game {
     this.projectiles.clear();
     this.particles.particles = [];
     this.entityManager.flush();
+    this.pendingUpgrade = null;
+    this.selectedUpgrade = null;
+    this.carriedLives = GAME_CONST.player.maxLives;
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
@@ -511,7 +572,8 @@ class Game {
   applyUpgrade(id) {
     if (id === "upgrade-life") {
       this.player.maxLives += 1;
-      this.player.lives += 1;
+      this.player.lives = Math.min(this.player.maxLives, this.player.lives + 1);
+      this.carriedLives = this.player.lives;
     } else if (id === "upgrade-jetpack") {
       this.player.maxJetpackFuel += 50;
       this.player.playerState.maxJetpackFuel = this.player.maxJetpackFuel;
@@ -530,6 +592,7 @@ class Game {
     });
     if (this.currentMapId === "laboratory") return;
     if (this.kills >= this.currentMapData.targetKills && this.state === "playing") {
+      this.carriedLives = this.player.lives;
       // Show victory screen instead of auto-advancing
       this.updateScoreboard("victory", "Victory");
       this.setState("victory");
@@ -537,12 +600,12 @@ class Game {
       // Unlock next map if available (for selection in menu later)
       if (this.mapIndex < this.maps.length - 1) {
         const nextMap = this.maps[this.mapIndex + 1];
-        // Check if next map is already unlocked before adding it
+        // Only grant upgrade when this is the first clear of the current level.
         this.isNewWin = !this.unlockedMaps.includes(nextMap);
         this.unlockMap(nextMap);
       } else {
-        // Last level completed
-        this.isNewWin = true; // Still show something? Actually last level goes back to main menu anyway.
+        // Last level has no next level to apply upgrades to.
+        this.isNewWin = false;
       }
     }
   }

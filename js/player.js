@@ -38,8 +38,11 @@ class Player {
     this.resetForSession({ x: 150, y: 400 });
   }
 
-  createOrResetEntity(spawnPoint) {
+  createOrResetEntity(spawnPoint, preserveLives = false) {
     const existing = this.entity;
+    // We want to pass existing lives down into the new health component when doing a session reset (map transitions)
+    const existingLives = existing ? existing.getComponent("health").lives : this.maxLives;
+
     if (existing) existing.markedForRemoval = true;
 
     this.entity = this.entityManager.createEntity();
@@ -63,7 +66,7 @@ class Player {
       .addComponent(
         "health",
         createHealth({
-          lives: this.maxLives,
+          lives: preserveLives ? existingLives : this.maxLives,
           maxLives: this.maxLives,
           invulnTimer: 0,
           controlLockTimer: 0,
@@ -198,9 +201,9 @@ class Player {
     this.onGround = false;
   }
 
-  resetForSession(spawnPoint) {
+  resetForSession(spawnPoint, preserveLives = false) {
     this.weapon.reset();
-    this.createOrResetEntity(spawnPoint);
+    this.createOrResetEntity(spawnPoint, preserveLives);
   }
 
   respawn() {
@@ -392,7 +395,7 @@ class Player {
     this.shootTimer = GAME_CONST.player.shootCooldown;
     
     if (audioService) {
-      audioService.playSfx("sfx-gun");
+      audioService.playSfx("sfx-laser-gun");
     }
     
     if (audioService?.particlesEnabled && particleSystem) {

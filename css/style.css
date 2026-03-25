@@ -136,6 +136,12 @@ button {
   color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+button:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn-img {
@@ -143,13 +149,24 @@ button {
   border: none !important;
   padding: 0 !important;
   cursor: pointer;
-  transition: transform 0.1s ease, filter 0.1s ease;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.btn-img:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn-return {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.btn-return:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px) scale(1.02);
 }
 .btn-return img {
   height: auto;

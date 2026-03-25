@@ -808,6 +808,43 @@ class Game {
     }
   }
 
+  drawOffscreenPlayerIndicator() {
+    if (!this.player || !this.player.transform) return;
+
+    const { position, width } = this.player.transform;
+    const playerScreenX = (position.x + width * 0.5 - this.camera.x) * this.camera.zoom;
+    const playerScreenY = (position.y - this.camera.y) * this.camera.zoom;
+
+    const isOffscreen =
+      playerScreenX < 0 ||
+      playerScreenX > this.canvas.width ||
+      playerScreenY < 0 ||
+      playerScreenY > this.canvas.height;
+    if (!isOffscreen) return;
+
+    const indicator = GAME_CONST.player.indicator || {};
+    const size = (indicator.size || 12) + 3;
+    const margin = size + 8;
+    const edgeX = Math.max(margin, Math.min(this.canvas.width - margin, playerScreenX));
+    const edgeY = Math.max(margin, Math.min(this.canvas.height - margin, playerScreenY));
+    const angle = Math.atan2(playerScreenY - edgeY, playerScreenX - edgeX);
+
+    this.ctx.save();
+    this.ctx.translate(edgeX, edgeY);
+    this.ctx.rotate(angle + Math.PI / 2);
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, -size);
+    this.ctx.lineTo(-size * 0.75, size * 0.6);
+    this.ctx.lineTo(size * 0.75, size * 0.6);
+    this.ctx.closePath();
+    this.ctx.fillStyle = indicator.color || "#ffe066";
+    this.ctx.fill();
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = indicator.outlineColor || "#2b1e08";
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
   render() {
     if (this.state === "tutorial") {
       this.tutorialManager.draw();
@@ -828,6 +865,10 @@ class Game {
       this.particles.draw(this.ctx, this.camera);
       
       this.ctx.restore();
+    }
+
+    if (["playing", "pause"].includes(this.state)) {
+      this.drawOffscreenPlayerIndicator();
     }
 
     if (["playing", "pause"].includes(this.state)) {

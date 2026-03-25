@@ -44,6 +44,7 @@ export const GAME_CONST = {
     shootCooldown: 0.5,
     damage: 5,
     maxKnockbackVsPlayerRatio: 0.8,
+    flyTimeRatioToPlayer: 0.5,
     difficultyStepEveryKills: 4,
     maxDifficultyStep: 3,
     jumpForce: -480,

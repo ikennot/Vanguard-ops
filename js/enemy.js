@@ -186,16 +186,6 @@ class Enemy {
     const isWarzone = deps.currentMapId === "warzone";
     const player = deps.player;
 
-    if (isCanyon) {
-      ai.maxJetpackFuel = GAME_CONST.enemy.canyonJetpackFuelMax;
-      ai.jetpackFuel = Math.min(ai.jetpackFuel, ai.maxJetpackFuel);
-    }
-
-    if (isWarzone) {
-      ai.maxJetpackFuel = GAME_CONST.enemy.warzoneJetpackFuelMax;
-      ai.jetpackFuel = Math.min(ai.jetpackFuel, ai.maxJetpackFuel);
-    }
-    
     if (canFly && player) {
       // Restore gravity to match player's physics feel
       transform.gravity = GAME_CONST.enemy.gravity;
@@ -204,6 +194,21 @@ class Enemy {
         isWarzone ? GAME_CONST.enemy.warzoneFlightHeightOffset : 120
       );
       const jetpackForce = isWarzone ? GAME_CONST.enemy.warzoneJetpackForce : 2400;
+      const drain = isWarzone
+        ? GAME_CONST.player.jetpackDrain * 1.15
+        : isCanyon
+          ? GAME_CONST.player.jetpackDrain * GAME_CONST.enemy.canyonJetpackDrainScale
+          : GAME_CONST.player.jetpackDrain;
+      const playerFlyTime = player.maxJetpackFuel / GAME_CONST.player.jetpackDrain;
+      const enemyTargetFlyTime = playerFlyTime * GAME_CONST.enemy.flyTimeRatioToPlayer;
+      const mapFuelCap = isWarzone
+        ? GAME_CONST.enemy.warzoneJetpackFuelMax
+        : isCanyon
+          ? GAME_CONST.enemy.canyonJetpackFuelMax
+          : 100;
+      const flyTimeFuelCap = enemyTargetFlyTime * drain;
+      ai.maxJetpackFuel = Math.min(mapFuelCap, flyTimeFuelCap);
+      ai.jetpackFuel = Math.min(ai.jetpackFuel, ai.maxJetpackFuel);
       let canStartFlight = true;
 
       if (isWarzone) {
@@ -235,11 +240,6 @@ class Enemy {
         (!isWarzone || ai.flightBurstTimer > 0)
       ) {
         transform.velocity.y -= jetpackForce * deltaTime;
-        const drain = isWarzone
-          ? GAME_CONST.player.jetpackDrain * 1.15
-          : isCanyon
-            ? GAME_CONST.player.jetpackDrain * GAME_CONST.enemy.canyonJetpackDrainScale
-            : GAME_CONST.player.jetpackDrain;
         ai.jetpackFuel = Math.max(0, ai.jetpackFuel - drain * deltaTime);
         isUsingJetpack = true;
         if (isWarzone) ai.flightBurstTimer = Math.max(0, ai.flightBurstTimer - deltaTime);

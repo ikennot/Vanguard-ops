@@ -100,7 +100,49 @@ class Hud {
       ctx.stroke();
     }
 
+    this.drawBossHealthBar(ctx, game);
     ctx.restore();
+  }
+
+  drawBossHealthBar(ctx, game) {
+    if (game.currentMapId !== "laboratory") return;
+    const bossEntity = game.finalBoss?.getEntity?.();
+    if (!bossEntity || bossEntity.markedForRemoval) return;
+
+    const health = bossEntity.getComponent("health");
+    if (!health || health.health <= 0) return;
+
+    const ratio = Math.max(0, Math.min(1, health.health / Math.max(1, health.maxHealth)));
+    const barWidth = 420;
+    const barHeight = 24;
+    const barX = (GAME_CONST.canvas.width - barWidth) * 0.5;
+    const barY = 90;
+    const hue = Math.round(0 + 290 * ratio);
+
+    ctx.fillStyle = "rgba(10, 6, 16, 0.8)";
+    ctx.fillRect(barX - 6, barY - 24, barWidth + 12, barHeight + 36);
+
+    ctx.fillStyle = "rgba(25, 18, 35, 0.95)";
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    ctx.fillStyle = `hsl(${hue}, 95%, 52%)`;
+    ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+    ctx.fillStyle = "#f8e8ff";
+    ctx.font = "700 16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("FINAL BOSS", GAME_CONST.canvas.width * 0.5, barY - 8);
+    ctx.font = "700 14px monospace";
+    ctx.fillText(
+      `${Math.max(0, Math.ceil(health.health))} / ${health.maxHealth}`,
+      GAME_CONST.canvas.width * 0.5,
+      barY + 17
+    );
+    ctx.textAlign = "start";
   }
 }
 

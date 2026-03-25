@@ -59,6 +59,22 @@ export const GAME_CONST = {
     threatSpawnCadencePerStep: 0.12,
     minSpawnCadenceScale: 0.55
   },
+  boss: {
+    maxHealth: 1000,
+    speed: 210,
+    shootRange: 900,
+    shootCooldown: 0.38,
+    damage: 18,
+    width: 120,
+    height: 120,
+    chaseYOffset: -60,
+    hoverAmplitude: 18,
+    hoverSpeed: 3.2,
+    color: "#cc00ff",
+    projectileColor: "#ff00cc",
+    projectileSpeed: 680,
+    projectileKnockback: 1400
+  },
   projectile: {
     playerSpeed: 760,
     enemySpeed: 480,

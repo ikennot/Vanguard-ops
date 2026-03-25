@@ -45,11 +45,16 @@ class HealthSystem {
 
     health.health -= amount;
     health.wasHitByPlayer = true;
-    const healthRatio = Math.max(0, health.health) / GAME_CONST.enemy.maxHealth;
-    const multiplier = healthRatio > 0.35 ? 2.6 : 4.2;
+    const isBoss = entity.hasComponent("bossAi");
+    const healthRatio = Math.max(0, health.health) / Math.max(1, health.maxHealth || 1);
+    const multiplier = isBoss
+      ? (healthRatio > 0.35 ? 5.5 : 8.0)
+      : (healthRatio > 0.35 ? 2.6 : 4.2);
     health.knockbackVelocityX += knockback * multiplier;
-    transform.velocity.y = -320;
-    health.knockbackTimer = healthRatio > 0.35 ? 0.6 : 0.95;
+    transform.velocity.y = isBoss ? -480 : -320;
+    health.knockbackTimer = isBoss
+      ? (healthRatio > 0.35 ? 0.9 : 1.3)
+      : (healthRatio > 0.35 ? 0.6 : 0.95);
 
     if (audio?.particlesEnabled && particles) {
       particles.spawn(
@@ -60,7 +65,9 @@ class HealthSystem {
     }
 
     if (health.health <= 0) {
-      health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
+      if (!isBoss) {
+        health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
+      }
     }
   }
 

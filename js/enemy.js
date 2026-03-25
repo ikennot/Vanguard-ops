@@ -326,13 +326,14 @@ class EnemyManager {
     });
   }
 
-  reset(platforms) {
+  reset(platforms, mapId = "space") {
     for (const enemy of this.enemies) {
       enemy.entity.markedForRemoval = true;
     }
     this.enemies = [];
     this.spawnTimer = 0;
     this.totalSpawned = 0;
+    if (mapId === "laboratory") return;
     for (let i = 0; i < 3; i += 1) this.spawnFromPlatforms(platforms);
   }
 
@@ -365,6 +366,7 @@ class EnemyManager {
 
     if (
       deps.gameState === "playing" &&
+      deps.currentMapId !== "laboratory" &&
       this.enemies.length < dynamicMaxActive &&
       this.kills < this.killTarget &&
       this.spawnTimer <= 0

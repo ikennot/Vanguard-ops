@@ -1,240 +1,269 @@
-# Plan: Replace Level 2 and Level 3 Enemy Sprite Animations
+# Final Boss Enhancement — Implementation Plan
 
-## Background and Architecture
-
-The game has a single `Enemy` class (`js/enemy.js`) used across all maps. There are no subclasses
-per level. The active map is passed to `Enemy.update()` via `deps.currentMapId`. The five maps in
-order are:
-
-  ["space", "jungle", "canyon", "warzone", "laboratory"]
-   level 1   level 2   level 3   level 4    level 5
-
-- **Level 2 map id**: `"jungle"`
-- **Level 3 map id**: `"canyon"`
-
-All sprite assets are preloaded at startup via a manifest array in `js/main.js` using
-`AssetService.preload()`. Each entry has the shape `{ key, src, type }`. During gameplay,
-`Enemy.update()` sets `sprite.assetKey` to a string key and `RenderSystem` looks up the image via
-`assets.getImage(sprite.assetKey)`.
-
-### Current Level-1 (space map) Asset Keys and Files
-
-| Asset key             | Source file                                                |
-|-----------------------|------------------------------------------------------------|
-| `enemy-left`          | `assets/sprites/enemy/enemy-facing-left.png`               |
-| `enemy-right`         | `assets/sprites/enemy/enemy-facing-right.png`              |
-| `enemy-left-shooting` | `assets/sprites/enemy/enemy-facing-left-shooting.png`      |
-| `enemy-right-shooting`| `assets/sprites/enemy/enemy-facing-rigth-shooting.png`     |
-
-The sprite component fields that matter for rendering (set in `Enemy.update()`):
-
-- `sprite.assetKey`      – which image to draw
-- `sprite.frameWidth`    – pixel width of one frame on the sheet
-- `sprite.frameHeight`   – pixel height of one frame on the sheet
-- `sprite.numFrames`     – how many frames are animated
-- `sprite.frameX`        – starting frame column offset
-- `sprite.frameY`        – row index (always 0 for these enemy sheets)
-- `sprite.currentFrame`  – incremented by `RenderSystem.updateAnimations()`
-- `sprite.animationSpeed`– seconds per frame advance
-- `sprite.noFlip`        – `true` because directional variants are separate images
-- `sprite.scale`         – render scale factor (currently `2.5`)
-- `sprite.offsetY`       – vertical draw offset (currently `24`)
-
-### New Sprite Files
-
-**Level 2 (jungle)** — directory: `assets/sprites/level-2_enemy/`
-
-| Animation state  | Exact filename                          |
-|------------------|-----------------------------------------|
-| Facing left      | `level_2-enemy_facing_left.png`         |
-| Facing right     | `level_2-enemy_facing_right.png`        |
-| Shooting left    | `level_2-enemy-shooting_left.png`       |
-| Shooting right   | `level_2-enemy_shooting_right.png`      |
-
-**Level 3 (canyon)** — directory: `assets/sprites/level-3_enemy/`
-
-| Animation state  | Exact filename                          |
-|------------------|-----------------------------------------|
-| Facing left      | `level_3-enemy-facing_left.png`         |
-| Facing right     | `level_3-enemy_facing_right.png`        |
-| Shooting left    | `level_3-shooting_left.png`             |
-| Shooting right   | `level_3-shooting_right.png`            |
-
-**Naming inconsistency to be aware of:**
-- Level 2 uses `level_2-enemy-shooting_left.png` (hyphen before "shooting") but
-  `level_2-enemy_shooting_right.png` (no hyphen before "shooting"). Copy the names exactly.
-- Level 3 omits "enemy" entirely in the shooting filenames: `level_3-shooting_left.png` and
-  `level_3-shooting_right.png`.
+> **For Codex:** Execute sections in the order listed (Section 1 → Section 3 → Section 2). Each step shows exact file, line(s), and before/after code.
 
 ---
 
-## Step 1 — Add New Asset Entries to the Manifest in `js/main.js`
+## Section 1 — `js/constants.js` (all stat tuning)
 
-File: `/home/kennethdomdom/projects/Vanguard-ops/js/main.js`
-
-Locate the `assetManifest` array. After the four existing `enemy-*` entries, insert the following
-eight new entries:
-
+### Step 1.1 — Raise max HP: 500 → 1000
+**Line 63**
 ```js
-  // Level 2 (jungle) enemy sprites
-  { key: "enemy-l2-left",          src: "assets/sprites/level-2_enemy/level_2-enemy_facing_left.png",   type: "image" },
-  { key: "enemy-l2-right",         src: "assets/sprites/level-2_enemy/level_2-enemy_facing_right.png",  type: "image" },
-  { key: "enemy-l2-left-shooting", src: "assets/sprites/level-2_enemy/level_2-enemy-shooting_left.png", type: "image" },
-  { key: "enemy-l2-right-shooting",src: "assets/sprites/level-2_enemy/level_2-enemy_shooting_right.png",type: "image" },
-  // Level 3 (canyon) enemy sprites
-  { key: "enemy-l3-left",          src: "assets/sprites/level-3_enemy/level_3-enemy-facing_left.png",   type: "image" },
-  { key: "enemy-l3-right",         src: "assets/sprites/level-3_enemy/level_3-enemy_facing_right.png",  type: "image" },
-  { key: "enemy-l3-left-shooting", src: "assets/sprites/level-3_enemy/level_3-shooting_left.png",       type: "image" },
-  { key: "enemy-l3-right-shooting",src: "assets/sprites/level-3_enemy/level_3-shooting_right.png",      type: "image" },
+// Before
+    maxHealth: 500,
+// After
+    maxHealth: 1000,
 ```
 
-No other changes to `js/main.js` are needed.
-
----
-
-## Step 2 — Add a Helper to Resolve the Correct Asset Key Set in `js/enemy.js`
-
-File: `/home/kennethdomdom/projects/Vanguard-ops/js/enemy.js`
-
-At the top of the file, before the `class Enemy` declaration, add this pure helper function:
-
+### Step 1.2 — Increase movement speed: 130 → 210
+**Line 64**
 ```js
-function getEnemyAssetKeys(mapId) {
-  if (mapId === "jungle") {
-    return {
-      left:          "enemy-l2-left",
-      right:         "enemy-l2-right",
-      leftShooting:  "enemy-l2-left-shooting",
-      rightShooting: "enemy-l2-right-shooting"
-    };
-  }
-  if (mapId === "canyon") {
-    return {
-      left:          "enemy-l3-left",
-      right:         "enemy-l3-right",
-      leftShooting:  "enemy-l3-left-shooting",
-      rightShooting: "enemy-l3-right-shooting"
-    };
-  }
-  // Default: level 1 (space) and all other maps
-  return {
-    left:          "enemy-left",
-    right:         "enemy-right",
-    leftShooting:  "enemy-left-shooting",
-    rightShooting: "enemy-right-shooting"
-  };
-}
+// Before
+    speed: 130,
+// After
+    speed: 210,
+```
+
+### Step 1.3 — Extend shoot range: 650 → 900
+**Line 65**
+```js
+// Before
+    shootRange: 650,
+// After
+    shootRange: 900,
+```
+
+### Step 1.4 — Reduce shoot cooldown: 0.9 → 0.38 s
+**Line 66**
+```js
+// Before
+    shootCooldown: 0.9,
+// After
+    shootCooldown: 0.38,
+```
+
+### Step 1.5 — Increase damage per shot: 8 → 18
+**Line 67**
+```js
+// Before
+    damage: 8,
+// After
+    damage: 18,
+```
+
+### Step 1.6 — Increase hover oscillation speed: 1.8 → 3.2
+**Line 72**
+```js
+// Before
+    hoverSpeed: 1.8,
+// After
+    hoverSpeed: 3.2,
+```
+
+### Step 1.7 — Add projectileSpeed and projectileKnockback constants
+**After line 74 (`projectileColor` line), still inside the `boss: {}` block.**
+```js
+// Before
+    color: "#cc00ff",
+    projectileColor: "#ff00cc"
+  },
+
+// After
+    color: "#cc00ff",
+    projectileColor: "#ff00cc",
+    projectileSpeed: 680,
+    projectileKnockback: 1400
+  },
+```
+
+### Complete resulting `boss` block for reference:
+```js
+  boss: {
+    maxHealth: 1000,
+    speed: 210,
+    shootRange: 900,
+    shootCooldown: 0.38,
+    damage: 18,
+    width: 120,
+    height: 120,
+    chaseYOffset: -60,
+    hoverAmplitude: 18,
+    hoverSpeed: 3.2,
+    color: "#cc00ff",
+    projectileColor: "#ff00cc",
+    projectileSpeed: 680,
+    projectileKnockback: 1400
+  },
 ```
 
 ---
 
-## Step 3 — Update the Sprite Selection Block in `Enemy.update()` in `js/enemy.js`
+## Section 2 — `js/systems/HealthSystem.js`
 
-File: `/home/kennethdomdom/projects/Vanguard-ops/js/enemy.js`
+### Step 2.1 — Boss-specific knockback multiplier in `applyEnemyDamage()`
 
-Locate the sprite selection block inside `Enemy.update()`. It currently hard-codes the asset key
-strings. Replace that entire `if (sprite) { ... }` block with the version below:
-
+**Lines 48-52 — replace existing multiplier block:**
 ```js
-if (sprite) {
-  const isShooting = ai.shootingTimer > 0;
-  const isJumping  = ai.isJumping;
-  const facingLeft = ai.direction === -1;
+// Before
+    const healthRatio = Math.max(0, health.health) / Math.max(1, health.maxHealth || 1);
+    const multiplier = healthRatio > 0.35 ? 2.6 : 4.2;
+    health.knockbackVelocityX += knockback * multiplier;
+    transform.velocity.y = -320;
+    health.knockbackTimer = healthRatio > 0.35 ? 0.6 : 0.95;
 
-  const keys = getEnemyAssetKeys(deps.currentMapId);
-
-  const nextAssetKey = isShooting
-    ? (facingLeft ? keys.leftShooting : keys.rightShooting)
-    : (facingLeft ? keys.left         : keys.right);
-
-  if (sprite.assetKey !== nextAssetKey) {
-    sprite.assetKey = nextAssetKey;
-    sprite.currentFrame = 0;
-    sprite.animationTimer = 0;
-  }
-
-  sprite.type  = "sprite";
-  sprite.noFlip = true;
-  sprite.frameY = 0;
-  sprite.color  = GAME_CONST.entity.enemy.color;
-
-  if (isShooting) {
-    sprite.frameX         = 0;
-    sprite.numFrames      = 4;
-    sprite.animationSpeed = 0.08;
-  } else if (isJumping) {
-    sprite.frameX         = 1;
-    sprite.numFrames      = 2;
-    sprite.animationSpeed = 0.12;
-  } else {
-    sprite.frameX         = 0;
-    sprite.numFrames      = 4;
-    sprite.animationSpeed = 0.12;
-  }
-
-  sprite.currentFrame %= sprite.numFrames;
-}
+// After
+    const isBoss = entity.hasComponent("bossAi");
+    const healthRatio = Math.max(0, health.health) / Math.max(1, health.maxHealth || 1);
+    const multiplier = isBoss
+      ? (healthRatio > 0.35 ? 5.5 : 8.0)
+      : (healthRatio > 0.35 ? 2.6 : 4.2);
+    health.knockbackVelocityX += knockback * multiplier;
+    transform.velocity.y = isBoss ? -480 : -320;
+    health.knockbackTimer = isBoss
+      ? (healthRatio > 0.35 ? 0.9 : 1.3)
+      : (healthRatio > 0.35 ? 0.6 : 0.95);
 ```
 
-The only structural change from the original is:
-1. A call to `getEnemyAssetKeys(deps.currentMapId)` to obtain the key set for the active map.
-2. The four asset key string literals replaced by `keys.left`, `keys.right`, `keys.leftShooting`,
-   `keys.rightShooting`.
-
-All animation logic (`frameX`, `numFrames`, `animationSpeed`) is identical to the existing code.
-
----
-
-## Step 4 — Verify Frame Dimensions (Important)
-
-The new sprite sheets may have different frame dimensions from the level-1 sheets
-(`frameWidth: 48, frameHeight: 48`). Before finalising the implementation:
-
-1. Open each of the eight new PNG files in an image editor and note the pixel dimensions.
-2. Divide the image width by the number of animation frames to get `frameWidth`.
-3. The image height is `frameHeight`.
-
-If the dimensions differ from `48×48`, update `sprite.frameWidth` and `sprite.frameHeight`
-alongside `sprite.assetKey` whenever the key changes (inside the `if (sprite.assetKey !== nextAssetKey)` branch). Example:
-
+### Step 2.2 — Remove duplicate `isBoss` declaration
+**Lines 62-67 — delete the inner `const isBoss` (it is now declared above):**
 ```js
-if (sprite.assetKey !== nextAssetKey) {
-  sprite.assetKey    = nextAssetKey;
-  sprite.frameWidth  = /* determined per mapId */;
-  sprite.frameHeight = /* determined per mapId */;
-  sprite.currentFrame  = 0;
-  sprite.animationTimer = 0;
-}
+// Before
+    if (health.health <= 0) {
+      const isBoss = entity.hasComponent("bossAi");
+      if (!isBoss) {
+        health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
+      }
+    }
+
+// After
+    if (health.health <= 0) {
+      if (!isBoss) {
+        health.health = Math.floor(GAME_CONST.enemy.maxHealth * 0.4);
+      }
+    }
 ```
 
-If all sheets are 48×48 per frame, no change is required.
+---
+
+## Section 3 — `js/boss.js`
+
+### Step 3.1 — Add burst-fire fields to `bossAi` component (constructor, lines 42-47)
+```js
+// Before
+      .addComponent(
+        "bossAi",
+        {
+          shootTimer: GAME_CONST.boss.shootCooldown * 0.5,
+          hoverTime: Math.random() * Math.PI * 2,
+          deathFalling: false
+        }
+      )
+
+// After
+      .addComponent(
+        "bossAi",
+        {
+          shootTimer: GAME_CONST.boss.shootCooldown * 0.5,
+          hoverTime: Math.random() * Math.PI * 2,
+          deathFalling: false,
+          burstCount: 0,
+          burstCooldown: 0
+        }
+      )
+```
+
+### Step 3.2 — Slow knockback decay and lower zero-threshold (line 85)
+```js
+// Before
+    health.knockbackVelocityX *= 0.92;
+    if (Math.abs(health.knockbackVelocityX) < 10) health.knockbackVelocityX = 0;
+
+// After
+    health.knockbackVelocityX *= 0.94;
+    if (Math.abs(health.knockbackVelocityX) < 6) health.knockbackVelocityX = 0;
+```
+
+### Step 3.3 — Replace single-fire shoot block with burst-fire logic (lines 123-146)
+```js
+// Before
+    ai.shootTimer -= deltaTime;
+    const distance = Math.hypot(dx, dy);
+    if (
+      deps.gameState === "playing" &&
+      ai.shootTimer <= 0 &&
+      distance <= GAME_CONST.boss.shootRange
+    ) {
+      deps.projectiles.spawn(
+        { x: bossCenterX, y: bossCenterY },
+        { x: dx, y: dy },
+        GAME_CONST.projectile.enemySpeed,
+        GAME_CONST.boss.damage,
+        "enemy",
+        GAME_CONST.boss.projectileColor,
+        750 * Math.sign(dx || 1)
+      );
+
+      const audioService = serviceLocator.get("audio");
+      if (audioService) {
+        audioService.playSfx("sfx-laser-gun");
+      }
+
+      ai.shootTimer = GAME_CONST.boss.shootCooldown;
+    }
+
+// After
+    ai.shootTimer -= deltaTime;
+    ai.burstCooldown -= deltaTime;
+    const distance = Math.hypot(dx, dy);
+
+    const BURST_SIZE = 3;
+    const BURST_INTERVAL = 0.12;
+
+    if (deps.gameState === "playing" && distance <= GAME_CONST.boss.shootRange) {
+      if (ai.shootTimer <= 0 && ai.burstCount === 0) {
+        ai.burstCount = BURST_SIZE;
+        ai.burstCooldown = 0;
+        ai.shootTimer = GAME_CONST.boss.shootCooldown;
+      }
+
+      if (ai.burstCount > 0 && ai.burstCooldown <= 0) {
+        deps.projectiles.spawn(
+          { x: bossCenterX, y: bossCenterY },
+          { x: dx, y: dy },
+          GAME_CONST.boss.projectileSpeed,
+          GAME_CONST.boss.damage,
+          "enemy",
+          GAME_CONST.boss.projectileColor,
+          GAME_CONST.boss.projectileKnockback * Math.sign(dx || 1)
+        );
+
+        const audioService = serviceLocator.get("audio");
+        if (audioService) {
+          audioService.playSfx("sfx-laser-gun");
+        }
+
+        ai.burstCount -= 1;
+        ai.burstCooldown = BURST_INTERVAL;
+      }
+    }
+```
 
 ---
 
-## Files Changed
+## Summary Table
 
-| File | Change Summary |
-|---|---|
-| `js/main.js` | Add 8 new entries to `assetManifest` for level-2 and level-3 enemy sprites |
-| `js/enemy.js` | Add `getEnemyAssetKeys()` helper; update sprite selection block to use it |
-
-## Files That Do NOT Need Changes
-
-| File | Reason |
-|---|---|
-| `js/systems/RenderSystem.js` | Already reads `sprite.assetKey` dynamically; no change needed |
-| `js/services/AssetService.js` | Generic loader; no change needed |
-| `js/constants.js` | No new constants required |
-| `js/components/Sprite.js` | No new fields required |
-
----
-
-## Naming Convention Summary (for reference)
-
-Level-2 filenames use `level_2-enemy_` prefix consistently for facing, but the shooting-left file
-breaks the pattern with a hyphen: `level_2-enemy-shooting_left.png` vs
-`level_2-enemy_shooting_right.png`. The asset manifest entries above reflect these exact names —
-do not "fix" the inconsistency; copy the filenames as-is.
-
-Level-3 shooting filenames drop the word "enemy" entirely: `level_3-shooting_left.png` and
-`level_3-shooting_right.png`. The facing files do include it: `level_3-enemy-facing_left.png`.
+| File | Line(s) | What changes | Old | New |
+|------|---------|--------------|-----|-----|
+| `js/constants.js` | 63 | `boss.maxHealth` | `500` | `1000` |
+| `js/constants.js` | 64 | `boss.speed` | `130` | `210` |
+| `js/constants.js` | 65 | `boss.shootRange` | `650` | `900` |
+| `js/constants.js` | 66 | `boss.shootCooldown` | `0.9` | `0.38` |
+| `js/constants.js` | 67 | `boss.damage` | `8` | `18` |
+| `js/constants.js` | 72 | `boss.hoverSpeed` | `1.8` | `3.2` |
+| `js/constants.js` | after 74 | `boss.projectileSpeed` | _(new)_ | `680` |
+| `js/constants.js` | after 74 | `boss.projectileKnockback` | _(new)_ | `1400` |
+| `js/systems/HealthSystem.js` | 48-52 | knockback multiplier block | shared | boss-specific |
+| `js/systems/HealthSystem.js` | 63 | inner `const isBoss` | present | delete |
+| `js/boss.js` | 42-47 | `bossAi` init | no burst fields | add `burstCount`, `burstCooldown` |
+| `js/boss.js` | 85-86 | knockback decay | `0.92`, `< 10` | `0.94`, `< 6` |
+| `js/boss.js` | 123-146 | shoot block | single-fire | burst-fire (3 shots) |

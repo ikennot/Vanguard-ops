@@ -92,6 +92,16 @@ const assetManifest = [
     src: "assets/sprites/level-3_enemy/level_3-shooting_right.png",
     type: "image"
   },
+  {
+    key: "boss-facing-east",
+    src: "assets/sprites/final_boss/facing_east.png",
+    type: "image"
+  },
+  {
+    key: "boss-facing-west",
+    src: "assets/sprites/final_boss/facing_west.png",
+    type: "image"
+  },
   { key: "enemy-sheet", src: "assets/sprites/enemies/enemies-sprite.png", type: "image" },
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },

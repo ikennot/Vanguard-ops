@@ -5,6 +5,7 @@ import CameraService from "./services/CameraService.js";
 import PlatformManager from "./platform.js";
 import Player from "./player.js";
 import { EnemyManager } from "./enemy.js";
+import { FinalBossManager } from "./boss.js";
 import ProjectileManager from "./projectile.js";
 import PickupManager from "./pickup.js";
 import ParticleSystem from "./particle.js";
@@ -32,6 +33,7 @@ class Game {
     this.entityManager = services.entityManager || new EntityManager();
     this.player = services.player || new Player(this.entityManager);
     this.enemies = services.enemies || new EnemyManager(this.entityManager);
+    this.finalBoss = services.finalBoss || new FinalBossManager(this.entityManager);
     this.projectiles = services.projectiles || new ProjectileManager(this.entityManager);
     this.pickups = services.pickups || new PickupManager(this.entityManager);
     this.particles = services.particles || new ParticleSystem();
@@ -431,7 +433,12 @@ class Game {
       kills: this.kills,
       target: this.currentMapData.targetKills
     });
-    this.enemies.reset(this.platforms.platforms);
+    this.enemies.reset(this.platforms.platforms, this.currentMapId);
+    this.finalBoss.reset();
+    if (this.currentMapId === "laboratory") {
+      const spawnX = GAME_CONST.world.width * 0.5 - GAME_CONST.boss.width * 0.5;
+      this.finalBoss.spawn(spawnX, 80);
+    }
     this.projectiles.clear();
     this.pickups.reset(this.platforms.platforms);
     this.particles.particles = [];
@@ -586,6 +593,13 @@ class Game {
       knockbackMultiplier: this.getEnemyKnockbackMultiplier(),
       difficultyScale: this.getGameplayScale()
     });
+    if (this.currentMapId === "laboratory") {
+      this.finalBoss.update(deltaTime, {
+        player: this.player,
+        projectiles: this.projectiles,
+        gameState: this.state
+      });
+    }
 
     this.physicsSystem.update(this.entityManager, deltaTime);
     this.collisionSystem.update(this.entityManager, this.platforms.platforms);
@@ -629,6 +643,23 @@ class Game {
             });
             hit = true;
             break;
+          }
+        }
+
+        if (!hit) {
+          const bossEntity = this.finalBoss.getEntity();
+          if (bossEntity && !bossEntity.markedForRemoval) {
+            const bossTransform = bossEntity.getComponent("transform");
+            const bossHealth = bossEntity.getComponent("health");
+            const canHitBoss = bossTransform && bossHealth && bossHealth.health > 0;
+            if (canHitBoss && Collision.intersects(projectileTransform, bossTransform)) {
+              eventBus.emit("enemy:hit", {
+                entity: bossEntity,
+                damage: projectileData.damage,
+                knockback: projectileData.knockback
+              });
+              hit = true;
+            }
           }
         }
       }

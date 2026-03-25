@@ -50,6 +50,48 @@ const assetManifest = [
     src: "assets/sprites/enemy/enemy-facing-rigth-shooting.png",
     type: "image"
   },
+  // Level 2 (jungle) enemy sprites
+  {
+    key: "enemy-l2-left",
+    src: "assets/sprites/level-2_enemy/level_2-enemy_facing_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l2-right",
+    src: "assets/sprites/level-2_enemy/level_2-enemy_facing_right.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l2-left-shooting",
+    src: "assets/sprites/level-2_enemy/level_2-enemy-shooting_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l2-right-shooting",
+    src: "assets/sprites/level-2_enemy/level_2-enemy_shooting_right.png",
+    type: "image"
+  },
+  // Level 3 (canyon) enemy sprites
+  {
+    key: "enemy-l3-left",
+    src: "assets/sprites/level-3_enemy/level_3-enemy-facing_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l3-right",
+    src: "assets/sprites/level-3_enemy/level_3-enemy_facing_right.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l3-left-shooting",
+    src: "assets/sprites/level-3_enemy/level_3-shooting_left.png",
+    type: "image"
+  },
+  {
+    key: "enemy-l3-right-shooting",
+    src: "assets/sprites/level-3_enemy/level_3-shooting_right.png",
+    type: "image"
+  },
   { key: "enemy-sheet", src: "assets/sprites/enemies/enemies-sprite.png", type: "image" },
   { key: "pickup-sheet", src: "assets/sprites/pickups/booster-packs-sprite.png", type: "image" },
   { key: "weapon-sheet", src: "assets/sprites/weapons/guns-sprite.png", type: "image" },

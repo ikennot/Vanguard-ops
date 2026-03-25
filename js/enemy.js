@@ -7,6 +7,31 @@ import { createHitbox } from "./components/Hitbox.js";
 import eventBus from "./core/EventBus.js";
 import serviceLocator from "./core/ServiceLocator.js";
 
+function getEnemyAssetKeys(mapId) {
+  if (mapId === "jungle") {
+    return {
+      left: "enemy-l2-left",
+      right: "enemy-l2-right",
+      leftShooting: "enemy-l2-left-shooting",
+      rightShooting: "enemy-l2-right-shooting"
+    };
+  }
+  if (mapId === "canyon") {
+    return {
+      left: "enemy-l3-left",
+      right: "enemy-l3-right",
+      leftShooting: "enemy-l3-left-shooting",
+      rightShooting: "enemy-l3-right-shooting"
+    };
+  }
+  return {
+    left: "enemy-left",
+    right: "enemy-right",
+    leftShooting: "enemy-left-shooting",
+    rightShooting: "enemy-right-shooting"
+  };
+}
+
 class Enemy {
   constructor(entityManager, x, y, patrolWidth = 180, type = "rival") {
     this.entityManager = entityManager;
@@ -215,10 +240,11 @@ class Enemy {
       const isShooting = ai.shootingTimer > 0;
       const isJumping = ai.isJumping;
       const facingLeft = ai.direction === -1;
+      const keys = getEnemyAssetKeys(deps.currentMapId);
 
       const nextAssetKey = isShooting
-        ? (facingLeft ? "enemy-left-shooting" : "enemy-right-shooting")
-        : (facingLeft ? "enemy-left" : "enemy-right");
+        ? (facingLeft ? keys.leftShooting : keys.rightShooting)
+        : (facingLeft ? keys.left : keys.right);
 
       if (sprite.assetKey !== nextAssetKey) {
         sprite.assetKey = nextAssetKey;

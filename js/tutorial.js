@@ -1,11 +1,12 @@
 import { GAME_CONST } from "./constants.js";
 
 export class TutorialManager {
-  constructor(canvas) {
+  constructor(canvas, audioService = null) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.width = canvas.width;
     this.height = canvas.height;
+    this.audioService = audioService;
 
     this.player = {
       x: 200,
@@ -21,6 +22,7 @@ export class TutorialManager {
     };
 
     this.bullets = [];
+    this.particles = [];
     
     // Adjusted platforms to match the reference image layout
     this.platforms = [
@@ -158,6 +160,19 @@ export class TutorialManager {
       vy: vy,
       life: 60
     });
+    this.spawnParticles(
+      { x: originX + this.player.facing * 20, y: originY },
+      "#ffd86b",
+      6,
+      {
+        speedX: 180,
+        speedY: 130,
+        lifeMin: 0.1,
+        lifeMax: 0.22,
+        sizeMin: 3,
+        sizeMax: 6
+      }
+    );
     this.shootTimer = 0.3; // Animation duration for shooting
 
     // Play gun sound
@@ -172,6 +187,10 @@ export class TutorialManager {
     const phys = this.physics;
     const en = this.enemy;
     this.shootTimer = Math.max(0, this.shootTimer - dt);
+
+    if (!this.areVisualEffectsEnabled()) {
+      this.particles = [];
+    }
 
     if (this.keys["KeyA"]) {
       p.vx = -phys.speed;
@@ -193,6 +212,19 @@ export class TutorialManager {
     if (this.keys["Space"] && p.fuel > 0) {
       p.vy -= phys.jetpackForce * dt;
       p.fuel -= phys.fuelDrain * dt;
+      this.spawnParticles(
+        { x: p.x + p.width * 0.5, y: p.y + p.height - 8 },
+        "#67c7ff",
+        3,
+        {
+          speedX: 70,
+          speedY: 180,
+          lifeMin: 0.15,
+          lifeMax: 0.28,
+          sizeMin: 4,
+          sizeMax: 7
+        }
+      );
     } else if (p.onGround) {
       p.fuel = Math.min(100, p.fuel + phys.fuelRegen * dt);
     }
@@ -303,6 +335,19 @@ export class TutorialManager {
       b.x += b.vx;
       b.y += b.vy; // Apply vertical velocity
       b.life--;
+      this.spawnParticles(
+        { x: b.x, y: b.y },
+        "#ffd700",
+        1,
+        {
+          speedX: 18,
+          speedY: 18,
+          lifeMin: 0.08,
+          lifeMax: 0.16,
+          sizeMin: 2,
+          sizeMax: 4
+        }
+      );
 
       // Bullet-Enemy collision
       if (en.respawnTimer <= 0 &&
@@ -327,6 +372,46 @@ export class TutorialManager {
       }
       this.frameTimer = 0;
     }
+
+    this.updateParticles(dt);
+  }
+
+  spawnParticles(position, color, count, options = {}) {
+    if (!this.areVisualEffectsEnabled()) return;
+
+    const speedX = options.speedX ?? 90;
+    const speedY = options.speedY ?? 90;
+    const lifeMin = options.lifeMin ?? 0.18;
+    const lifeMax = options.lifeMax ?? 0.32;
+    const sizeMin = options.sizeMin ?? 3;
+    const sizeMax = options.sizeMax ?? 5;
+
+    for (let i = 0; i < count; i += 1) {
+      this.particles.push({
+        x: position.x,
+        y: position.y,
+        vx: (Math.random() * 2 - 1) * speedX,
+        vy: (Math.random() * 2 - 1) * speedY,
+        life: lifeMin + Math.random() * (lifeMax - lifeMin),
+        maxLife: lifeMax,
+        size: sizeMin + Math.random() * (sizeMax - sizeMin),
+        color
+      });
+    }
+  }
+
+  updateParticles(dt) {
+    this.particles = this.particles.filter((particle) => particle.life > 0);
+    for (const particle of this.particles) {
+      particle.life -= dt;
+      particle.x += particle.vx * dt;
+      particle.y += particle.vy * dt;
+      particle.vy += 90 * dt;
+    }
+  }
+
+  areVisualEffectsEnabled() {
+    return this.audioService ? this.audioService.particlesEnabled !== false : true;
   }
 
   draw() {
@@ -385,8 +470,44 @@ export class TutorialManager {
         this.ctx.restore();
     }
 
-    this.ctx.fillStyle = "yellow";
+    if (this.areVisualEffectsEnabled()) {
+      for (const particle of this.particles) {
+        const alpha = Math.max(0, particle.life / particle.maxLife);
+        const glowSize = Math.max(4, particle.size * 1.9 * alpha);
+
+        this.ctx.globalAlpha = alpha * 0.35;
+        this.ctx.fillStyle = particle.color;
+        this.ctx.beginPath();
+        this.ctx.arc(particle.x, particle.y, glowSize, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.globalAlpha = alpha;
+        this.ctx.fillRect(
+          particle.x - particle.size * 0.5,
+          particle.y - particle.size * 0.5,
+          particle.size,
+          particle.size
+        );
+      }
+    }
+    this.ctx.globalAlpha = 1;
+
     for (const b of this.bullets) {
+      if (this.areVisualEffectsEnabled()) {
+        this.ctx.strokeStyle = "rgba(255, 215, 0, 0.32)";
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(b.x, b.y);
+        this.ctx.lineTo(b.x - b.vx * 0.65, b.y - b.vy * 0.65);
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = "rgba(255, 215, 0, 0.4)";
+        this.ctx.beginPath();
+        this.ctx.arc(Math.round(b.x), Math.round(b.y), 6, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+
+      this.ctx.fillStyle = "yellow";
       this.ctx.beginPath();
       this.ctx.arc(Math.round(b.x), Math.round(b.y), 3, 0, Math.PI * 2);
       this.ctx.fill();

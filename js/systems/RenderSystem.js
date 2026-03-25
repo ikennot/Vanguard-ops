@@ -116,8 +116,12 @@ class RenderSystem {
         this.drawGun(ctx, posX, posY, transform.width, transform.height, transform.facing || 1, sprite);
       }
 
-      // Fuel Indicator above player's head
       const playerState = entity.getComponent("playerState");
+      if (playerState) {
+        this.drawPlayerIndicator(ctx, posX, posY, transform.width);
+      }
+
+      // Fuel Indicator above player's head
       if (playerState && playerState.jetpackFuel !== undefined) {
         const baseBarWidth = 40;
         const barHeight = 4;
@@ -144,6 +148,27 @@ class RenderSystem {
         ctx.strokeRect(barX, barY, barWidth, barHeight);
       }
     }
+  }
+
+  drawPlayerIndicator(ctx, x, y, width) {
+    const indicator = GAME_CONST.player.indicator || {};
+    const size = indicator.size || 12;
+    const offsetY = indicator.offsetY || 28;
+    const tipX = x + width * 0.5;
+    const tipY = y - offsetY;
+    const baseY = tipY - size;
+    const halfWidth = size * 0.65;
+
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(tipX - halfWidth, baseY);
+    ctx.lineTo(tipX + halfWidth, baseY);
+    ctx.closePath();
+    ctx.fillStyle = indicator.color || "#ffe066";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = indicator.outlineColor || "#2b1e08";
+    ctx.stroke();
   }
 
   drawFallback(ctx, x, y, w, h, color) {

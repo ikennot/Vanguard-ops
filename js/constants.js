@@ -34,7 +34,13 @@ export const GAME_CONST = {
     jetpackRegen: 18,
     shootCooldown: 0.16,
     dropThroughDuration: 0.18,
-    dropDownVelocity: 220
+    dropDownVelocity: 220,
+    indicator: {
+      size: 12,
+      offsetY: 28,
+      color: "#ffe066",
+      outlineColor: "#2b1e08"
+    }
   },
   enemy: {
     gravity: 1300,

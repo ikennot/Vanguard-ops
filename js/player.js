@@ -18,6 +18,7 @@ class Player {
     this.jumpRequested = false;
     this.shootRequested = false;
     this.lastJetpackSfxAt = 0;
+    this.respawnTimer = 0;
     eventBus.on("input:jump", () => {
       if (gameState.get() !== "playing") return;
       this.jumpRequested = true;
@@ -209,7 +210,8 @@ class Player {
   respawn() {
     this.jetpackFuel = Math.max(55, this.jetpackFuel);
     this.setSpawn(this.playerState.spawnPoint);
-    this.invulnTimer = 0.75;
+    this.invulnTimer = GAME_CONST.player.invulnDuration || 2.5;
+    this.health.respawnInvuln = true;
   }
 
   update(input, deltaTime, deps = {}) {
@@ -219,6 +221,16 @@ class Player {
     const wasGrounded = this.onGround;
     const speed = GAME_CONST.player.speed;
     const health = this.health;
+
+    if (this.respawnTimer > 0) {
+      this.respawnTimer -= deltaTime;
+      if (this.respawnTimer <= 0) {
+        this.respawn();
+        const sprite = this.entity.getComponent("sprite");
+        if (sprite) sprite.visible = true;
+      }
+      return;
+    }
 
     if (!inputService) return;
 
@@ -352,6 +364,12 @@ class Player {
         this.invulnTimer > 0
           ? GAME_CONST.entity.player.flashColor
           : GAME_CONST.entity.player.color;
+
+      if (this.invulnTimer > 0 && this.health.respawnInvuln) {
+        sprite.visible = Math.floor(this.invulnTimer * 15) % 2 === 0;
+      } else {
+        sprite.visible = true;
+      }
     }
   }
 
@@ -408,6 +426,8 @@ class Player {
   }
 
   loseLife() {
+    if (this.respawnTimer > 0) return;
+
     this.lives = Math.max(0, this.lives - 1);
     this.weapon.reset();
 
@@ -420,7 +440,10 @@ class Player {
       eventBus.emit("player:died", { lives: this.lives });
       return;
     }
-    this.respawn();
+    
+    this.respawnTimer = 1.0;
+    const sprite = this.entity.getComponent("sprite");
+    if (sprite) sprite.visible = false;
   }
 }
 

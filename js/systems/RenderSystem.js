@@ -33,7 +33,7 @@ class RenderSystem {
     for (const entity of entities) {
       const transform = entity.getComponent("transform");
       const sprite = entity.getComponent("sprite");
-      if (!transform || !sprite) continue;
+      if (!transform || !sprite || sprite.visible === false) continue;
       const projectile = entity.getComponent("projectile");
 
       const posX = transform.position.x - camera.x;

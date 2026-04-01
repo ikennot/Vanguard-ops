@@ -84,6 +84,7 @@ class HealthSystem {
       const transform = entity.getComponent("transform");
 
       health.invulnTimer = Math.max(0, (health.invulnTimer || 0) - deltaTime);
+      if (health.invulnTimer <= 0) health.respawnInvuln = false;
       health.knockbackTimer = Math.max(0, (health.knockbackTimer || 0) - deltaTime);
       health.controlLockTimer = Math.max(0, (health.controlLockTimer || 0) - deltaTime);
 

@@ -60,6 +60,9 @@ class PickupManager {
       .createEntity()
       .addTag("pickup")
       .addTag("render")
+      .addTag("physics")
+      .addTag("world-bounds")
+      .addTag("platform-collide")
       .addComponent(
         "transform",
         createTransform({
@@ -67,7 +70,7 @@ class PickupManager {
           y,
           width: physicalWidth,
           height: physicalHeight,
-          gravity: 0
+          gravity: 300 // Lower gravity for slower falling
         })
       )
       .addComponent("sprite", createSprite({ 
@@ -90,28 +93,16 @@ class PickupManager {
     this.clear();
 
     const ammoTypes = ["weapon-crate", "ammo-small", "ammo-medium"];
-    let ammoSpawned = false;
+    const pickupCount = Math.max(3, Math.floor(platforms.length * 0.5));
 
-    for (const platform of platforms) {
-      if (Math.random() < 0.65) {
-        const type = ammoTypes[Math.floor(Math.random() * ammoTypes.length)];
-        ammoSpawned = true;
-        this.createPickup(
-          type,
-          platform.x + platform.width * 0.5 - GAME_CONST.entity.pickup.width * 0.5,
-          platform.y - GAME_CONST.entity.pickup.height,
-          platform
-        );
-      }
-    }
-
-    if (!ammoSpawned && platforms.length) {
-      const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    for (let i = 0; i < pickupCount; i++) {
+      const type = ammoTypes[Math.floor(Math.random() * ammoTypes.length)];
+      const randomX = Math.random() * (GAME_CONST.world.width - GAME_CONST.entity.pickup.width);
       this.createPickup(
-        ammoTypes[Math.floor(Math.random() * ammoTypes.length)],
-        platform.x + platform.width * 0.5 - GAME_CONST.entity.pickup.width * 0.5,
-        platform.y - GAME_CONST.entity.pickup.height,
-        platform
+        type,
+        randomX,
+        -100, // Spawn above the screen
+        null
       );
     }
   }
@@ -128,7 +119,8 @@ class PickupManager {
     this.respawnQueue = this.respawnQueue.filter((respawn) => respawn.timer > 0);
 
     for (const respawn of ready) {
-      this.createPickup(respawn.type, respawn.x, respawn.y, respawn.sourcePlatform);
+      const randomX = Math.random() * (GAME_CONST.world.width - GAME_CONST.entity.pickup.width);
+      this.createPickup(respawn.type, randomX, -100, null);
     }
 
     const playerTransform = player.entity.getComponent("transform");
@@ -138,6 +130,17 @@ class PickupManager {
       const transform = pickup.getComponent("transform");
       const pickupData = pickup.getComponent("pickup");
 
+      // Handle falling off world
+      if (transform.position.y > GAME_CONST.world.killY) {
+        pickup.markedForRemoval = true;
+        this.respawnQueue.push({
+           timer: 5,
+           type: pickupData.type,
+           sourcePlatform: null
+        });
+        return false;
+      }
+
       if (!Collision.intersects(transform, playerTransform)) {
         return true;
       }
@@ -146,11 +149,7 @@ class PickupManager {
       this.respawnQueue.push({
         timer: 10,
         type: pickupData.type,
-        sourcePlatform: pickupData.sourcePlatform,
-        x:
-          pickupData.sourcePlatform.x +
-          pickupData.sourcePlatform.width * (0.2 + Math.random() * 0.6),
-        y: pickupData.sourcePlatform.y - GAME_CONST.entity.pickup.height
+        sourcePlatform: null
       });
 
       if (audio?.particlesEnabled && particles) {

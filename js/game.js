@@ -421,15 +421,8 @@ class Game {
     // Update confirm button
     const confirmBtnImg = document.querySelector("#btn-map-confirm img");
     if (confirmBtnImg) {
-      let folder = this.currentMapId;
-      if (folder === "canyon") folder = "lava";
-      
-      // Check if folder exists or use space as fallback for new maps
-      if (folder === "laboratory" || folder === "warzone") {
-        confirmBtnImg.src = `assets/space/ok.png`; // Fallback to space ok button
-      } else {
-        confirmBtnImg.src = `assets/${folder}/ok.png`;
-      }
+      // All maps now use the standardized ok.png from space as the base style
+      confirmBtnImg.src = `assets/space/ok.png`;
     }
 
     const levelInfoImg = document.getElementById("level-info-img");
@@ -453,13 +446,8 @@ class Game {
       levelInfoBg.src = bgAsset;
     }
     if (levelInfoOkImg) {
-        let folder = this.currentMapId;
-        if (folder === "canyon") folder = "lava";
-        if (folder === "laboratory" || folder === "warzone") {
-            levelInfoOkImg.src = `assets/space/ok.png`;
-        } else {
-            levelInfoOkImg.src = `assets/${folder}/ok.png`;
-        }
+        // Standardize all level info screens to use ok-1.png across all 4 maps
+        levelInfoOkImg.src = `assets/space/ok-1.png`;
     }
   }
 

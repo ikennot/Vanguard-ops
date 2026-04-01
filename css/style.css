@@ -144,31 +144,55 @@ button:hover {
   transform: translateY(-1px) scale(1.02);
 }
 
+/* --- Global Button Styles --- */
 .btn-img {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
   cursor: pointer;
-  transition: transform 0.14s ease, filter 0.14s ease;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(140px, 15vw, 220px); /* Liquid responsive width */
 }
 
 .btn-img:hover {
-  filter: brightness(1.2);
-  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.15) contrast(1.1);
+  transform: scale(1.08) translateY(-3px);
+}
+
+.btn-img:active {
+  transform: scale(0.94) translateY(1px);
+  filter: brightness(0.9);
+}
+
+.btn-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
 }
 
 .btn-return {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
-  transition: transform 0.14s ease, filter 0.14s ease;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s ease;
+  width: clamp(140px, 15vw, 220px); /* Liquid responsive width */
 }
 
 .btn-return:hover {
-  filter: brightness(1.2);
-  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.15) contrast(1.1);
+  transform: scale(1.08) translateY(-3px);
 }
+
+.btn-return:active {
+  transform: scale(0.94) translateY(1px);
+}
+
 .btn-return img {
+  width: 100%;
   height: auto;
   display: block;
 }
@@ -199,29 +223,13 @@ button:hover {
 #screen-rules .menu-actions {
   position: absolute;
   left: 50%;
-  bottom: 0%;
+  bottom: 5%;
   transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
   z-index: 10;
-  width: auto; /* Hayaan nating mag-adjust ang box sa laki ng image */
-}
-
-#screen-rules .menu-actions img {
-  width: 500px; 
-  height: auto;  
-  display: block; 
 }
 
 #screen-rules .menu-actions button img {
-  width: 200px;
-  height: auto;
-}
-
-.victory-container .menu-actions button:hover,
-.defeat-container .menu-actions button:hover {
-  filter: brightness(1.2);
-  transform: scale(1.05);
+  width: 180px;
 }
 
 .victory-actions {
@@ -233,10 +241,8 @@ button:hover {
   margin: 0;
 }
 
-.victory-actions img {
-  width: 200px;
-  height: auto;
-  display: block;
+.victory-actions button img {
+  width: 180px;
 }
 
 .victory-ok-actions {
@@ -247,9 +253,8 @@ button:hover {
   z-index: 15;
 }
 
-.victory-ok-actions img {
-  width: 190px;
-  display: block;
+.victory-ok-actions button img {
+  width: 180px;
 }
 
 .defeat-actions {
@@ -261,10 +266,8 @@ button:hover {
   margin: 0;
 }
 
-.defeat-actions img {
-  width: 200px;
-  height: auto;
-  display: block;
+.defeat-actions button img {
+  width: 180px;
 }
 
 .end-screen {
@@ -440,8 +443,7 @@ button:hover {
 }
 
 #screen-map-select .menu-actions button img {
-  width: 150px;
-  cursor: pointer;
+  width: 180px;
 }
 
 .resources-fullscreen-container {
@@ -470,19 +472,12 @@ button:hover {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 15px; /* Dagdag space sa pagitan ng mga buttons/images */
+  gap: 15px;
   z-index: 10;
 }
 
-/* Target ang images sa loob */
-#screen-resources .menu-actions img {
-  width: 80px; /* Halimbawa ng laki */
-  transition: transform 0.2s; /* Optional: smooth transition */
-}
-
 #screen-resources .menu-actions button img {
-  width: 200px;
-  height: auto;
+  width: 180px;
 }
 
 #level-info-img {
@@ -623,16 +618,19 @@ button:hover {
   text-shadow: 1px 1px 2px #000;
 }
 
+/* Overlay Background */
 #menu-pause {
   background: rgba(0, 0, 0, 0.55) !important;
 }
 
+/* Main Card Container */
 .pause-card-wrapper {
   position: relative;
   width: min(680px, 80vw);
   aspect-ratio: 601 / 415;
 }
 
+/* Background Image of the Card */
 .pause-card-bg {
   position: absolute;
   inset: 0;
@@ -642,6 +640,7 @@ button:hover {
   pointer-events: none;
 }
 
+/* Flex Container for Buttons */
 .pause-actions {
   position: absolute;
   inset: 0;
@@ -649,14 +648,17 @@ button:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  /* Reduced padding to remove the need for negative margins */
+  padding-top: 150px; 
   gap: 0px;
-  padding-top: 220px;
 }
 
+/* Individual Button Styling */
 .pause-image-btn {
-  width: min(280px, 42vw);
-  line-height: 100%;
-  margin-top: -120px;
+  width: 220px;
+  /* Changed to positive margin */
+  margin-top: -70px; 
+  position: relative;
 }
 
 .pause-image-btn img {
@@ -665,17 +667,11 @@ button:hover {
   display: block;
 }
 
-.pause-image-btn:hover,
-.pause-image-btn:focus-visible {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
-}
-
 .pause-image-btn-main {
-  width: min(320px, 48vw);
-  margin-top: -130px;
+  width: 220px;
 }
 
+/* Icon Styling */
 .hud-pause-icon {
   width: 50px;
   height: auto;
@@ -683,12 +679,17 @@ button:hover {
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   #game-root {
     width: min(100vw, 177.78vh);
     height: min(100vh, 56.25vw);
   }
-
+  
+  .pause-image-btn {
+    width: 180px; /* Scaling down slightly for mobile */
+  }
+}
   .map-select-box {
     min-width: 0;
     width: 100%;
@@ -705,7 +706,7 @@ button:hover {
     bottom: 7%;
     gap: 0.3rem;
   }
-}
+
 
 /* --- Settings & Tutorial Improvements --- */
 #menu-settings {

@@ -438,7 +438,7 @@ class Game {
       levelInfoImg.src = infoAsset;
     }
     if (levelInfoBg) {
-      let bgAsset = `assets/space/terrainspace.jpg`;
+      let bgAsset = `assets/space/terrainspace.png`;
       if (this.currentMapId === "jungle") bgAsset = `assets/jungle/terrainjungle.jpg`;
       if (this.currentMapId === "canyon") bgAsset = `assets/lava/terrainlava.jpg`;
       if (this.currentMapId === "warzone") bgAsset = `assets/warzone/warzoneterrain.png`;

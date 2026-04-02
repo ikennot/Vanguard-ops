@@ -321,7 +321,7 @@ class Player {
       let nextAssetKey;
       if (isShooting) {
         nextAssetKey = facingLeft ? "player-shooting-right" : "player-shooting-left";
-      } else if (isFlying) {
+      } else if (isFlying || this.state === "jumping" || this.state === "falling") {
         nextAssetKey = facingLeft ? "player-flying-right" : "player-flying-left";
       } else {
         nextAssetKey = facingLeft ? "player-running-right" : "player-running-left";
@@ -345,11 +345,11 @@ class Player {
         sprite.frameX = 3;
         sprite.numFrames = 2;
         sprite.animationSpeed = 0.08;
-      } else if (isFlying) {
+      } else if (isFlying || this.state === "jumping" || this.state === "falling") {
         sprite.frameX = 0;
-        sprite.numFrames = 5;
+        sprite.numFrames = 1;
         sprite.animationSpeed = 0.1;
-      } else if (isMoving) {
+      } else if (this.state === "running") {
         sprite.frameX = 0;
         sprite.numFrames = 5;
         sprite.animationSpeed = 0.1;

@@ -156,7 +156,7 @@ const assetManifest = [
   { key: "platform-canyon", src: "assets/lava/lavaplatform.png", type: "image" },
   { key: "platform-laboratory", src: "assets/laboratory/laboratoryplatform.png", type: "image" },
   { key: "platform-warzone", src: "assets/warzone/warzone_platform.png", type: "image" },
-  { key: "bg-space", src: "assets/space/terrainspace.jpg", type: "image" },
+  { key: "bg-space", src: "assets/space/terrainspace.png", type: "image" },
   { key: "bg-jungle", src: "assets/jungle/terrainjungle.jpg", type: "image" },
   { key: "bg-canyon", src: "assets/lava/terrainlava.jpg", type: "image" },
   { key: "bg-laboratory", src: "assets/laboratory/terrainlaboratory.png", type: "image" },

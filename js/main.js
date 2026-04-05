@@ -38,6 +38,11 @@ const assetManifest = [
   { key: "player-flying-right", src: "assets/sprites/player/flying_right.png", type: "image" },
   { key: "player-shooting-left", src: "assets/sprites/player/shooting_left.png", type: "image" },
   { key: "player-shooting-right", src: "assets/sprites/player/shooting_right.png", type: "image" },
+  // Player 2 sprites
+  { key: "player2-running-left", src: "assets/sprites/player2/player2_run_left.png", type: "image" },
+  { key: "player2-running-right", src: "assets/sprites/player2/player2_run_right.png", type: "image" },
+  { key: "player2-shooting-left", src: "assets/sprites/player2/player2_shoot_left.png", type: "image" },
+  { key: "player2-shooting-right", src: "assets/sprites/player2/player2_shoot_right.png", type: "image" },
   { key: "enemy-left", src: "assets/sprites/enemy/enemy-facing-left.png", type: "image" },
   { key: "enemy-right", src: "assets/sprites/enemy/enemy-facing-right.png", type: "image" },
   {

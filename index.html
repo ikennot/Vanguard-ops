@@ -27,6 +27,71 @@
       </div>
     </section>
 
+    <section id="screen-character-select" class="overlay hidden panel full-screen">
+      <img src="assets/space/terrainspace.png" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <img src="assets/space/modalblur.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; opacity: 0.5;">
+
+      <div class="character-select-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
+        <img src="assets/characterSelection/character_selection.png" alt="Character Selection" style="width:400px; margin-bottom: 20px;">
+
+        <div class="character-nav-row" style="display:flex; align-items:center; gap:40px;">
+          <button id="btn-char-prev" class="btn-img" style="width:80px;">
+            <img src="assets/characterSelection/lessthan.png" alt="Prev" style="width:100%;">
+          </button>
+
+          <div class="character-preview" style="width:300px; height:300px; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.3); border-radius: 10px; border: 2px solid #315466;">
+            <canvas id="char-preview-canvas" width="300" height="300"></canvas>
+          </div>
+
+          <button id="btn-char-next" class="btn-img" style="width:80px;">
+            <img src="assets/characterSelection/greaterthan.png" alt="Next" style="width:100%;">
+          </button>
+        </div>
+
+        <div class="menu-actions" style="margin-top: 40px; display:flex; gap:20px;">
+          <button id="btn-char-back" class="btn-img" style="width:150px;">
+            <img src="assets/characterSelection/back.png" alt="Back" style="width:100%;">
+          </button>
+          <button id="btn-char-confirm" class="btn-img" style="width:150px;">
+            <img src="assets/characterSelection/ok.png" alt="Confirm" style="width:100%;">
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-rules" class="overlay hidden panel full-screen">
+
+      <img src="assets/space/terrainspace.png" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+      <img src="assets/space/modalblur.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; opacity: 0.5;">
+      
+      <div class="character-select-container" style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
+        <img src="assets/characterSelection/character_selection.png" alt="Character Selection" style="width:400px; margin-bottom: 20px;">
+        
+        <div class="character-nav-row" style="display:flex; align-items:center; gap:40px;">
+          <button id="btn-char-prev" class="btn-img" style="width:80px;">
+            <img src="assets/characterSelection/lessthan.png" alt="Prev" style="width:100%;">
+          </button>
+          
+          <div class="character-preview" style="width:200px; height:200px; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.3); border-radius: 10px; border: 2px solid #315466;">
+            <canvas id="char-preview-canvas" width="200" height="200"></canvas>
+          </div>
+
+          <button id="btn-char-next" class="btn-img" style="width:80px;">
+            <img src="assets/characterSelection/greaterthan.png" alt="Next" style="width:100%;">
+          </button>
+        </div>
+
+        <div class="menu-actions" style="margin-top: 40px; display:flex; gap:20px;">
+          <button id="btn-char-back" class="btn-img" style="width:150px;">
+            <img src="assets/characterSelection/back.png" alt="Back" style="width:100%;">
+          </button>
+          <button id="btn-char-confirm" class="btn-img" style="width:150px;">
+            <img src="assets/characterSelection/ok.png" alt="Confirm" style="width:100%;">
+          </button>
+        </div>
+      </div>
+    </section>
+
     <section id="screen-rules" class="overlay hidden panel full-screen">
       <div class="rules-fullscreen-container">
         <img src="assets/rules/rules.png" alt="Game rules" class="rules-fullscreen-image">

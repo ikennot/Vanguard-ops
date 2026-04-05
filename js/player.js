@@ -19,6 +19,7 @@ class Player {
     this.shootRequested = false;
     this.lastJetpackSfxAt = 0;
     this.respawnTimer = 0;
+    this.selectedCharacter = 1;
     eventBus.on("input:jump", () => {
       if (gameState.get() !== "playing") return;
       this.jumpRequested = true;
@@ -40,11 +41,20 @@ class Player {
   }
 
   createOrResetEntity(spawnPoint, preserveLives = false) {
+    const game = serviceLocator.get("game");
+    if (game) {
+      this.selectedCharacter = game.selectedCharacter || 1;
+    }
+
     const existing = this.entity;
     // We want to pass existing lives down into the new health component when doing a session reset (map transitions)
     const existingLives = existing ? existing.getComponent("health").lives : this.maxLives;
 
     if (existing) existing.markedForRemoval = true;
+
+    const initialAsset = this.selectedCharacter === 1 ? "player-running-right" : "player2-running-right";
+    const frameSize = this.selectedCharacter === 1 ? 48 : 224;
+    const scale = this.selectedCharacter === 1 ? 3 : 0.65;
 
     this.entity = this.entityManager.createEntity();
     this.entity
@@ -88,15 +98,15 @@ class Player {
         "sprite",
         createSprite({
           type: "sprite",
-          assetKey: "player-running-right",
-          frameWidth: 48,
-          frameHeight: 48,
+          assetKey: initialAsset,
+          frameWidth: frameSize,
+          frameHeight: frameSize,
           numFrames: 5,
           animationSpeed: 0.1,
-          scale: 3,
+          scale: scale,
           noFlip: true,
           color: GAME_CONST.entity.player.color,
-          offsetY: GAME_CONST.entity.player.spriteOffsetY
+          offsetY: this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : -30
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -319,12 +329,19 @@ class Player {
       const isMoving = ["running", "jumping", "falling"].includes(this.state);
 
       let nextAssetKey;
+      const prefix = this.selectedCharacter === 1 ? "player" : "player2";
+      
       if (isShooting) {
-        nextAssetKey = facingLeft ? "player-shooting-right" : "player-shooting-left";
+        nextAssetKey = facingLeft ? `${prefix}-shooting-left` : `${prefix}-shooting-right`;
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
-        nextAssetKey = facingLeft ? "player-flying-right" : "player-flying-left";
+        if (this.selectedCharacter === 1) {
+          nextAssetKey = facingLeft ? "player-flying-left" : "player-flying-right";
+        } else {
+          // Player 2 fallback to running for flying/air states
+          nextAssetKey = facingLeft ? "player2-running-left" : "player2-running-right";
+        }
       } else {
-        nextAssetKey = facingLeft ? "player-running-right" : "player-running-left";
+        nextAssetKey = facingLeft ? `${prefix}-running-left` : `${prefix}-running-right`;
       }
 
       if (sprite.assetKey !== nextAssetKey) {
@@ -336,14 +353,14 @@ class Player {
       sprite.type = "sprite";
       sprite.noFlip = true;
       sprite.frameY = 0;
-      sprite.frameWidth = 48;
-      sprite.frameHeight = 48;
-      sprite.scale = 2.5;
-      sprite.offsetY = GAME_CONST.entity.player.spriteOffsetY;
+      sprite.frameWidth = this.selectedCharacter === 1 ? 48 : 224;
+      sprite.frameHeight = this.selectedCharacter === 1 ? 48 : 224;
+      sprite.scale = this.selectedCharacter === 1 ? 2.5 : 0.55;
+      sprite.offsetY = this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : -20;
 
       if (isShooting) {
-        sprite.frameX = 3;
-        sprite.numFrames = 2;
+        sprite.frameX = this.selectedCharacter === 1 ? 3 : 0;
+        sprite.numFrames = this.selectedCharacter === 1 ? 2 : 5;
         sprite.animationSpeed = 0.08;
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
         sprite.frameX = 0;

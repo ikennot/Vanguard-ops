@@ -9,6 +9,7 @@ class MenuController {
     this.victory = document.getElementById("screen-victory");
     this.defeat = document.getElementById("screen-defeat");
     this.tutorial = document.getElementById("screen-tutorial");
+    this.characterSelect = document.getElementById("screen-character-select");
     this.levelInfo = document.getElementById("screen-level-info");
     this.upgrade = document.getElementById("screen-upgrade");
     this.confirmUpgrade = document.getElementById("modal-confirm-upgrade");
@@ -18,6 +19,7 @@ class MenuController {
       this.settings,
       this.rules,
       this.mapSelect,
+      this.characterSelect,
       this.resources,
       this.victory,
       this.defeat,
@@ -44,6 +46,7 @@ class MenuController {
     if (state === "settings") this.settings.classList.remove("hidden");
     if (state === "rules") this.rules.classList.remove("hidden");
     if (state === "tutorial") this.tutorial.classList.remove("hidden");
+    if (state === "character-select") this.characterSelect.classList.remove("hidden");
     if (state === "map-select") this.mapSelect.classList.remove("hidden");
     if (state === "resources") this.resources.classList.remove("hidden");
     if (state === "level-info") this.levelInfo.classList.remove("hidden");

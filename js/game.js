@@ -65,11 +65,12 @@ class Game {
     this.level = 0;
     this.livesAtStartOfLevel = GAME_CONST.player.maxLives; // Base default before tracking overrides this
     this.maps = ["space", "jungle", "canyon", "warzone", "laboratory"];
-    this.unlockedMaps = ["space"];
+    this.unlockedMaps = ["space", "jungle", "canyon", "warzone", "laboratory"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];
     this.isNewWin = false;
+    this.selectedCharacter = 1;
 
     this.bindUi();
     this.bindEvents();
@@ -117,7 +118,20 @@ class Game {
     });
 
     document.getElementById("btn-start").addEventListener("click", () => {
-      this.setState("rules");
+      this.setState("character-select");
+    });
+
+    document.getElementById("btn-char-prev").addEventListener("click", () => {
+      this.shiftCharacter(-1);
+    });
+    document.getElementById("btn-char-next").addEventListener("click", () => {
+      this.shiftCharacter(1);
+    });
+    document.getElementById("btn-char-back").addEventListener("click", () => {
+      this.setState("main");
+    });
+    document.getElementById("btn-char-confirm").addEventListener("click", () => {
+      this.setState("map-select");
     });
 
     document.getElementById("btn-settings").addEventListener("click", () => {
@@ -308,10 +322,14 @@ class Game {
 
     if (nextState === "playing") this.menu.hideAll();
     else if (nextState === "pause") this.menu.show("pause");
+    else if (nextState === "character-select") {
+      this.menu.show("character-select");
+      this.updateCharacterPreview();
+    }
     else this.menu.show(nextState);
 
     // Audio state transitions
-    if (["main", "settings", "rules", "tutorial", "map-select", "resources", "level-info"].includes(nextState)) {
+    if (["main", "settings", "rules", "tutorial", "character-select", "map-select", "resources", "level-info"].includes(nextState)) {
       this.audio.playBgm("bgm-opening");
     } else if (["playing", "pause"].includes(nextState)) {
       if (this.currentMapId === "jungle") {
@@ -333,6 +351,40 @@ class Game {
 
     gameState.set(nextState);
     eventBus.emit("game:state-changed", nextState, previousState);
+  }
+
+  shiftCharacter(direction) {
+    this.selectedCharacter = this.selectedCharacter === 1 ? 2 : 1;
+    this.updateCharacterPreview();
+    this.audio.playSfx("sfx-button");
+  }
+
+  updateCharacterPreview() {
+    const canvas = document.getElementById("char-preview-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const assets = serviceLocator.get("assets");
+    const assetKey = this.selectedCharacter === 1 ? "player-running-right" : "player2-running-right";
+    const img = assets.get(assetKey);
+
+    if (img) {
+      const frameWidth = this.selectedCharacter === 1 ? 48 : 224;
+      const frameHeight = this.selectedCharacter === 1 ? 48 : 224;
+      const scale = this.selectedCharacter === 1 ? 4 : 1;
+      
+      const drawWidth = frameWidth * scale;
+      const drawHeight = frameHeight * scale;
+      const x = (canvas.width - drawWidth) / 2;
+      const y = (canvas.height - drawHeight) / 2;
+
+      ctx.drawImage(
+        img,
+        0, 0, frameWidth, frameHeight,
+        x, y, drawWidth, drawHeight
+      );
+    }
   }
 
   syncVictoryScreen() {

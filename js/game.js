@@ -372,7 +372,7 @@ class Game {
     if (img) {
       const frameWidth = this.selectedCharacter === 1 ? 48 : 224;
       const frameHeight = this.selectedCharacter === 1 ? 48 : 224;
-      const scale = this.selectedCharacter === 1 ? 4 : 1;
+      const scale = this.selectedCharacter === 1 ? 6 : 1.3;
       
       const drawWidth = frameWidth * scale;
       const drawHeight = frameHeight * scale;

@@ -369,7 +369,9 @@ class Game {
 
     const assets = serviceLocator.get("assets");
     const prefix = this.selectedCharacter === 1 ? "player" : `player${this.selectedCharacter}`;
-    const assetKey = `${prefix}-running-right`;
+    // Character 1 (Vanguard) and 2 (Sentinel) face left, 3 (Ghost) and 4 (Titan) face right
+    const faceLeft = this.selectedCharacter <= 2;
+    const assetKey = faceLeft ? `${prefix}-running-left` : `${prefix}-running-right`;
     const img = assets.get(assetKey);
 
     if (img) {
@@ -380,14 +382,40 @@ class Game {
       
       const drawWidth = frameWidth * scale;
       const drawHeight = frameHeight * scale;
+      
+      // Center character and handle any built-in horizontal offset if needed
+      // (Currently just centering based on the frame dimensions)
       const x = (canvas.width - drawWidth) / 2;
       const y = (canvas.height - drawHeight) / 2;
 
+      ctx.save();
+      // Ensure character faces right in preview regardless of original asset orientation
+      // Note: If the sprite is already facing right, this just draws it.
+      // If it's facing left, we would need to scale -1, but prefix-running-right 
+      // is expected to be right-facing.
       ctx.drawImage(
         img,
         0, 0, frameWidth, frameHeight,
         x, y, drawWidth, drawHeight
       );
+      ctx.restore();
+
+      // Character Name
+      const names = {
+        1: "Vanguard",
+        2: "Sentinel",
+        3: "Ghost",
+        4: "Titan"
+      };
+      const name = names[this.selectedCharacter] || "Unknown";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px 'Press Start 2P', monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 4;
+      ctx.fillText(name, canvas.width / 2, canvas.height - 30);
+      ctx.shadowBlur = 0;
     }
   }
 

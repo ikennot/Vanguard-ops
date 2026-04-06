@@ -353,15 +353,24 @@ class Player {
       const isFlying = this.state === "jetpack";
       let nextAssetKey;
       const prefix = this.selectedCharacter === 1 ? "player" : `player${this.selectedCharacter}`;
-      
-      // UNIFIED ASSET STRATEGY:
-      // Both Shooting and Running assets (named '...-left') visually face LEFT.
+      const facingSuffix = this.facing === -1 ? "left" : "right";
+      const usesDirectionalSheets = this.selectedCharacter >= 2;
+      const runFacingSuffix = this.selectedCharacter === 2
+        ? (this.facing === -1 ? "right" : "left")
+        : facingSuffix;
+
       if (visuallyShooting) {
-        nextAssetKey = `${prefix}-shooting-left`;
+        nextAssetKey = usesDirectionalSheets
+          ? `${prefix}-shooting-${facingSuffix}`
+          : `${prefix}-shooting-left`;
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
-        nextAssetKey = (this.selectedCharacter === 1) ? "player-flying-left" : `${prefix}-running-left`;
+        nextAssetKey = this.selectedCharacter === 1
+          ? `player-flying-${facingSuffix}`
+          : `${prefix}-running-${runFacingSuffix}`;
       } else {
-        nextAssetKey = `${prefix}-running-left`;
+        nextAssetKey = usesDirectionalSheets
+          ? `${prefix}-running-${runFacingSuffix}`
+          : `${prefix}-running-left`;
       }
 
       if (sprite.assetKey !== nextAssetKey) {
@@ -370,15 +379,13 @@ class Player {
         sprite.animationTimer = 0;
       }
 
-      // ASSET DIRECTION LOGIC:
-      // Running/Flying assets face RIGHT, but Shooting assets face LEFT.
       sprite.noFlip = true;
-      if (visuallyShooting) {
-          // Shooting asset faces LEFT: flip when aiming RIGHT (1)
-          sprite.flipX = (this.facing === 1); 
+      if (usesDirectionalSheets) {
+        sprite.flipX = false;
+      } else if (visuallyShooting) {
+        sprite.flipX = this.facing === 1;
       } else {
-          // Running asset faces RIGHT: flip when moving LEFT (-1)
-          sprite.flipX = (this.facing === -1);
+        sprite.flipX = this.facing === -1;
       }
 
       const isLargeChar = this.selectedCharacter >= 2;
@@ -388,20 +395,56 @@ class Player {
       sprite.frameHeight = isLargeChar ? 224 : 48;
       sprite.scale = isLargeChar ? 0.535 : 2.5;
       sprite.offsetY = isLargeChar ? 30 : GAME_CONST.entity.player.spriteOffsetY;
+      sprite.frameSequence = null;
 
       if (visuallyShooting) {
         if (isActuallyFiring) {
             if (this.selectedCharacter === 1) {
                 sprite.frameX = 3; 
                 sprite.numFrames = 2;
+                sprite.animationSpeed = 0.06;
+            } else if (this.selectedCharacter === 2) {
+                sprite.frameX = this.facing === -1 ? 1 : 4;
+                sprite.numFrames = 1;
+                sprite.currentFrame = 0;
+                sprite.animationSpeed = 0.06;
+            } else if (this.selectedCharacter === 3) {
+                if (this.state === "running") {
+                    sprite.frameX = this.facing === -1 ? 3 : 0;
+                } else {
+                    sprite.frameX = 2;
+                }
+                sprite.numFrames = 1;
+                sprite.currentFrame = 0;
+                sprite.animationSpeed = 0.08;
+            } else if (this.selectedCharacter === 4) {
+                if (this.state === "running") {
+                    sprite.frameX = this.facing === -1 ? 3 : 2;
+                } else {
+                    sprite.frameX = 2;
+                }
+                sprite.numFrames = 1;
+                sprite.currentFrame = 0;
+                sprite.animationSpeed = 0.08;
             } else {
-                sprite.frameX = 1;
-                sprite.numFrames = 2;
+                if (this.state === "running") {
+                    sprite.frameX = this.facing === -1 ? 3 : 0;
+                    sprite.numFrames = 2;
+                } else {
+                    sprite.frameX = this.facing === -1 ? 0 : 2;
+                    sprite.numFrames = 3;
+                }
+                sprite.animationSpeed = 0.08;
             }
-            sprite.animationSpeed = 0.06;
             sprite.loop = true;
         } else {
-            sprite.frameX = this.selectedCharacter === 1 ? 2 : 0;
+            if (this.selectedCharacter === 1) {
+                sprite.frameX = 2;
+            } else if (this.selectedCharacter === 2) {
+                sprite.frameX = this.facing === -1 ? 1 : 4;
+            } else {
+                sprite.frameX = 0;
+            }
             sprite.numFrames = 1;
             sprite.animationSpeed = 0.1;
             sprite.loop = false;

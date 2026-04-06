@@ -81,7 +81,11 @@ class RenderSystem {
                ctx.drawImage(image, 0, 0, image.naturalWidth || image.width, image.naturalHeight || image.height, drawX, drawY, drawW, drawH);
              }
           } else {
-            const frameX = (sprite.frameX + sprite.currentFrame) * sprite.frameWidth;
+            const frameIndex = Array.isArray(sprite.frameSequence) &&
+              sprite.frameSequence.length > 0
+              ? sprite.frameSequence[sprite.currentFrame] ?? sprite.frameSequence[0]
+              : sprite.frameX + sprite.currentFrame;
+            const frameX = frameIndex * sprite.frameWidth;
             const frameY = sprite.frameY * sprite.frameHeight;
 
             // Simple centering if frame size differs from transform size

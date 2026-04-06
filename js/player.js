@@ -54,7 +54,7 @@ class Player {
 
     const initialAsset = this.selectedCharacter === 1 ? "player-running-right" : "player2-running-right";
     const frameSize = this.selectedCharacter === 1 ? 48 : 224;
-    const scale = this.selectedCharacter === 1 ? 3 : 0.65;
+    const scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
 
     this.entity = this.entityManager.createEntity();
     this.entity
@@ -250,7 +250,10 @@ class Player {
       if (inputService.isDown(GAME_CONST.controls.left)) this.velocity.x = -speed;
       if (inputService.isDown(GAME_CONST.controls.right)) this.velocity.x = speed;
     }
-    if (this.velocity.x !== 0) this.facing = this.velocity.x > 0 ? 1 : -1;
+    
+    // Determine facing based on velocity (overridden by shooting later if needed)
+    if (this.velocity.x > 0) this.facing = -1;
+    else if (this.velocity.x < 0) this.facing = 1;
 
     if (wasGrounded && this.jumpRequested) {
       this.velocity.y = GAME_CONST.player.jumpForce;
@@ -355,8 +358,8 @@ class Player {
       sprite.frameY = 0;
       sprite.frameWidth = this.selectedCharacter === 1 ? 48 : 224;
       sprite.frameHeight = this.selectedCharacter === 1 ? 48 : 224;
-      sprite.scale = this.selectedCharacter === 1 ? 2.5 : 0.55;
-      sprite.offsetY = this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : -20;
+      sprite.scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
+      sprite.offsetY = this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : 30;
 
       if (isShooting) {
         sprite.frameX = this.selectedCharacter === 1 ? 3 : 0;
@@ -412,9 +415,16 @@ class Player {
     const deltaY = mouseWorldY - originY;
     let direction = { x: this.facing, y: 0 };
 
-    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-      direction = { x: deltaX, y: deltaY };
-      if (deltaX !== 0) this.facing = deltaX > 0 ? 1 : -1;
+    // ONLY use the mouse position to aim IF the player is actively clicking the mouse button.
+    // Otherwise, default to the character's current facing direction.
+    if (inputService.isMouseDown(0)) {
+      if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+        direction = { x: deltaX, y: deltaY };
+        // Only update facing if shooting at a significant horizontal distance
+        if (Math.abs(deltaX) > 5) {
+          this.facing = deltaX > 0 ? 1 : -1;
+        }
+      }
     }
 
     projectileManager.spawn(

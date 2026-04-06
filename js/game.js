@@ -632,8 +632,8 @@ class Game {
       // Unlock next map if available (for selection in menu later)
       if (this.mapIndex < this.maps.length - 1) {
         const nextMap = this.maps[this.mapIndex + 1];
-        // Only grant upgrade when this is the first clear of the current level.
-        this.isNewWin = !this.unlockedMaps.includes(nextMap);
+        // ALWAYS grant an upgrade when completing a level, not just on first clear
+        this.isNewWin = true; 
         this.unlockMap(nextMap);
       } else {
         // Last level has no next level to apply upgrades to.

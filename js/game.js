@@ -354,7 +354,9 @@ class Game {
   }
 
   shiftCharacter(direction) {
-    this.selectedCharacter = this.selectedCharacter === 1 ? 2 : 1;
+    this.selectedCharacter += direction;
+    if (this.selectedCharacter > 4) this.selectedCharacter = 1;
+    if (this.selectedCharacter < 1) this.selectedCharacter = 4;
     this.updateCharacterPreview();
     this.audio.playSfx("sfx-button");
   }
@@ -366,13 +368,15 @@ class Game {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const assets = serviceLocator.get("assets");
-    const assetKey = this.selectedCharacter === 1 ? "player-running-right" : "player2-running-right";
+    const prefix = this.selectedCharacter === 1 ? "player" : `player${this.selectedCharacter}`;
+    const assetKey = `${prefix}-running-right`;
     const img = assets.get(assetKey);
 
     if (img) {
-      const frameWidth = this.selectedCharacter === 1 ? 48 : 224;
-      const frameHeight = this.selectedCharacter === 1 ? 48 : 224;
-      const scale = this.selectedCharacter === 1 ? 6 : 1.3;
+      const isLargeChar = this.selectedCharacter >= 2;
+      const frameWidth = isLargeChar ? 224 : 48;
+      const frameHeight = isLargeChar ? 224 : 48;
+      const scale = isLargeChar ? 1.3 : 6;
       
       const drawWidth = frameWidth * scale;
       const drawHeight = frameHeight * scale;

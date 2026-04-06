@@ -43,6 +43,16 @@ const assetManifest = [
   { key: "player2-running-right", src: "assets/sprites/player2/player2_run_right.png", type: "image" },
   { key: "player2-shooting-left", src: "assets/sprites/player2/player2_shoot_left.png", type: "image" },
   { key: "player2-shooting-right", src: "assets/sprites/player2/player2_shoot_right.png", type: "image" },
+  // Player 3 sprites
+  { key: "player3-running-left", src: "assets/sprites/player3/player3_run_left.png", type: "image" },
+  { key: "player3-running-right", src: "assets/sprites/player3/player3_right_run.png", type: "image" },
+  { key: "player3-shooting-left", src: "assets/sprites/player3/player_shoot_left.png", type: "image" },
+  { key: "player3-shooting-right", src: "assets/sprites/player3/player_shoot_right.png", type: "image" },
+  // Player 4 sprites
+  { key: "player4-running-left", src: "assets/sprites/player4/player4_run_left.png", type: "image" },
+  { key: "player4-running-right", src: "assets/sprites/player4/player4_run_right.png", type: "image" },
+  { key: "player4-shooting-left", src: "assets/sprites/player4/player4_shoot_left.png", type: "image" },
+  { key: "player4-shooting-right", src: "assets/sprites/player4/player4_shoot_right.png", type: "image" },
   { key: "enemy-left", src: "assets/sprites/enemy/enemy-facing-left.png", type: "image" },
   { key: "enemy-right", src: "assets/sprites/enemy/enemy-facing-right.png", type: "image" },
   {

@@ -52,10 +52,15 @@ class Player {
 
     if (existing) existing.markedForRemoval = true;
 
-    // We use the 'left' asset as the unified base for everything.
-    const initialAsset = this.selectedCharacter === 1 ? "player-running-left" : "player2-running-left";
-    const frameSize = this.selectedCharacter === 1 ? 48 : 224;
-    const scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
+    // Prefixes: player, player2, player3, player4
+    const prefix = this.selectedCharacter === 1 ? "player" : `player${this.selectedCharacter}`;
+    const initialAsset = `${prefix}-running-left`;
+    
+    // Character 1 has different dimensions, others are same as character 2
+    const isLargeChar = this.selectedCharacter >= 2;
+    const frameSize = isLargeChar ? 224 : 48;
+    const scale = isLargeChar ? 0.535 : 2.5;
+    const offsetY = isLargeChar ? 30 : GAME_CONST.entity.player.spriteOffsetY;
 
     this.entity = this.entityManager.createEntity();
     this.entity
@@ -107,7 +112,7 @@ class Player {
           scale: scale,
           noFlip: true,
           color: GAME_CONST.entity.player.color,
-          offsetY: this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : 30
+          offsetY: offsetY
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -347,14 +352,14 @@ class Player {
       
       const isFlying = this.state === "jetpack";
       let nextAssetKey;
-      const prefix = this.selectedCharacter === 1 ? "player" : "player2";
+      const prefix = this.selectedCharacter === 1 ? "player" : `player${this.selectedCharacter}`;
       
       // UNIFIED ASSET STRATEGY:
       // Both Shooting and Running assets (named '...-left') visually face LEFT.
       if (visuallyShooting) {
         nextAssetKey = `${prefix}-shooting-left`;
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
-        nextAssetKey = (this.selectedCharacter === 1) ? "player-flying-left" : "player2-running-left";
+        nextAssetKey = (this.selectedCharacter === 1) ? "player-flying-left" : `${prefix}-running-left`;
       } else {
         nextAssetKey = `${prefix}-running-left`;
       }
@@ -376,12 +381,13 @@ class Player {
           sprite.flipX = (this.facing === -1);
       }
 
+      const isLargeChar = this.selectedCharacter >= 2;
       sprite.type = "sprite";
       sprite.frameY = 0;
-      sprite.frameWidth = this.selectedCharacter === 1 ? 48 : 224;
-      sprite.frameHeight = this.selectedCharacter === 1 ? 48 : 224;
-      sprite.scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
-      sprite.offsetY = this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : 30;
+      sprite.frameWidth = isLargeChar ? 224 : 48;
+      sprite.frameHeight = isLargeChar ? 224 : 48;
+      sprite.scale = isLargeChar ? 0.535 : 2.5;
+      sprite.offsetY = isLargeChar ? 30 : GAME_CONST.entity.player.spriteOffsetY;
 
       if (visuallyShooting) {
         if (isActuallyFiring) {

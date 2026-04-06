@@ -65,7 +65,7 @@ class Game {
     this.level = 0;
     this.livesAtStartOfLevel = GAME_CONST.player.maxLives; // Base default before tracking overrides this
     this.maps = ["space", "jungle", "canyon", "warzone", "laboratory"];
-    this.unlockedMaps = ["space", "jungle", "canyon", "warzone", "laboratory"];
+    this.unlockedMaps = ["space"];
     this.mapIndex = 0;
     this.currentMapId = this.maps[this.mapIndex];
     this.currentMapData = GAME_CONST.maps[this.currentMapId];

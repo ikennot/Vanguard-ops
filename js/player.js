@@ -20,6 +20,7 @@ class Player {
     this.lastJetpackSfxAt = 0;
     this.respawnTimer = 0;
     this.selectedCharacter = 1;
+
     eventBus.on("input:jump", () => {
       if (gameState.get() !== "playing") return;
       this.jumpRequested = true;
@@ -47,12 +48,12 @@ class Player {
     }
 
     const existing = this.entity;
-    // We want to pass existing lives down into the new health component when doing a session reset (map transitions)
     const existingLives = existing ? existing.getComponent("health").lives : this.maxLives;
 
     if (existing) existing.markedForRemoval = true;
 
-    const initialAsset = this.selectedCharacter === 1 ? "player-running-right" : "player2-running-right";
+    // We use the 'left' asset as the unified base for everything.
+    const initialAsset = this.selectedCharacter === 1 ? "player-running-left" : "player2-running-left";
     const frameSize = this.selectedCharacter === 1 ? 48 : 224;
     const scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
 
@@ -106,7 +107,7 @@ class Player {
           scale: scale,
           noFlip: true,
           color: GAME_CONST.entity.player.color,
-          offsetY: this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : -30
+          offsetY: this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : 30
         })
       )
       .addComponent("hitbox", createHitbox());
@@ -226,6 +227,7 @@ class Player {
 
   update(input, deltaTime, deps = {}) {
     const inputService = input || deps.input || serviceLocator.get("input");
+    const cameraService = deps.camera || serviceLocator.get("camera");
     const audioService = deps.audio || serviceLocator.get("audio");
     const particleSystem = deps.particles || serviceLocator.get("particles");
     const wasGrounded = this.onGround;
@@ -246,14 +248,17 @@ class Player {
 
     this.velocity.x = 0;
 
+    // Movement updates facing
     if (health.controlLockTimer <= 0) {
-      if (inputService.isDown(GAME_CONST.controls.left)) this.velocity.x = -speed;
-      if (inputService.isDown(GAME_CONST.controls.right)) this.velocity.x = speed;
+      if (inputService.isDown(GAME_CONST.controls.left)) {
+          this.velocity.x = -speed;
+          this.facing = -1;
+      }
+      if (inputService.isDown(GAME_CONST.controls.right)) {
+          this.velocity.x = speed;
+          this.facing = 1;
+      }
     }
-    
-    // Determine facing based on velocity (overridden by shooting later if needed)
-    if (this.velocity.x > 0) this.facing = -1;
-    else if (this.velocity.x < 0) this.facing = 1;
 
     if (wasGrounded && this.jumpRequested) {
       this.velocity.y = GAME_CONST.player.jumpForce;
@@ -268,9 +273,8 @@ class Player {
 
     let jetpackActive = false;
     if (inputService.isDown(GAME_CONST.controls.jetpack) && this.jetpackFuel > 0) {
-      // If we are on the ground, give a small nudge to break contact
       if (this.onGround) {
-        this.velocity.y = -10; // Tiny upward nudge just to break ground contact
+        this.velocity.y = -10;
         this.onGround = false;
       }
       this.velocity.y -= GAME_CONST.player.jetpackForce * deltaTime;
@@ -308,10 +312,21 @@ class Player {
     this.shootTimer = Math.max(0, this.shootTimer - deltaTime);
     this.weapon.update(deltaTime);
 
-    if (this.shootRequested || inputService.isMouseDown(0)) {
+    const isAiming = inputService.isMouseDown(0);
+    const hasAmmo = this.weapon.magAmmo[this.weapon.currentWeapon] > 0;
+    
+    // Aim updates facing
+    if ((isAiming || this.shootRequested) && cameraService) {
+        const originX = this.position.x + this.width * 0.5;
+        const mouseWorldX = (inputService.mouse.x / cameraService.zoom) + cameraService.x;
+        this.facing = (mouseWorldX > originX) ? 1 : -1;
+    }
+
+    if (this.shootRequested || isAiming) {
       this.tryShoot({
         ...deps,
         input: inputService,
+        camera: cameraService,
         audio: audioService,
         particles: particleSystem
       });
@@ -326,25 +341,22 @@ class Player {
 
     const sprite = this.entity.getComponent("sprite");
     if (sprite) {
-      const isShooting = this.shootTimer > 0;
-      const facingLeft = this.facing === -1;
+      const isActuallyFiring = this.shootTimer > 0;
+      const isAimingWithAmmo = isAiming && hasAmmo;
+      const visuallyShooting = isActuallyFiring || isAimingWithAmmo;
+      
       const isFlying = this.state === "jetpack";
-      const isMoving = ["running", "jumping", "falling"].includes(this.state);
-
       let nextAssetKey;
       const prefix = this.selectedCharacter === 1 ? "player" : "player2";
       
-      if (isShooting) {
-        nextAssetKey = facingLeft ? `${prefix}-shooting-left` : `${prefix}-shooting-right`;
+      // UNIFIED ASSET STRATEGY:
+      // Both Shooting and Running assets (named '...-left') visually face LEFT.
+      if (visuallyShooting) {
+        nextAssetKey = `${prefix}-shooting-left`;
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
-        if (this.selectedCharacter === 1) {
-          nextAssetKey = facingLeft ? "player-flying-left" : "player-flying-right";
-        } else {
-          // Player 2 fallback to running for flying/air states
-          nextAssetKey = facingLeft ? "player2-running-left" : "player2-running-right";
-        }
+        nextAssetKey = (this.selectedCharacter === 1) ? "player-flying-left" : "player2-running-left";
       } else {
-        nextAssetKey = facingLeft ? `${prefix}-running-left` : `${prefix}-running-right`;
+        nextAssetKey = `${prefix}-running-left`;
       }
 
       if (sprite.assetKey !== nextAssetKey) {
@@ -353,30 +365,56 @@ class Player {
         sprite.animationTimer = 0;
       }
 
-      sprite.type = "sprite";
+      // ASSET DIRECTION LOGIC:
+      // Running/Flying assets face RIGHT, but Shooting assets face LEFT.
       sprite.noFlip = true;
+      if (visuallyShooting) {
+          // Shooting asset faces LEFT: flip when aiming RIGHT (1)
+          sprite.flipX = (this.facing === 1); 
+      } else {
+          // Running asset faces RIGHT: flip when moving LEFT (-1)
+          sprite.flipX = (this.facing === -1);
+      }
+
+      sprite.type = "sprite";
       sprite.frameY = 0;
       sprite.frameWidth = this.selectedCharacter === 1 ? 48 : 224;
       sprite.frameHeight = this.selectedCharacter === 1 ? 48 : 224;
       sprite.scale = this.selectedCharacter === 1 ? 2.5 : 0.535;
       sprite.offsetY = this.selectedCharacter === 1 ? GAME_CONST.entity.player.spriteOffsetY : 30;
 
-      if (isShooting) {
-        sprite.frameX = this.selectedCharacter === 1 ? 3 : 0;
-        sprite.numFrames = this.selectedCharacter === 1 ? 2 : 5;
-        sprite.animationSpeed = 0.08;
+      if (visuallyShooting) {
+        if (isActuallyFiring) {
+            if (this.selectedCharacter === 1) {
+                sprite.frameX = 3; 
+                sprite.numFrames = 2;
+            } else {
+                sprite.frameX = 1;
+                sprite.numFrames = 2;
+            }
+            sprite.animationSpeed = 0.06;
+            sprite.loop = true;
+        } else {
+            sprite.frameX = this.selectedCharacter === 1 ? 2 : 0;
+            sprite.numFrames = 1;
+            sprite.animationSpeed = 0.1;
+            sprite.loop = false;
+        }
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
         sprite.frameX = 0;
         sprite.numFrames = 1;
         sprite.animationSpeed = 0.1;
+        sprite.loop = true;
       } else if (this.state === "running") {
         sprite.frameX = 0;
         sprite.numFrames = 5;
         sprite.animationSpeed = 0.1;
+        sprite.loop = true;
       } else {
         sprite.frameX = 0;
         sprite.numFrames = 1;
         sprite.animationSpeed = 0.12;
+        sprite.loop = true;
       }
 
       sprite.currentFrame %= sprite.numFrames;
@@ -413,28 +451,18 @@ class Player {
     const mouseWorldY = (inputService.mouse.y / cameraService.zoom) + cameraService.y;
     const deltaX = mouseWorldX - originX;
     const deltaY = mouseWorldY - originY;
-    let direction = { x: this.facing, y: 0 };
-
-    // ONLY use the mouse position to aim IF the player is actively clicking the mouse button.
-    // Otherwise, default to the character's current facing direction.
-    if (inputService.isMouseDown(0)) {
-      if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-        direction = { x: deltaX, y: deltaY };
-        // Only update facing if shooting at a significant horizontal distance
-        if (Math.abs(deltaX) > 5) {
-          this.facing = deltaX > 0 ? 1 : -1;
-        }
-      }
-    }
+    
+    let direction = { x: deltaX, y: deltaY };
+    const shootFacing = (deltaX > 0) ? 1 : -1;
 
     projectileManager.spawn(
-      { x: this.position.x + this.width * 0.5 + this.facing * 12, y: this.position.y + this.height * 0.45 },
+      { x: this.position.x + this.width * 0.5 + shootFacing * 12, y: this.position.y + this.height * 0.45 },
       direction,
       GAME_CONST.projectile.playerSpeed,
       34,
       "player",
       GAME_CONST.entity.projectile.player.color,
-      GAME_CONST.projectile.knockback * this.facing
+      GAME_CONST.projectile.knockback * shootFacing
     );
     this.weapon.consumeAmmo(1);
     this.shootTimer = GAME_CONST.player.shootCooldown;
@@ -445,7 +473,7 @@ class Player {
     
     if (audioService?.particlesEnabled && particleSystem) {
       particleSystem.spawn(
-        { x: this.position.x + this.width * 0.5 + this.facing * 14, y: this.position.y + 26 },
+        { x: this.position.x + this.width * 0.5 + shootFacing * 14, y: this.position.y + 26 },
         "#ffb458",
         10
       );

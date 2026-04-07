@@ -12,15 +12,20 @@ class RenderSystem {
       const sprite = entity.getComponent("sprite");
       if (!sprite || sprite.numFrames <= 1) continue;
 
+      // Handle variable animation speed if provided
+      const speed = sprite.animationSpeed || 0.1;
       sprite.animationTimer += deltaTime;
-      if (sprite.animationTimer >= sprite.animationSpeed) {
-        sprite.animationTimer = 0;
+
+      while (sprite.animationTimer >= speed) {
+        sprite.animationTimer -= speed;
         sprite.currentFrame++;
+        
         if (sprite.currentFrame >= sprite.numFrames) {
-          if (sprite.loop) {
+          if (sprite.loop !== false) {
             sprite.currentFrame = 0;
           } else {
             sprite.currentFrame = sprite.numFrames - 1;
+            break; // Stop updating if not looping
           }
         }
       }

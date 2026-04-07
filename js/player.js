@@ -409,11 +409,8 @@ class Player {
                 sprite.currentFrame = 0;
                 sprite.animationSpeed = 0.06;
             } else if (this.selectedCharacter === 3) {
-                if (this.state === "running") {
-                    sprite.frameX = this.facing === -1 ? 3 : 0;
-                } else {
-                    sprite.frameX = 2;
-                }
+                // Ghost shooting frames: 5th frame (index 4) for right, 1st frame (index 0) for left
+                sprite.frameX = this.facing === -1 ? 0 : 4;
                 sprite.numFrames = 1;
                 sprite.currentFrame = 0;
                 sprite.animationSpeed = 0.08;
@@ -451,12 +448,17 @@ class Player {
         }
       } else if (isFlying || this.state === "jumping" || this.state === "falling") {
         sprite.frameX = 0;
-        sprite.numFrames = 1;
-        sprite.animationSpeed = 0.1;
+        // Sentinel (Char 2), Ghost (Char 3), and Titan (Char 4) use a static frame for air states
+        if (this.selectedCharacter >= 2) {
+          sprite.numFrames = 1;
+        } else {
+          sprite.numFrames = 2; // Vanguard (Char 1) uses 2 frames for air
+        }
+        sprite.animationSpeed = 0.12;
         sprite.loop = true;
       } else if (this.state === "running") {
         sprite.frameX = 0;
-        sprite.numFrames = 5;
+        sprite.numFrames = 3; // Fluid 3-frame run cycle
         sprite.animationSpeed = 0.1;
         sprite.loop = true;
       } else {
